@@ -14,6 +14,19 @@ mod seal_cap {
         type MagetypesBackend: archmage::SimdToken + archmage::IntoConcreteToken;
         type Proof: Copy;
         const IS_SCALAR_BACKED: bool;
+        type SimdF32<Token: archmage::SimdToken + super::Sealed + Copy + 'static>;
+        type SimdF64<Token: archmage::SimdToken + super::Sealed + Copy + 'static>;
+        type SimdI8<Token: archmage::SimdToken + super::Sealed + Copy + 'static>;
+        type SimdI16<Token: archmage::SimdToken + super::Sealed + Copy + 'static>;
+        type SimdI32<Token: archmage::SimdToken + super::Sealed + Copy + 'static>;
+        type SimdI64<Token: archmage::SimdToken + super::Sealed + Copy + 'static>;
+        type SimdU8<Token: archmage::SimdToken + super::Sealed + Copy + 'static>;
+        type SimdU16<Token: archmage::SimdToken + super::Sealed + Copy + 'static>;
+        type SimdU32<Token: archmage::SimdToken + super::Sealed + Copy + 'static>;
+        type SimdU64<Token: archmage::SimdToken + super::Sealed + Copy + 'static>;
+        const SIMD_F32_LANES: usize;
+        const SIMD_F64_LANES: usize;
+        const SIMD_I32_LANES: usize;
 
         fn narrow(proof: Self::Proof) -> Self::Narrow;
         #[cfg(feature = "w512")]
@@ -1260,6 +1273,26 @@ where
     }
 }
 
+impl<T> crate::SimdTypes for T
+where
+    T: archmage::SimdToken + archmage::IntoConcreteToken + Copy + 'static,
+    <T as archmage::SimdToken>::__Caps: seal_cap::SealedFromCaps<T>,
+{
+    type F32 = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SimdF32<T>;
+    type F64 = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SimdF64<T>;
+    type I8 = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SimdI8<T>;
+    type I16 = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SimdI16<T>;
+    type I32 = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SimdI32<T>;
+    type I64 = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SimdI64<T>;
+    type U8 = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SimdU8<T>;
+    type U16 = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SimdU16<T>;
+    type U32 = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SimdU32<T>;
+    type U64 = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SimdU64<T>;
+    const F32_LANES: usize = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SIMD_F32_LANES;
+    const F64_LANES: usize = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SIMD_F64_LANES;
+    const I32_LANES: usize = <<<T as archmage::SimdToken>::__Caps as seal_cap::SealedFromCaps<T>>::Base as seal_cap::SealedBase>::SIMD_I32_LANES;
+}
+
 impl<T> Sealed for T
 where
     T: archmage::SimdToken + archmage::IntoConcreteToken + Copy + 'static,
@@ -1945,6 +1978,49 @@ where
 mod seal_base_impls {
     use super::seal_cap::SealedBase;
 
+    macro_rules! impl_simd_types_assoc {
+        (scalar) => {
+            type SimdF32<Token: archmage::SimdToken + super::Sealed + Copy + 'static> = f32;
+            type SimdF64<Token: archmage::SimdToken + super::Sealed + Copy + 'static> = f64;
+            type SimdI8<Token: archmage::SimdToken + super::Sealed + Copy + 'static> = i8;
+            type SimdI16<Token: archmage::SimdToken + super::Sealed + Copy + 'static> = i16;
+            type SimdI32<Token: archmage::SimdToken + super::Sealed + Copy + 'static> = i32;
+            type SimdI64<Token: archmage::SimdToken + super::Sealed + Copy + 'static> = i64;
+            type SimdU8<Token: archmage::SimdToken + super::Sealed + Copy + 'static> = u8;
+            type SimdU16<Token: archmage::SimdToken + super::Sealed + Copy + 'static> = u16;
+            type SimdU32<Token: archmage::SimdToken + super::Sealed + Copy + 'static> = u32;
+            type SimdU64<Token: archmage::SimdToken + super::Sealed + Copy + 'static> = u64;
+            const SIMD_F32_LANES: usize = 1;
+            const SIMD_F64_LANES: usize = 1;
+            const SIMD_I32_LANES: usize = 1;
+        };
+        ($f32:ident, $f64:ident, $i8:ident, $i16:ident, $i32:ident, $i64:ident, $u8:ident, $u16:ident, $u32:ident, $u64:ident, $l32:literal, $l64:literal) => {
+            type SimdF32<Token: archmage::SimdToken + super::Sealed + Copy + 'static> =
+                crate::simd::generic::$f32<Token>;
+            type SimdF64<Token: archmage::SimdToken + super::Sealed + Copy + 'static> =
+                crate::simd::generic::$f64<Token>;
+            type SimdI8<Token: archmage::SimdToken + super::Sealed + Copy + 'static> =
+                crate::simd::generic::$i8<Token>;
+            type SimdI16<Token: archmage::SimdToken + super::Sealed + Copy + 'static> =
+                crate::simd::generic::$i16<Token>;
+            type SimdI32<Token: archmage::SimdToken + super::Sealed + Copy + 'static> =
+                crate::simd::generic::$i32<Token>;
+            type SimdI64<Token: archmage::SimdToken + super::Sealed + Copy + 'static> =
+                crate::simd::generic::$i64<Token>;
+            type SimdU8<Token: archmage::SimdToken + super::Sealed + Copy + 'static> =
+                crate::simd::generic::$u8<Token>;
+            type SimdU16<Token: archmage::SimdToken + super::Sealed + Copy + 'static> =
+                crate::simd::generic::$u16<Token>;
+            type SimdU32<Token: archmage::SimdToken + super::Sealed + Copy + 'static> =
+                crate::simd::generic::$u32<Token>;
+            type SimdU64<Token: archmage::SimdToken + super::Sealed + Copy + 'static> =
+                crate::simd::generic::$u64<Token>;
+            const SIMD_F32_LANES: usize = $l32;
+            const SIMD_F64_LANES: usize = $l64;
+            const SIMD_I32_LANES: usize = $l32;
+        };
+    }
+
     pub struct ScalarBase;
 
     impl SealedBase for ScalarBase {
@@ -1954,6 +2030,7 @@ mod seal_base_impls {
         type MagetypesBackend = archmage::ScalarToken;
         type Proof = archmage::ScalarToken;
         const IS_SCALAR_BACKED: bool = true;
+        impl_simd_types_assoc!(scalar);
 
         #[inline(always)]
         fn narrow(proof: archmage::ScalarToken) -> Self::Narrow {
@@ -2028,6 +2105,9 @@ mod seal_base_impls {
         type MagetypesBackend = archmage::X64V3Token;
         type Proof = archmage::X64V3Token;
         const IS_SCALAR_BACKED: bool = false;
+        impl_simd_types_assoc!(
+            f32x8, f64x4, i8x32, i16x16, i32x8, i64x4, u8x32, u16x16, u32x8, u64x4, 8, 4
+        );
 
         #[inline(always)]
         fn narrow(proof: archmage::X64V3Token) -> Self::Narrow {
@@ -2120,6 +2200,9 @@ mod seal_base_impls {
         type MagetypesBackend = archmage::X64V4Token;
         type Proof = archmage::X64V4Token;
         const IS_SCALAR_BACKED: bool = false;
+        impl_simd_types_assoc!(
+            f32x16, f64x8, i8x64, i16x32, i32x16, i64x8, u8x64, u16x32, u32x16, u64x8, 16, 8
+        );
 
         #[inline(always)]
         fn narrow(proof: archmage::X64V4Token) -> Self::Narrow {
@@ -2259,6 +2342,9 @@ mod seal_base_impls {
         type MagetypesBackend = archmage::X64V4xToken;
         type Proof = archmage::X64V4xToken;
         const IS_SCALAR_BACKED: bool = false;
+        impl_simd_types_assoc!(
+            f32x16, f64x8, i8x64, i16x32, i32x16, i64x8, u8x64, u16x32, u32x16, u64x8, 16, 8
+        );
 
         #[inline(always)]
         fn narrow(proof: archmage::X64V4xToken) -> Self::Narrow {
@@ -2467,6 +2553,9 @@ mod seal_base_impls {
         type MagetypesBackend = archmage::NeonToken;
         type Proof = archmage::NeonToken;
         const IS_SCALAR_BACKED: bool = false;
+        impl_simd_types_assoc!(
+            f32x4, f64x2, i8x16, i16x8, i32x4, i64x2, u8x16, u16x8, u32x4, u64x2, 4, 2
+        );
 
         #[inline(always)]
         fn narrow(proof: archmage::NeonToken) -> Self::Narrow {
@@ -2559,6 +2648,9 @@ mod seal_base_impls {
         type MagetypesBackend = archmage::Wasm128Token;
         type Proof = archmage::Wasm128Token;
         const IS_SCALAR_BACKED: bool = false;
+        impl_simd_types_assoc!(
+            f32x4, f64x2, i8x16, i16x8, i32x4, i64x2, u8x16, u16x8, u32x4, u64x2, 4, 2
+        );
 
         #[inline(always)]
         fn narrow(proof: archmage::Wasm128Token) -> Self::Narrow {
@@ -2659,6 +2751,9 @@ mod seal_base_impls {
         type MagetypesBackend = archmage::Wasm128RelaxedFmaToken;
         type Proof = archmage::Wasm128RelaxedFmaToken;
         const IS_SCALAR_BACKED: bool = false;
+        impl_simd_types_assoc!(
+            f32x4, f64x2, i8x16, i16x8, i32x4, i64x2, u8x16, u16x8, u32x4, u64x2, 4, 2
+        );
 
         #[inline(always)]
         fn narrow(proof: archmage::Wasm128RelaxedFmaToken) -> Self::Narrow {

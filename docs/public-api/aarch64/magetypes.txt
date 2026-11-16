@@ -6,7 +6,7 @@
 # impls omitted; re-export duplicates annotated `[also: path]`.
 # DO NOT EDIT BY HAND — commit regenerated changes with the code.
 #
-# files: magetypes.txt 2892 lines (supported surface) | magetypes.features.txt 12 added (features: avx512,std,w512) | magetypes.internal.txt 42 lines (52 hidden + 0 excluded-feature)
+# files: magetypes.txt 2886 lines (supported surface) | magetypes.features.txt 12 added (features: avx512,std,w512) | magetypes.internal.txt 42 lines (52 hidden + 0 excluded-feature)
 
 ## summary
 #
@@ -17,8 +17,8 @@
 #   inherent methods                         1318
 #   enum variants                               1
 #   re-exports                                  2
-#   trait roster entries (type × trait)       708
-#   conditional trait impls (verbatim)        136
+#   trait roster entries (type × trait)       701
+#   conditional trait impls (verbatim)        137
 #   auto-trait-complete types                  10
 #   auto-trait exceptions                      30
 #
@@ -2678,7 +2678,7 @@ pub fn WidthDispatch::u8x64_load(self, &[u8; 64]) -> Self::U8x64
 pub fn WidthDispatch::u8x64_splat(self, u8) -> Self::U8x64
 pub fn WidthDispatch::u8x64_zero(self) -> Self::U8x64
 
-## trait impls (78 types)
+## trait impls (71 types)
 
 T: prelude::F16Convert, prelude::F32x16FromHalves, prelude::F32x16ToU32, prelude::F32x4ToU32, prelude::F32x8FromHalves, prelude::F32x8ToU32, prelude::I32x16DotI8, prelude::I32x4DotI8, prelude::I32x8DotI8, simd::backends::F32x16Backend, simd::backends::F32x16Convert, simd::backends::F32x4Backend, simd::backends::F32x4Convert, simd::backends::F32x8Backend, simd::backends::F32x8Convert, simd::backends::F64x2Backend, simd::backends::F64x2Convert, simd::backends::F64x4Backend, simd::backends::F64x4Convert, simd::backends::F64x8Backend, simd::backends::F64x8Convert, simd::backends::I16x16Backend, simd::backends::I16x16Bitcast, simd::backends::I16x32Backend, simd::backends::I16x8Backend, simd::backends::I16x8Bitcast, simd::backends::I32x16Backend, simd::backends::I32x4Backend, simd::backends::I32x8Backend, simd::backends::I64x2Backend, simd::backends::I64x2Bitcast, simd::backends::I64x4Backend, simd::backends::I64x4Bitcast, simd::backends::I64x8Backend, simd::backends::I8x16Backend, simd::backends::I8x16Bitcast, simd::backends::I8x32Backend, simd::backends::I8x32Bitcast, simd::backends::I8x64Backend, simd::backends::U16x16Backend, simd::backends::U16x32Backend, simd::backends::U16x8Backend, simd::backends::U32x16Backend, simd::backends::U32x4Backend, simd::backends::U32x4Bitcast, simd::backends::U32x8Backend, simd::backends::U32x8Bitcast, simd::backends::U64x2Backend, simd::backends::U64x2Bitcast, simd::backends::U64x4Backend, simd::backends::U64x4Bitcast, simd::backends::U64x8Backend, simd::backends::U8x16Backend, simd::backends::U8x32Backend, simd::backends::U8x64Backend
 [f32; 16]: From<prelude::f32x16<T>>
@@ -2711,13 +2711,6 @@ T: prelude::F16Convert, prelude::F32x16FromHalves, prelude::F32x16ToU32, prelude
 [u8; 16]: From<prelude::u8x16<T>>
 [u8; 32]: From<prelude::u8x32<T>>
 [u8; 64]: From<prelude::u8x64<T>>
-archmage::tokens::ScalarToken: SimdTypes
-archmage::tokens::generated::arm::Arm64V2Token: SimdTypes
-archmage::tokens::generated::arm::Arm64V3Token: SimdTypes
-archmage::tokens::generated::arm::NeonAesToken: SimdTypes
-archmage::tokens::generated::arm::NeonCrcToken: SimdTypes
-archmage::tokens::generated::arm::NeonSha3Token: SimdTypes
-archmage::tokens::generated::arm::NeonToken: SimdTypes
 prelude::f32x16<T>: Add, Add<f32>, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Debug, Div, Div<f32>, DivAssign, Index<usize>, IndexMut<usize>, Mul, Mul<f32>, MulAssign, Neg, Sub, Sub<f32>, SubAssign
 prelude::f32x4<T>: Add, Add<f32>, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Debug, Div, Div<f32>, DivAssign, Index<usize>, IndexMut<usize>, Mul, Mul<f32>, MulAssign, Neg, Sub, Sub<f32>, SubAssign
 prelude::f32x8<T>: Add, Add<f32>, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Debug, Div, Div<f32>, DivAssign, Index<usize>, IndexMut<usize>, Mul, Mul<f32>, MulAssign, Neg, Sub, Sub<f32>, SubAssign
@@ -2893,6 +2886,7 @@ impl<T> prelude::ArmRdma for T where T: simd::generic::capabilities::cap_sealed:
 impl<T> prelude::DotI8Signed for T where T: simd::generic::capabilities::cap_sealed::Sealed + simd::generic::capabilities::cap_sealed::DotI8SignedOps + simd::generic::capabilities::cap_sealed::DotI8SignedW512 + simd::backends::I32x4Backend + simd::backends::I8x16Backend + simd::backends::I32x8Backend + simd::backends::I8x32Backend + archmage::tokens::SimdToken + core::marker::Copy + 'static
 impl<T> prelude::DotU8 for T where T: simd::generic::capabilities::cap_sealed::Sealed + simd::generic::capabilities::cap_sealed::DotU8Ops + simd::generic::capabilities::cap_sealed::DotU8W512 + simd::backends::U32x4Backend + simd::backends::U8x16Backend + simd::backends::U32x8Backend + simd::backends::U8x32Backend + archmage::tokens::SimdToken + core::marker::Copy + 'static
 impl<T> prelude::MagetypesToken for T where T: archmage::tokens::SimdToken + archmage::tokens::generated::traits::IntoConcreteToken + core::marker::Copy + 'static, <T as archmage::tokens::SimdToken>::__Caps: simd::backends::sealed::seal_cap::SealedFromCaps<T>
+impl<T> SimdTypes for T where T: archmage::tokens::SimdToken + archmage::tokens::generated::traits::IntoConcreteToken + core::marker::Copy + 'static, <T as archmage::tokens::SimdToken>::__Caps: simd::backends::sealed::seal_cap::SealedFromCaps<T>
 impl<T> WidthDispatch for T where T: archmage::tokens::SimdToken + core::marker::Copy + simd::backends::F32x4Backend + simd::backends::F64x2Backend + simd::backends::I8x16Backend + simd::backends::U8x16Backend + simd::backends::I16x8Backend + simd::backends::U16x8Backend + simd::backends::I32x4Backend + simd::backends::U32x4Backend + simd::backends::I64x2Backend + simd::backends::U64x2Backend + simd::backends::F32x8Backend + simd::backends::F64x4Backend + simd::backends::I8x32Backend + simd::backends::U8x32Backend + simd::backends::I16x16Backend + simd::backends::U16x16Backend + simd::backends::I32x8Backend + simd::backends::U32x8Backend + simd::backends::I64x4Backend + simd::backends::U64x4Backend
 
 ## auto traits

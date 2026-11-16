@@ -346,13 +346,24 @@ fn all_21_tokens_satisfy_all_unified_traits_and_run_when_available() {
         check_simd_types_bound::<archmage::X64V4Token>();
         check_simd_types_bound::<archmage::X64V4xToken>();
         check_simd_types_bound::<archmage::Avx512Fp16Token>();
+        check_simd_types_bound::<archmage::X64Avx512Bf16Token>();
+        check_simd_types_bound::<archmage::X64GfniToken>();
+        check_simd_types_bound::<archmage::X64AvxVnniToken>();
     }
     #[cfg(target_arch = "aarch64")]
     {
         check_simd_types_bound::<archmage::NeonToken>();
         check_simd_types_bound::<archmage::NeonAesToken>();
+        check_simd_types_bound::<archmage::NeonSha2Token>();
         check_simd_types_bound::<archmage::NeonSha3Token>();
         check_simd_types_bound::<archmage::NeonCrcToken>();
+        check_simd_types_bound::<archmage::NeonRdmToken>();
+        check_simd_types_bound::<archmage::NeonDotProdToken>();
+        check_simd_types_bound::<archmage::NeonFp16Token>();
+        check_simd_types_bound::<archmage::NeonFcmaToken>();
+        check_simd_types_bound::<archmage::NeonI8mmToken>();
+        check_simd_types_bound::<archmage::NeonBf16Token>();
+        check_simd_types_bound::<archmage::NeonFhmToken>();
         check_simd_types_bound::<archmage::Arm64V2Token>();
         check_simd_types_bound::<archmage::Arm64V3Token>();
     }
@@ -381,6 +392,8 @@ fn conjunction_tokens_satisfy_capabilities_and_verify() {
             verify_token_narrow_and_256::<
                 archmage::And<archmage::X64V3Token, archmage::X64GfniToken>,
             >;
+        check_simd_types_bound::<archmage::And<archmage::X64V3Token, archmage::X64GfniToken>>();
+        check_simd_types_bound::<archmage::And<archmage::ScalarToken, archmage::ScalarToken>>();
         let _: fn(archmage::And<archmage::X64V3Token, archmage::X64AvxVnniToken>) =
             assert_dot_u8_i8::<archmage::And<archmage::X64V3Token, archmage::X64AvxVnniToken>>;
         let _: fn(archmage::And<archmage::X64V3Token, archmage::X64AvxIfmaToken>) =

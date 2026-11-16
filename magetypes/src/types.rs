@@ -52,212 +52,119 @@ pub trait SimdTypes: SimdToken {
     const I32_LANES: usize;
 }
 
-macro_rules! impl_simd_types_scalar {
-    ($($token:ty),* $(,)?) => {
-        $(
-            impl SimdTypes for $token {
-                type F32 = f32;
-                type F64 = f64;
-                type I8 = i8;
-                type I16 = i16;
-                type I32 = i32;
-                type I64 = i64;
-                type U8 = u8;
-                type U16 = u16;
-                type U32 = u32;
-                type U64 = u64;
-
-                const F32_LANES: usize = 1;
-                const F64_LANES: usize = 1;
-                const I32_LANES: usize = 1;
-            }
-        )*
-    };
-}
-
-#[cfg(any(target_arch = "aarch64", target_arch = "wasm32"))]
-macro_rules! impl_simd_types_w128 {
-    ($($token:ty),* $(,)?) => {
-        $(
-            impl SimdTypes for $token {
-                type F32 = crate::simd::generic::f32x4<$token>;
-                type F64 = crate::simd::generic::f64x2<$token>;
-                type I8 = crate::simd::generic::i8x16<$token>;
-                type I16 = crate::simd::generic::i16x8<$token>;
-                type I32 = crate::simd::generic::i32x4<$token>;
-                type I64 = crate::simd::generic::i64x2<$token>;
-                type U8 = crate::simd::generic::u8x16<$token>;
-                type U16 = crate::simd::generic::u16x8<$token>;
-                type U32 = crate::simd::generic::u32x4<$token>;
-                type U64 = crate::simd::generic::u64x2<$token>;
-
-                const F32_LANES: usize = 4;
-                const F64_LANES: usize = 2;
-                const I32_LANES: usize = 4;
-            }
-        )*
-    };
-}
-
-#[cfg(target_arch = "x86_64")]
-macro_rules! impl_simd_types_w256 {
-    ($($token:ty),* $(,)?) => {
-        $(
-            impl SimdTypes for $token {
-                type F32 = crate::simd::generic::f32x8<$token>;
-                type F64 = crate::simd::generic::f64x4<$token>;
-                type I8 = crate::simd::generic::i8x32<$token>;
-                type I16 = crate::simd::generic::i16x16<$token>;
-                type I32 = crate::simd::generic::i32x8<$token>;
-                type I64 = crate::simd::generic::i64x4<$token>;
-                type U8 = crate::simd::generic::u8x32<$token>;
-                type U16 = crate::simd::generic::u16x16<$token>;
-                type U32 = crate::simd::generic::u32x8<$token>;
-                type U64 = crate::simd::generic::u64x4<$token>;
-
-                const F32_LANES: usize = 8;
-                const F64_LANES: usize = 4;
-                const I32_LANES: usize = 8;
-            }
-        )*
-    };
-}
-
-#[cfg(all(target_arch = "x86_64", feature = "avx512"))]
-macro_rules! impl_simd_types_w512 {
-    ($($token:ty),* $(,)?) => {
-        $(
-            impl SimdTypes for $token {
-                type F32 = crate::simd::generic::f32x16<$token>;
-                type F64 = crate::simd::generic::f64x8<$token>;
-                type I8 = crate::simd::generic::i8x64<$token>;
-                type I16 = crate::simd::generic::i16x32<$token>;
-                type I32 = crate::simd::generic::i32x16<$token>;
-                type I64 = crate::simd::generic::i64x8<$token>;
-                type U8 = crate::simd::generic::u8x64<$token>;
-                type U16 = crate::simd::generic::u16x32<$token>;
-                type U32 = crate::simd::generic::u32x16<$token>;
-                type U64 = crate::simd::generic::u64x8<$token>;
-
-                const F32_LANES: usize = 16;
-                const F64_LANES: usize = 8;
-                const I32_LANES: usize = 16;
-            }
-        )*
-    };
-}
-
-// =============================================================================
-// x86_64 implementations
-// =============================================================================
-
-#[cfg(target_arch = "x86_64")]
-impl_simd_types_scalar!(
-    archmage::X64V1Token,
-    archmage::X64V2Token,
-    archmage::X64CryptoToken
-);
-
-#[cfg(target_arch = "x86_64")]
-impl_simd_types_w256!(
-    archmage::X64V3Token,
-    archmage::X64V3CryptoToken,
-    archmage::X64V3GfniCryptoToken,
-    archmage::X64V3VnniToken,
-    archmage::X64V3Vnni2Token,
-);
-
-#[cfg(all(target_arch = "x86_64", feature = "avx512"))]
-impl_simd_types_w512!(
-    archmage::X64V4Token,
-    archmage::X64V4xToken,
-    archmage::Avx512Fp16Token,
-);
-
-#[cfg(all(target_arch = "x86_64", not(feature = "avx512")))]
-impl_simd_types_w256!(
-    archmage::X64V4Token,
-    archmage::X64V4xToken,
-    archmage::Avx512Fp16Token,
-);
-
-// =============================================================================
-// aarch64 implementations
-// =============================================================================
-
-#[cfg(target_arch = "aarch64")]
-impl_simd_types_w128!(
-    archmage::NeonToken,
-    archmage::NeonAesToken,
-    archmage::NeonSha3Token,
-    archmage::NeonCrcToken,
-    archmage::Arm64V2Token,
-    archmage::Arm64V3Token,
-);
-
-// =============================================================================
-// wasm32 implementations
-// =============================================================================
-
-#[cfg(target_arch = "wasm32")]
-impl_simd_types_w128!(
-    archmage::Wasm128Token,
-    archmage::Wasm128RelaxedToken,
-    archmage::Wasm128RelaxedFmaToken,
-);
-
-// =============================================================================
-// ScalarToken implementation (no SIMD - uses scalar types)
-// =============================================================================
-
-impl_simd_types_scalar!(archmage::ScalarToken);
+// Implementations of `SimdTypes` for all concrete tokens and `archmage::And<Base, Extra>`
+// conjunctions are generated in `crate::simd::backends::sealed` via `SealedFromCaps`.
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use core::any::TypeId;
 
     #[test]
     fn scalar_token_types() {
-        // ScalarToken associates with scalar types
+        // ScalarToken and ScalarToken.and(ScalarToken) associate with scalar types.
         fn check<T: SimdTypes>() {
             assert_eq!(T::F32_LANES, 1);
             assert_eq!(T::F64_LANES, 1);
             assert_eq!(T::I32_LANES, 1);
         }
         check::<archmage::ScalarToken>();
+        check::<archmage::And<archmage::ScalarToken, archmage::ScalarToken>>();
+        assert_eq!(
+            TypeId::of::<
+                <archmage::And<archmage::ScalarToken, archmage::ScalarToken> as SimdTypes>::F32,
+            >(),
+            TypeId::of::<f32>(),
+        );
     }
 
     #[cfg(target_arch = "x86_64")]
     #[test]
-    fn x64v3_token_types() {
-        fn check<T: SimdTypes>() {
-            assert_eq!(T::F32_LANES, 8);
-            assert_eq!(T::F64_LANES, 4);
-            assert_eq!(T::I32_LANES, 8);
+    fn x86_all_leaf_and_conjunction_tokens_implement_simd_types() {
+        fn check_lanes<T: SimdTypes>(expected_f32: usize, expected_f64: usize) {
+            assert_eq!(T::F32_LANES, expected_f32);
+            assert_eq!(T::F64_LANES, expected_f64);
+            assert_eq!(T::I32_LANES, expected_f32);
         }
-        check::<archmage::X64V3Token>();
+
+        // Scalar-backed baseline & standalone x86 extension leaf tokens
+        check_lanes::<archmage::X64V1Token>(1, 1);
+        check_lanes::<archmage::X64V2Token>(1, 1);
+        check_lanes::<archmage::X64CryptoToken>(1, 1);
+        check_lanes::<archmage::X64GfniToken>(1, 1);
+        check_lanes::<archmage::X64ShaToken>(1, 1);
+        check_lanes::<archmage::X64AdxToken>(1, 1);
+        check_lanes::<archmage::X64AvxVnniToken>(1, 1);
+        check_lanes::<archmage::X64AvxIfmaToken>(1, 1);
+        check_lanes::<archmage::X64AvxVnniInt8Token>(1, 1);
+        check_lanes::<archmage::X64AvxVnniInt16Token>(1, 1);
+        check_lanes::<archmage::X64AvxNeConvertToken>(1, 1);
+        check_lanes::<archmage::X64Sha512Token>(1, 1);
+
+        // V3-backed tokens (256-bit)
+        check_lanes::<archmage::X64V3Token>(8, 4);
+        check_lanes::<archmage::X64V3CryptoToken>(8, 4);
+        check_lanes::<archmage::X64V3GfniCryptoToken>(8, 4);
+        check_lanes::<archmage::X64V3VnniToken>(8, 4);
+        check_lanes::<archmage::X64V3Vnni2Token>(8, 4);
+
+        // V4-backed tokens (512-bit when avx512 enabled, 256-bit otherwise)
+        #[cfg(feature = "avx512")]
+        let (v4_32, v4_64) = (16, 8);
+        #[cfg(not(feature = "avx512"))]
+        let (v4_32, v4_64) = (8, 4);
+        check_lanes::<archmage::X64V4Token>(v4_32, v4_64);
+        check_lanes::<archmage::X64V4xToken>(v4_32, v4_64);
+        check_lanes::<archmage::Avx512Fp16Token>(v4_32, v4_64);
+        check_lanes::<archmage::X64Avx512Bf16Token>(v4_32, v4_64);
+
+        // Conjunctions inherit the full joined capability set
+        type V3Gfni = archmage::And<archmage::X64V3Token, archmage::X64GfniToken>;
+        check_lanes::<V3Gfni>(8, 4);
+        assert_eq!(
+            TypeId::of::<<V3Gfni as SimdTypes>::F32>(),
+            TypeId::of::<crate::simd::generic::f32x8<V3Gfni>>(),
+        );
+        check_lanes::<archmage::And<archmage::X64V1Token, archmage::X64V3Token>>(8, 4);
+        check_lanes::<archmage::And<archmage::X64V3Token, archmage::X64V4Token>>(v4_32, v4_64);
     }
 
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(target_arch = "aarch64")]
     #[test]
-    fn x64v2_token_types() {
-        // X64V2Token has no magetypes SIMD backend, so SimdTypes maps to scalar lanes.
-        fn check<T: SimdTypes>() {
-            assert_eq!(T::F32_LANES, 1);
-            assert_eq!(T::F64_LANES, 1);
-            assert_eq!(T::I32_LANES, 1);
+    fn arm_all_leaf_and_conjunction_tokens_implement_simd_types() {
+        fn check_lanes<T: SimdTypes>() {
+            assert_eq!(T::F32_LANES, 4);
+            assert_eq!(T::F64_LANES, 2);
+            assert_eq!(T::I32_LANES, 4);
         }
-        check::<archmage::X64V2Token>();
+        check_lanes::<archmage::NeonToken>();
+        check_lanes::<archmage::NeonAesToken>();
+        check_lanes::<archmage::NeonSha2Token>();
+        check_lanes::<archmage::NeonSha3Token>();
+        check_lanes::<archmage::NeonCrcToken>();
+        check_lanes::<archmage::NeonRdmToken>();
+        check_lanes::<archmage::NeonDotProdToken>();
+        check_lanes::<archmage::NeonFp16Token>();
+        check_lanes::<archmage::NeonFcmaToken>();
+        check_lanes::<archmage::NeonI8mmToken>();
+        check_lanes::<archmage::NeonBf16Token>();
+        check_lanes::<archmage::NeonFhmToken>();
+        check_lanes::<archmage::Arm64V2Token>();
+        check_lanes::<archmage::Arm64V3Token>();
+        check_lanes::<archmage::And<archmage::NeonToken, archmage::NeonFp16Token>>();
     }
 
-    #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
+    #[cfg(target_arch = "wasm32")]
     #[test]
-    fn x64v4_token_types() {
-        fn check<T: SimdTypes>() {
-            assert_eq!(T::F32_LANES, 16);
-            assert_eq!(T::F64_LANES, 8);
-            assert_eq!(T::I32_LANES, 16);
+    fn wasm_all_leaf_and_conjunction_tokens_implement_simd_types() {
+        fn check_lanes<T: SimdTypes>() {
+            assert_eq!(T::F32_LANES, 4);
+            assert_eq!(T::F64_LANES, 2);
+            assert_eq!(T::I32_LANES, 4);
         }
-        check::<archmage::X64V4Token>();
+        check_lanes::<archmage::Wasm128Token>();
+        check_lanes::<archmage::Wasm128RelaxedToken>();
+        check_lanes::<archmage::Wasm128RelaxedFmaToken>();
+        check_lanes::<archmage::And<archmage::Wasm128Token, archmage::Wasm128RelaxedFmaToken>>();
     }
 }
