@@ -890,3 +890,67 @@ fn scalar_self_type_authenticates_boundary() {
         "Expected typed _self: &ScalarToken parameter, got: {expanded}"
     );
 }
+
+#[test]
+fn qualified_non_archmage_and_type_is_ignored_by_discovery() {
+    let f: ItemFn = syn::parse_str(
+        "fn work(tok: X64V3Token, _node: my_mod::And<X64V3Token, String>, _ast: custom::And<u32, X64GfniToken>) {}",
+    )
+    .unwrap();
+    let proofs = crate::token_discovery::discover_signature_proofs(&f.sig)
+        .unwrap()
+        .unwrap();
+    assert_eq!(proofs.all_concrete_names, vec!["X64V3Token"]);
+    assert!(proofs.and_assertions.is_empty());
+    assert!(proofs.single_concrete.is_some());
+}
+
+#[test]
+fn qualified_archmage_and_tokens_path_is_validated() {
+    let ok_fn: ItemFn =
+        syn::parse_str("fn work(tok: archmage::tokens::And<X64V3Token, X64GfniToken>) {}").unwrap();
+    let proofs = crate::token_discovery::discover_signature_proofs(&ok_fn.sig)
+        .unwrap()
+        .unwrap();
+    assert_eq!(proofs.and_assertions.len(), 1);
+    assert_eq!(
+        proofs.all_concrete_names,
+        vec!["X64V3Token", "X64GfniToken"]
+    );
+
+    let bad_fn: ItemFn =
+        syn::parse_str("fn work(tok: archmage::tokens::And<X64V3Token, Foo>) {}").unwrap();
+    assert!(crate::token_discovery::discover_signature_proofs(&bad_fn.sig).is_err());
+
+    let nested_bad: ItemFn =
+        syn::parse_str("fn work(tok: And<my_mod::And<X64V3Token, u32>, X64V3Token>) {}").unwrap();
+    assert!(crate::token_discovery::discover_signature_proofs(&nested_bad.sig).is_err());
+}
+
+#[test]
+fn autoversion_rejects_non_bare_token_proof_forms() {
+    let signatures = [
+        "fn f(_t: &X64V3Token) {}",
+        "fn f(_t: &mut NeonToken) {}",
+        "fn f(_t: (X64V3Token, X64GfniToken)) {}",
+        "fn f(_t: And<X64V3Token, X64GfniToken>) {}",
+        "fn f(_t: archmage::And<X64V3Token, X64GfniToken>) {}",
+        "fn f(_t: impl HasX64V2) {}",
+        "fn f<T: HasX64V3>(_t: T) {}",
+        "fn f<T>(_t: T) where T: HasNeon {}",
+        "fn f(_t: ScalarToken, _extra: X64GfniToken) {}",
+        "fn f(_t: &ScalarToken) {}",
+        "fn f(_t: impl SimdToken) {}",
+    ];
+    for src in signatures {
+        let f: ItemFn = syn::parse_str(src).unwrap();
+        assert!(
+            find_autoversion_token_param(&f.sig).is_err(),
+            "expected error for `{src}`"
+        );
+    }
+
+    let ok: ItemFn =
+        syn::parse_str("fn f(data: &[f32], _ignored: my_mod::And<X64V3Token, u32>) {}").unwrap();
+    assert!(find_autoversion_token_param(&ok.sig).unwrap().is_none());
+}

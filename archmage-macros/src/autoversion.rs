@@ -12,7 +12,6 @@ use syn::{
 };
 
 use crate::common::*;
-use crate::generated::token_to_features;
 use crate::tiers::*;
 
 /// Arguments to the `#[autoversion]` macro.
@@ -115,6 +114,62 @@ pub(crate) struct AutoversionTokenParam {
 pub(crate) fn find_autoversion_token_param(
     sig: &Signature,
 ) -> Result<Option<AutoversionTokenParam>, syn::Error> {
+    if let Some(proofs) = crate::token_discovery::discover_signature_proofs(sig)? {
+        let single_direct = proofs
+            .single_concrete
+            .as_ref()
+            .filter(|c| c.direct_value_param)
+            .map(|c| c.type_name.as_str());
+
+        if single_direct != Some("ScalarToken") {
+            let err_ty = proofs.token_param_indices.first().and_then(|&idx| {
+                sig.inputs
+                    .iter()
+                    .filter_map(|arg| match arg {
+                        FnArg::Typed(pt) => Some(pt.ty.as_ref()),
+                        FnArg::Receiver(_) => None,
+                    })
+                    .nth(idx)
+            });
+            let msg = if let Some(name) = proofs.single_concrete_name().or_else(|| {
+                (proofs.concrete_assertions.len() == 1
+                    && proofs.and_assertions.is_empty()
+                    && proofs.bound_assertions.is_empty())
+                .then(|| proofs.concrete_assertions[0].0.as_str())
+            }) {
+                format!(
+                    "#[autoversion] generates multi-tier dispatch — it can't take a \
+                     concrete token like `{name}`.\n\
+                     Use #[arcane] or #[rite] for single-token functions.\n\
+                     Use #[autoversion] with no token parameter (recommended) or \
+                     ScalarToken for incant! nesting."
+                )
+            } else {
+                "#[autoversion] generates multi-tier dispatch — it can't take a concrete \
+                 or bounded SIMD token proof (`&Token`, tuple, `And<..>`, `impl Has*`, \
+                 or `T: Has*`).\n\
+                 Use #[arcane] or #[rite] for single-token functions.\n\
+                 Use #[autoversion] with no token parameter (recommended) or \
+                 ScalarToken for incant! nesting."
+                    .to_string()
+            };
+            return Err(match err_ty {
+                Some(ty) => syn::Error::new_spanned(ty, msg),
+                None => syn::Error::new_spanned(sig, msg),
+            });
+        }
+    } else if let Some(featureless) = crate::token_discovery::diagnose_featureless_token(sig) {
+        return Err(syn::Error::new_spanned(
+            sig,
+            format!(
+                "#[autoversion] generates multi-tier dispatch — it can't take a parameter \
+                 bounded by `{featureless}`.\n\
+                 Use #[autoversion] with no token parameter (recommended) or \
+                 ScalarToken for incant! nesting."
+            ),
+        ));
+    }
+
     for (i, arg) in sig.inputs.iter().enumerate() {
         if let FnArg::Typed(PatType { pat, ty, .. }) = arg
             && let Type::Path(type_path) = ty.as_ref()
@@ -127,18 +182,6 @@ pub(crate) fn find_autoversion_token_param(
                 AutoversionTokenKind::SimdToken
             } else if name == "ScalarToken" {
                 AutoversionTokenKind::ScalarToken
-            } else if token_to_features(&name).is_some() {
-                // It's a concrete SIMD token (X64V3Token, NeonToken, etc.)
-                return Err(syn::Error::new_spanned(
-                    ty,
-                    format!(
-                        "#[autoversion] generates multi-tier dispatch — it can't take a \
-                         concrete token like `{name}`.\n\
-                         Use #[arcane] or #[rite] for single-token functions.\n\
-                         Use #[autoversion] with no token parameter (recommended) or \
-                         ScalarToken for incant! nesting."
-                    ),
-                ));
             } else {
                 continue;
             };

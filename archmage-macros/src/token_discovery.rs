@@ -373,6 +373,7 @@ impl SignatureProofs {
     }
 }
 
+#[derive(Clone)]
 struct ProofAccumulator {
     arch: Option<ArchClass>,
     features: Vec<&'static str>,
@@ -454,11 +455,29 @@ impl ProofAccumulator {
     }
 }
 
+fn path_idents(path: &syn::Path) -> Vec<String> {
+    path.segments.iter().map(|s| s.ident.to_string()).collect()
+}
+
 fn is_and_path(path: &syn::Path) -> Option<(&Type, &Type)> {
-    let last = path.segments.last()?;
-    if last.ident != "And" {
+    let segs = path_idents(path);
+    let refs: Vec<&str> = segs.iter().map(|s| s.as_str()).collect();
+    let is_candidate = if path.leading_colon.is_some() {
+        matches!(
+            refs.as_slice(),
+            ["archmage", "And"] | ["archmage", "tokens", "And"]
+        )
+    } else {
+        matches!(
+            refs.as_slice(),
+            ["And"] | ["archmage", "And"] | ["archmage", "tokens", "And"]
+        )
+    };
+    if !is_candidate {
         return None;
     }
+
+    let last = path.segments.last()?;
     let PathArguments::AngleBracketed(ab) = &last.arguments else {
         return None;
     };
@@ -475,8 +494,12 @@ fn is_and_path(path: &syn::Path) -> Option<(&Type, &Type)> {
 }
 
 fn is_explicit_archmage_and(path: &syn::Path) -> bool {
-    let segs: Vec<_> = path.segments.iter().map(|s| s.ident.to_string()).collect();
-    matches!(segs.as_slice(), [a, b] if a == "archmage" && b == "And")
+    let segs = path_idents(path);
+    let refs: Vec<&str> = segs.iter().map(|s| s.as_str()).collect();
+    matches!(
+        refs.as_slice(),
+        ["archmage", "And"] | ["archmage", "tokens", "And"]
+    )
 }
 
 fn arch_for_concrete_token(name: &str) -> ArchClass {
@@ -522,13 +545,14 @@ fn discover_in_type(
             };
 
             if let Some((left_ty, right_ty)) = is_and_path(&type_path.path) {
-                let snapshot = acc.concrete_assertions.len()
-                    + acc.and_assertions.len()
-                    + acc.bound_assertions.len();
-                let left_ok = discover_in_type(left_ty, sig, param_idx, steps.clone(), true, acc)?;
-                let right_ok = discover_in_type(right_ty, sig, param_idx, steps, true, acc)?;
+                let mut scratch = acc.clone();
+                let left_ok =
+                    discover_in_type(left_ty, sig, param_idx, steps.clone(), true, &mut scratch)?;
+                let right_ok =
+                    discover_in_type(right_ty, sig, param_idx, steps, true, &mut scratch)?;
 
                 if left_ok && right_ok {
+                    *acc = scratch;
                     acc.and_assertions.push(ty.clone());
                     return Ok(true);
                 }
@@ -539,12 +563,6 @@ fn discover_in_type(
                          archmage tokens or capability-bounded generic tokens",
                     ));
                 }
-                debug_assert_eq!(
-                    snapshot,
-                    acc.concrete_assertions.len()
-                        + acc.and_assertions.len()
-                        + acc.bound_assertions.len()
-                );
                 return Ok(false);
             }
 
