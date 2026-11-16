@@ -1,6 +1,6 @@
 //! ARM (NEON) throughput comparison of three reciprocal / reciprocal-sqrt
-//! implementation families, run on real aarch64 hardware (a Hetzner Ampere /
-//! Neoverse box), not QEMU:
+//! implementation families, run on real aarch64 hardware (an Ampere Altra /
+//! Neoverse-N1 server), not QEMU:
 //!
 //!   1. **original**   — the pre-change methods: raw `vrsqrteq`/`vrecpeq` 8-bit
 //!      estimate, then (for full precision) two *manual* Newton

@@ -61,7 +61,7 @@ their own measurements.
   cargo build/run invocation. No Linux cgroup memory cap on this Mac.
 
 Reproduce with `just bench-arm-codegen-macos`, which saves complete output to
-`~/tmp`. The underlying command is:
+`<scratch>`. The underlying command is:
 
 ```sh
 cargo bench --locked -p magetypes --bench generic_vs_concrete -- --format=llm

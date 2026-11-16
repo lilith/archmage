@@ -8,21 +8,19 @@ Use Rust 1.89 or newer. Add both crates for the vector examples:
 
 ```toml
 [dependencies]
-archmage = "0.9"
-magetypes = "0.9"
+archmage = "0.10"
+magetypes = "0.10"
 ```
 
 Continue with [Your First SIMD Function](@/archmage/getting-started/first-simd.md).
-The guide tracks the repository; additions after the latest published release
-are identified in [coverage and version scope](@/magetypes/examples/coverage.md).
-API links use docs.rs `latest`, which can lag repository changes.
+The guide tracks the repository; API links use docs.rs `latest`, which can lag
+repository changes.
 
 ## Features
 
 | Crate / feature | Default | Effect |
 |---|---|---|
 | archmage `std` | Yes | Standard-library detection/support |
-| archmage `macros` | Compatibility no-op | Macros are included unconditionally |
 | archmage `avx512` | No | AVX-512 intrinsic-wrapper and macro support |
 | archmage `testable_dispatch` | No | Test-only tier-disabling facilities |
 | magetypes `std` | Yes | Forwards archmage standard-library support |
@@ -36,8 +34,8 @@ For a library that exposes optional std and native AVX-512 support:
 
 ```toml
 [dependencies]
-archmage = { version = "0.9", default-features = false }
-magetypes = { version = "0.9", default-features = false, features = ["w512"] }
+archmage = { version = "0.10", default-features = false }
+magetypes = { version = "0.10", default-features = false, features = ["w512"] }
 
 [features]
 default = ["std"]

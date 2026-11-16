@@ -65,7 +65,7 @@
 /// All features supported by `is_x86_feature_detected!` are supported:
 /// - SSE family: `"sse"`, `"sse2"`, `"sse3"`, `"ssse3"`, `"sse4.1"`, `"sse4.2"`
 /// - AVX family: `"avx"`, `"avx2"`, `"avx512f"`, `"avx512bw"`, etc.
-/// - Other: `"fma"`, `"bmi1"`, `"bmi2"`, `"popcnt"`, `"lzcnt"`, etc.
+/// - Other: `"fma"`, `"bmi1"`, `"bmi2"`, `"popcnt"`, `"lzcnt"`, `"adx"`, `"sha"`, etc.
 #[macro_export]
 macro_rules! is_x86_feature_available {
     ("sse") => {
@@ -110,6 +110,30 @@ macro_rules! is_x86_feature_available {
     ("avx512vl") => {
         $crate::__impl_feature_check!("avx512vl")
     };
+    ("avx512fp16") => {
+        $crate::__impl_feature_check!("avx512fp16")
+    };
+    ("avx512bf16") => {
+        $crate::__impl_feature_check!("avx512bf16")
+    };
+    ("avx512vpopcntdq") => {
+        $crate::__impl_feature_check!("avx512vpopcntdq")
+    };
+    ("avx512ifma") => {
+        $crate::__impl_feature_check!("avx512ifma")
+    };
+    ("avx512vbmi") => {
+        $crate::__impl_feature_check!("avx512vbmi")
+    };
+    ("avx512vbmi2") => {
+        $crate::__impl_feature_check!("avx512vbmi2")
+    };
+    ("avx512bitalg") => {
+        $crate::__impl_feature_check!("avx512bitalg")
+    };
+    ("avx512vnni") => {
+        $crate::__impl_feature_check!("avx512vnni")
+    };
     ("bmi1") => {
         $crate::__impl_feature_check!("bmi1")
     };
@@ -128,8 +152,44 @@ macro_rules! is_x86_feature_available {
     ("aes") => {
         $crate::__impl_feature_check!("aes")
     };
+    ("vpclmulqdq") => {
+        $crate::__impl_feature_check!("vpclmulqdq")
+    };
+    ("vaes") => {
+        $crate::__impl_feature_check!("vaes")
+    };
+    ("gfni") => {
+        $crate::__impl_feature_check!("gfni")
+    };
+    ("avxvnni") => {
+        $crate::__impl_feature_check!("avxvnni")
+    };
+    ("avxvnniint8") => {
+        $crate::__impl_feature_check!("avxvnniint8")
+    };
+    ("avxvnniint16") => {
+        $crate::__impl_feature_check!("avxvnniint16")
+    };
+    ("avxneconvert") => {
+        $crate::__impl_feature_check!("avxneconvert")
+    };
+    ("avxifma") => {
+        $crate::__impl_feature_check!("avxifma")
+    };
+    ("adx") => {
+        $crate::__impl_feature_check!("adx")
+    };
     ("sha") => {
         $crate::__impl_feature_check!("sha")
+    };
+    ("sha512") => {
+        $crate::__impl_feature_check!("sha512")
+    };
+    ("sm3") => {
+        $crate::__impl_feature_check!("sm3")
+    };
+    ("sm4") => {
+        $crate::__impl_feature_check!("sm4")
     };
     // Fallback for unknown features - runtime only
     ($feature:tt) => {
@@ -282,6 +342,86 @@ macro_rules! __impl_feature_check {
             $crate::__impl_runtime_only_check!("avx512vl")
         }
     }};
+    ("avx512fp16") => {{
+        #[cfg(target_feature = "avx512fp16")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avx512fp16"))]
+        {
+            $crate::__impl_runtime_only_check!("avx512fp16")
+        }
+    }};
+    ("avx512bf16") => {{
+        #[cfg(target_feature = "avx512bf16")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avx512bf16"))]
+        {
+            $crate::__impl_runtime_only_check!("avx512bf16")
+        }
+    }};
+    ("avx512vpopcntdq") => {{
+        #[cfg(target_feature = "avx512vpopcntdq")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avx512vpopcntdq"))]
+        {
+            $crate::__impl_runtime_only_check!("avx512vpopcntdq")
+        }
+    }};
+    ("avx512ifma") => {{
+        #[cfg(target_feature = "avx512ifma")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avx512ifma"))]
+        {
+            $crate::__impl_runtime_only_check!("avx512ifma")
+        }
+    }};
+    ("avx512vbmi") => {{
+        #[cfg(target_feature = "avx512vbmi")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avx512vbmi"))]
+        {
+            $crate::__impl_runtime_only_check!("avx512vbmi")
+        }
+    }};
+    ("avx512vbmi2") => {{
+        #[cfg(target_feature = "avx512vbmi2")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avx512vbmi2"))]
+        {
+            $crate::__impl_runtime_only_check!("avx512vbmi2")
+        }
+    }};
+    ("avx512bitalg") => {{
+        #[cfg(target_feature = "avx512bitalg")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avx512bitalg"))]
+        {
+            $crate::__impl_runtime_only_check!("avx512bitalg")
+        }
+    }};
+    ("avx512vnni") => {{
+        #[cfg(target_feature = "avx512vnni")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avx512vnni"))]
+        {
+            $crate::__impl_runtime_only_check!("avx512vnni")
+        }
+    }};
     ("bmi1") => {{
         #[cfg(target_feature = "bmi1")]
         {
@@ -342,6 +482,96 @@ macro_rules! __impl_feature_check {
             $crate::__impl_runtime_only_check!("aes")
         }
     }};
+    ("vpclmulqdq") => {{
+        #[cfg(target_feature = "vpclmulqdq")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "vpclmulqdq"))]
+        {
+            $crate::__impl_runtime_only_check!("vpclmulqdq")
+        }
+    }};
+    ("vaes") => {{
+        #[cfg(target_feature = "vaes")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "vaes"))]
+        {
+            $crate::__impl_runtime_only_check!("vaes")
+        }
+    }};
+    ("gfni") => {{
+        #[cfg(target_feature = "gfni")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "gfni"))]
+        {
+            $crate::__impl_runtime_only_check!("gfni")
+        }
+    }};
+    ("avxvnni") => {{
+        #[cfg(target_feature = "avxvnni")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avxvnni"))]
+        {
+            $crate::__impl_runtime_only_check!("avxvnni")
+        }
+    }};
+    ("avxvnniint8") => {{
+        #[cfg(target_feature = "avxvnniint8")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avxvnniint8"))]
+        {
+            $crate::__impl_runtime_only_check!("avxvnniint8")
+        }
+    }};
+    ("avxvnniint16") => {{
+        #[cfg(target_feature = "avxvnniint16")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avxvnniint16"))]
+        {
+            $crate::__impl_runtime_only_check!("avxvnniint16")
+        }
+    }};
+    ("avxneconvert") => {{
+        #[cfg(target_feature = "avxneconvert")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avxneconvert"))]
+        {
+            $crate::__impl_runtime_only_check!("avxneconvert")
+        }
+    }};
+    ("avxifma") => {{
+        #[cfg(target_feature = "avxifma")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "avxifma"))]
+        {
+            $crate::__impl_runtime_only_check!("avxifma")
+        }
+    }};
+    ("adx") => {{
+        #[cfg(target_feature = "adx")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "adx"))]
+        {
+            $crate::__impl_runtime_only_check!("adx")
+        }
+    }};
     ("sha") => {{
         #[cfg(target_feature = "sha")]
         {
@@ -350,6 +580,36 @@ macro_rules! __impl_feature_check {
         #[cfg(not(target_feature = "sha"))]
         {
             $crate::__impl_runtime_only_check!("sha")
+        }
+    }};
+    ("sha512") => {{
+        #[cfg(target_feature = "sha512")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "sha512"))]
+        {
+            $crate::__impl_runtime_only_check!("sha512")
+        }
+    }};
+    ("sm3") => {{
+        #[cfg(target_feature = "sm3")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "sm3"))]
+        {
+            $crate::__impl_runtime_only_check!("sm3")
+        }
+    }};
+    ("sm4") => {{
+        #[cfg(target_feature = "sm4")]
+        {
+            true
+        }
+        #[cfg(not(target_feature = "sm4"))]
+        {
+            $crate::__impl_runtime_only_check!("sm4")
         }
     }};
 }

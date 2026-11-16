@@ -2,19 +2,12 @@
 
 
 The [fresh local follow-up](../benchmarks/powf_module_2026-11-07/QUIET-LOCAL.md) records the final scalar-only optimization, clean ns/bar comparisons, rejected native conversion experiment and remaining software-FMA cost.
-Updated 2026-11-09. The replacement API remains in [draft PR144](https://github.com/imazen/archmage/pull/144), with promotion held. Canonical HIGHP now has scalar and packed implementations. Legacy power methods retain ordinary valid-domain behavior; [the NEON numeric min/max ledger](../benchmarks/powf_module_2026-11-07/NEON-NUMERIC.md) records the accepted exceptional changes. Performance observations below identify the actual implementation and machine; exploratory intervals cannot satisfy the promotion gate.
+Updated 2026-11-09. Canonical HIGHP now has scalar and packed implementations. Legacy power methods retain ordinary valid-domain behavior; [the NEON numeric min/max ledger](../benchmarks/powf_module_2026-11-07/NEON-NUMERIC.md) records the accepted exceptional changes. Performance observations below identify the actual implementation and machine; exploratory intervals cannot satisfy the promotion gate.
 
-## Relationship to the earlier portability PRs
+## Relationship to earlier work
 
-[PR144](https://github.com/imazen/archmage/pull/144) is independently based on
-main. Neither [PR128](https://github.com/imazen/archmage/pull/128) nor
-[PR143](https://github.com/imazen/archmage/pull/143) is included by commit
-ancestry. The configurable power module is the successor to PR128's portable
-pow direction; PR128's portable log/ln/log10/exp/exp2 methods are not included.
-PR143's general exp/exp2 NaN corrections remain separate and held by the owner;
-this PR does not silently accept their measured cost. Its experimental global
-f64 FMA fallback remains unpromoted. Research informed the power design, but
-PR144 does not supersede either complete PR.
+This work is independently based on main, integrating the configurable power design
+without claiming general exp/exp2 promotion. Research informed the power design.
 
 ## Numerical contracts and bounds
 
@@ -161,8 +154,8 @@ pilot had no overlapping study analysis. No full Linux matrix followed.
 
 The graph and domain affect the preferred width: the Full graph favors V4x
 in this pilot, while Gamma favors V3. This observation does not change a
-shipping default or satisfy the 2% gate. The run-heavy summary is
-6 s, peak RSS 0.26 GiB, minimum available 44,292 MiB, peak load 1.83.
+shipping default or satisfy the 2% gate. The benchmark run completed in
+6 s with peak RSS 0.26 GiB.
 
 Hardware counters separately cover 104,857,600 actual powers in each
 whole-process x8/4096 stream diagnostic, including startup and the adapter:

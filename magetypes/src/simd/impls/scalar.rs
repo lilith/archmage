@@ -11,7 +11,7 @@
     clippy::unnecessary_cast
 )]
 
-use crate::simd::backends::*;
+use crate::simd::backends::ops::*;
 
 // Helpers to avoid trait method name shadowing inside the impl block.
 // Inside `impl XxxBackend`, names like `sqrt`, `floor`, etc. resolve to
@@ -55,7 +55,7 @@ fn f64_round(x: f64) -> f64 {
     crate::nostd_math::roundeven(x)
 }
 
-impl F32x4Backend for archmage::ScalarToken {
+impl F32x4Ops for archmage::ScalarToken {
     type Repr = [f32; 4];
 
     // ====== Construction ======
@@ -137,6 +137,24 @@ impl F32x4Backend for archmage::ScalarToken {
             a[2].max(b[2]),
             a[3].max(b[3]),
         ]
+    }
+
+    #[inline(always)]
+    fn min_fast(self, a: [f32; 4], b: [f32; 4]) -> [f32; 4] {
+        let mut r = [0.0f32; 4];
+        for i in 0..4 {
+            r[i] = if a[i] < b[i] { a[i] } else { b[i] };
+        }
+        r
+    }
+
+    #[inline(always)]
+    fn max_fast(self, a: [f32; 4], b: [f32; 4]) -> [f32; 4] {
+        let mut r = [0.0f32; 4];
+        for i in 0..4 {
+            r[i] = if a[i] > b[i] { a[i] } else { b[i] };
+        }
+        r
     }
 
     #[inline(always)]
@@ -399,9 +417,55 @@ impl F32x4Backend for archmage::ScalarToken {
             f32::from_bits(a[3].to_bits() ^ b[3].to_bits()),
         ]
     }
+
+    #[inline(always)]
+    fn broadcast_lane<const N: usize>(self, a: [f32; 4]) -> [f32; 4] {
+        const { assert!(N < 4, "lane index out of bounds") };
+        [a[N]; 4]
+    }
+
+    #[inline(always)]
+    fn shift_left_lanes<const N: usize>(self, a: [f32; 4]) -> [f32; 4] {
+        const { assert!(N <= 4, "shift count out of bounds") };
+        let mut out = [0.0f32; 4];
+        let mut i = N;
+        while i < 4 {
+            out[i] = a[i - N];
+            i += 1;
+        }
+        out
+    }
+
+    #[inline(always)]
+    fn shift_right_lanes<const N: usize>(self, a: [f32; 4]) -> [f32; 4] {
+        const { assert!(N <= 4, "shift count out of bounds") };
+        let mut out = [0.0f32; 4];
+        let mut i = 0;
+        while i + N < 4 {
+            out[i] = a[i + N];
+            i += 1;
+        }
+        out
+    }
+
+    #[inline(always)]
+    fn mul_add_lane_relaxed<const LANE: i32>(
+        self,
+        a: [f32; 4],
+        v_in: [f32; 4],
+        acc: [f32; 4],
+    ) -> [f32; 4] {
+        const { assert!(LANE >= 0 && (LANE as usize) < 4, "LANE out of bounds") };
+        let b = v_in[LANE as usize];
+        let mut out = [0.0f32; 4];
+        for i in 0..4 {
+            out[i] = a[i] * b + acc[i];
+        }
+        out
+    }
 }
 
-impl F32x8Backend for archmage::ScalarToken {
+impl F32x8Ops for archmage::ScalarToken {
     type Repr = [f32; 8];
 
     // ====== Construction ======
@@ -527,6 +591,24 @@ impl F32x8Backend for archmage::ScalarToken {
             a[6].max(b[6]),
             a[7].max(b[7]),
         ]
+    }
+
+    #[inline(always)]
+    fn min_fast(self, a: [f32; 8], b: [f32; 8]) -> [f32; 8] {
+        let mut r = [0.0f32; 8];
+        for i in 0..8 {
+            r[i] = if a[i] < b[i] { a[i] } else { b[i] };
+        }
+        r
+    }
+
+    #[inline(always)]
+    fn max_fast(self, a: [f32; 8], b: [f32; 8]) -> [f32; 8] {
+        let mut r = [0.0f32; 8];
+        for i in 0..8 {
+            r[i] = if a[i] > b[i] { a[i] } else { b[i] };
+        }
+        r
     }
 
     #[inline(always)]
@@ -821,9 +903,55 @@ impl F32x8Backend for archmage::ScalarToken {
             f32::from_bits(a[7].to_bits() ^ b[7].to_bits()),
         ]
     }
+
+    #[inline(always)]
+    fn broadcast_lane<const N: usize>(self, a: [f32; 8]) -> [f32; 8] {
+        const { assert!(N < 8, "lane index out of bounds") };
+        [a[N]; 8]
+    }
+
+    #[inline(always)]
+    fn shift_left_lanes<const N: usize>(self, a: [f32; 8]) -> [f32; 8] {
+        const { assert!(N <= 8, "shift count out of bounds") };
+        let mut out = [0.0f32; 8];
+        let mut i = N;
+        while i < 8 {
+            out[i] = a[i - N];
+            i += 1;
+        }
+        out
+    }
+
+    #[inline(always)]
+    fn shift_right_lanes<const N: usize>(self, a: [f32; 8]) -> [f32; 8] {
+        const { assert!(N <= 8, "shift count out of bounds") };
+        let mut out = [0.0f32; 8];
+        let mut i = 0;
+        while i + N < 8 {
+            out[i] = a[i + N];
+            i += 1;
+        }
+        out
+    }
+
+    #[inline(always)]
+    fn mul_add_lane_relaxed<const LANE: i32>(
+        self,
+        a: [f32; 8],
+        v_in: [f32; 8],
+        acc: [f32; 8],
+    ) -> [f32; 8] {
+        const { assert!(LANE >= 0 && (LANE as usize) < 8, "LANE out of bounds") };
+        let b = v_in[LANE as usize];
+        let mut out = [0.0f32; 8];
+        for i in 0..8 {
+            out[i] = a[i] * b + acc[i];
+        }
+        out
+    }
 }
 
-impl F64x2Backend for archmage::ScalarToken {
+impl F64x2Ops for archmage::ScalarToken {
     type Repr = [f64; 2];
 
     // ====== Construction ======
@@ -895,6 +1023,24 @@ impl F64x2Backend for archmage::ScalarToken {
     #[inline(always)]
     fn max(self, a: [f64; 2], b: [f64; 2]) -> [f64; 2] {
         [a[0].max(b[0]), a[1].max(b[1])]
+    }
+
+    #[inline(always)]
+    fn min_fast(self, a: [f64; 2], b: [f64; 2]) -> [f64; 2] {
+        let mut r = [0.0f64; 2];
+        for i in 0..2 {
+            r[i] = if a[i] < b[i] { a[i] } else { b[i] };
+        }
+        r
+    }
+
+    #[inline(always)]
+    fn max_fast(self, a: [f64; 2], b: [f64; 2]) -> [f64; 2] {
+        let mut r = [0.0f64; 2];
+        for i in 0..2 {
+            r[i] = if a[i] > b[i] { a[i] } else { b[i] };
+        }
+        r
     }
 
     #[inline(always)]
@@ -1133,7 +1279,7 @@ impl F64x2Backend for archmage::ScalarToken {
     }
 }
 
-impl F64x4Backend for archmage::ScalarToken {
+impl F64x4Ops for archmage::ScalarToken {
     type Repr = [f64; 4];
 
     // ====== Construction ======
@@ -1215,6 +1361,24 @@ impl F64x4Backend for archmage::ScalarToken {
             a[2].max(b[2]),
             a[3].max(b[3]),
         ]
+    }
+
+    #[inline(always)]
+    fn min_fast(self, a: [f64; 4], b: [f64; 4]) -> [f64; 4] {
+        let mut r = [0.0f64; 4];
+        for i in 0..4 {
+            r[i] = if a[i] < b[i] { a[i] } else { b[i] };
+        }
+        r
+    }
+
+    #[inline(always)]
+    fn max_fast(self, a: [f64; 4], b: [f64; 4]) -> [f64; 4] {
+        let mut r = [0.0f64; 4];
+        for i in 0..4 {
+            r[i] = if a[i] > b[i] { a[i] } else { b[i] };
+        }
+        r
     }
 
     #[inline(always)]
@@ -1473,7 +1637,7 @@ impl F64x4Backend for archmage::ScalarToken {
     }
 }
 
-impl I32x4Backend for archmage::ScalarToken {
+impl I32x4Ops for archmage::ScalarToken {
     type Repr = [i32; 4];
 
     // ====== Construction ======
@@ -1768,7 +1932,7 @@ impl I32x4Backend for archmage::ScalarToken {
     }
 }
 
-impl I32x8Backend for archmage::ScalarToken {
+impl I32x8Ops for archmage::ScalarToken {
     type Repr = [i32; 8];
 
     // ====== Construction ======
@@ -2160,7 +2324,7 @@ impl I32x8Backend for archmage::ScalarToken {
     }
 }
 
-impl U32x4Backend for archmage::ScalarToken {
+impl U32x4Ops for archmage::ScalarToken {
     type Repr = [u32; 4];
 
     // ====== Construction ======
@@ -2401,7 +2565,7 @@ impl U32x4Backend for archmage::ScalarToken {
     }
 }
 
-impl U32x8Backend for archmage::ScalarToken {
+impl U32x8Ops for archmage::ScalarToken {
     type Repr = [u32; 8];
 
     // ====== Construction ======
@@ -2730,7 +2894,7 @@ impl U32x8Backend for archmage::ScalarToken {
     }
 }
 
-impl I64x2Backend for archmage::ScalarToken {
+impl I64x2Ops for archmage::ScalarToken {
     type Repr = [i64; 2];
 
     // ====== Construction ======
@@ -2938,7 +3102,7 @@ impl I64x2Backend for archmage::ScalarToken {
     }
 }
 
-impl I64x4Backend for archmage::ScalarToken {
+impl I64x4Ops for archmage::ScalarToken {
     type Repr = [i64; 4];
 
     // ====== Construction ======
@@ -3178,7 +3342,7 @@ impl I64x4Backend for archmage::ScalarToken {
     }
 }
 
-impl I8x16Backend for archmage::ScalarToken {
+impl I8x16Ops for archmage::ScalarToken {
     type Repr = [i8; 16];
 
     #[inline(always)]
@@ -3792,7 +3956,7 @@ impl I8x16Backend for archmage::ScalarToken {
     }
 }
 
-impl I8x32Backend for archmage::ScalarToken {
+impl I8x32Ops for archmage::ScalarToken {
     type Repr = [i8; 32];
 
     #[inline(always)]
@@ -4826,7 +4990,7 @@ impl I8x32Backend for archmage::ScalarToken {
     }
 }
 
-impl U8x16Backend for archmage::ScalarToken {
+impl U8x16Ops for archmage::ScalarToken {
     type Repr = [u8; 16];
 
     #[inline(always)]
@@ -5396,7 +5560,7 @@ impl U8x16Backend for archmage::ScalarToken {
     }
 }
 
-impl U8x32Backend for archmage::ScalarToken {
+impl U8x32Ops for archmage::ScalarToken {
     type Repr = [u8; 32];
 
     #[inline(always)]
@@ -6338,7 +6502,7 @@ impl U8x32Backend for archmage::ScalarToken {
     }
 }
 
-impl I16x8Backend for archmage::ScalarToken {
+impl I16x8Ops for archmage::ScalarToken {
     type Repr = [i16; 8];
 
     #[inline(always)]
@@ -6411,6 +6575,11 @@ impl I16x8Backend for archmage::ScalarToken {
             a[6].wrapping_mul(b[6]),
             a[7].wrapping_mul(b[7]),
         ]
+    }
+
+    #[inline(always)]
+    fn mul_hrs_q15(self, a: [i16; 8], b: [i16; 8]) -> [i16; 8] {
+        core::array::from_fn(|i| ((a[i] as i32 * b[i] as i32 + 0x4000) >> 15) as i16)
     }
 
     #[inline(always)]
@@ -6810,7 +6979,7 @@ impl I16x8Backend for archmage::ScalarToken {
     }
 }
 
-impl I16x16Backend for archmage::ScalarToken {
+impl I16x16Ops for archmage::ScalarToken {
     type Repr = [i16; 16];
 
     #[inline(always)]
@@ -6907,6 +7076,11 @@ impl I16x16Backend for archmage::ScalarToken {
             a[14].wrapping_mul(b[14]),
             a[15].wrapping_mul(b[15]),
         ]
+    }
+
+    #[inline(always)]
+    fn mul_hrs_q15(self, a: [i16; 16], b: [i16; 16]) -> [i16; 16] {
+        core::array::from_fn(|i| ((a[i] as i32 * b[i] as i32 + 0x4000) >> 15) as i16)
     }
 
     #[inline(always)]
@@ -7501,7 +7675,7 @@ impl I16x16Backend for archmage::ScalarToken {
     }
 }
 
-impl U16x8Backend for archmage::ScalarToken {
+impl U16x8Ops for archmage::ScalarToken {
     type Repr = [u16; 8];
 
     #[inline(always)]
@@ -7902,7 +8076,7 @@ impl U16x8Backend for archmage::ScalarToken {
     }
 }
 
-impl U16x16Backend for archmage::ScalarToken {
+impl U16x16Ops for archmage::ScalarToken {
     type Repr = [u16; 16];
 
     #[inline(always)]
@@ -8498,7 +8672,7 @@ impl U16x16Backend for archmage::ScalarToken {
     }
 }
 
-impl U64x2Backend for archmage::ScalarToken {
+impl U64x2Ops for archmage::ScalarToken {
     type Repr = [u64; 2];
 
     #[inline(always)]
@@ -8672,7 +8846,7 @@ impl U64x2Backend for archmage::ScalarToken {
     }
 }
 
-impl U64x4Backend for archmage::ScalarToken {
+impl U64x4Ops for archmage::ScalarToken {
     type Repr = [u64; 4];
 
     #[inline(always)]
@@ -8895,7 +9069,7 @@ impl U64x4Backend for archmage::ScalarToken {
     }
 }
 
-impl F32x4Convert for archmage::ScalarToken {
+impl F32x4ConvertOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_f32_to_i32(self, a: [f32; 4]) -> [i32; 4] {
         [
@@ -8937,7 +9111,7 @@ impl F32x4Convert for archmage::ScalarToken {
     }
 }
 
-impl F32x8Convert for archmage::ScalarToken {
+impl F32x8ConvertOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_f32_to_i32(self, a: [f32; 8]) -> [i32; 8] {
         [
@@ -9010,7 +9184,7 @@ impl F32x8Convert for archmage::ScalarToken {
 }
 
 #[cfg(feature = "w512")]
-impl F32x16Convert for archmage::ScalarToken {
+impl F32x16ConvertOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_f32_to_i32(self, a: [f32; 16]) -> [i32; 16] {
         [
@@ -9122,7 +9296,7 @@ impl F32x16Convert for archmage::ScalarToken {
     }
 }
 
-impl U32x4Bitcast for archmage::ScalarToken {
+impl U32x4BitcastOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_u32_to_i32(self, a: [u32; 4]) -> [i32; 4] {
         [a[0] as i32, a[1] as i32, a[2] as i32, a[3] as i32]
@@ -9134,7 +9308,7 @@ impl U32x4Bitcast for archmage::ScalarToken {
     }
 }
 
-impl U32x8Bitcast for archmage::ScalarToken {
+impl U32x8BitcastOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_u32_to_i32(self, a: [u32; 8]) -> [i32; 8] {
         [
@@ -9164,7 +9338,7 @@ impl U32x8Bitcast for archmage::ScalarToken {
     }
 }
 
-impl I64x2Bitcast for archmage::ScalarToken {
+impl I64x2BitcastOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_i64_to_f64(self, a: [i64; 2]) -> [f64; 2] {
         [f64::from_bits(a[0] as u64), f64::from_bits(a[1] as u64)]
@@ -9176,7 +9350,7 @@ impl I64x2Bitcast for archmage::ScalarToken {
     }
 }
 
-impl I64x4Bitcast for archmage::ScalarToken {
+impl I64x4BitcastOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_i64_to_f64(self, a: [i64; 4]) -> [f64; 4] {
         [
@@ -9198,7 +9372,91 @@ impl I64x4Bitcast for archmage::ScalarToken {
     }
 }
 
-impl I8x16Bitcast for archmage::ScalarToken {
+impl F64x2ConvertOps for archmage::ScalarToken {
+    #[inline(always)]
+    fn convert_f64_to_i32_low(self, a: [f64; 2]) -> [i32; 4] {
+        [a[0] as i32, a[1] as i32, 0, 0]
+    }
+
+    #[inline(always)]
+    fn convert_f64_to_i32_low_round(self, a: [f64; 2]) -> [i32; 4] {
+        [f64_round(a[0]) as i32, f64_round(a[1]) as i32, 0, 0]
+    }
+
+    #[inline(always)]
+    fn convert_i32_low_to_f64(self, a: [i32; 4]) -> [f64; 2] {
+        [a[0] as f64, a[1] as f64]
+    }
+}
+
+impl F64x4ConvertOps for archmage::ScalarToken {
+    #[inline(always)]
+    fn convert_f64_to_i32(self, a: [f64; 4]) -> [i32; 4] {
+        [a[0] as i32, a[1] as i32, a[2] as i32, a[3] as i32]
+    }
+
+    #[inline(always)]
+    fn convert_f64_to_i32_round(self, a: [f64; 4]) -> [i32; 4] {
+        [
+            f64_round(a[0]) as i32,
+            f64_round(a[1]) as i32,
+            f64_round(a[2]) as i32,
+            f64_round(a[3]) as i32,
+        ]
+    }
+
+    #[inline(always)]
+    fn convert_i32_to_f64(self, a: [i32; 4]) -> [f64; 4] {
+        [a[0] as f64, a[1] as f64, a[2] as f64, a[3] as f64]
+    }
+}
+
+#[cfg(feature = "w512")]
+#[inline(always)]
+pub(crate) fn scalar_f64x8_to_i32(a: [f64; 8]) -> [i32; 8] {
+    [
+        a[0] as i32,
+        a[1] as i32,
+        a[2] as i32,
+        a[3] as i32,
+        a[4] as i32,
+        a[5] as i32,
+        a[6] as i32,
+        a[7] as i32,
+    ]
+}
+
+#[cfg(feature = "w512")]
+#[inline(always)]
+pub(crate) fn scalar_f64x8_to_i32_round(a: [f64; 8]) -> [i32; 8] {
+    [
+        f64_round(a[0]) as i32,
+        f64_round(a[1]) as i32,
+        f64_round(a[2]) as i32,
+        f64_round(a[3]) as i32,
+        f64_round(a[4]) as i32,
+        f64_round(a[5]) as i32,
+        f64_round(a[6]) as i32,
+        f64_round(a[7]) as i32,
+    ]
+}
+
+#[cfg(feature = "w512")]
+#[inline(always)]
+pub(crate) fn scalar_f64x8_from_i32(a: [i32; 8]) -> [f64; 8] {
+    [
+        a[0] as f64,
+        a[1] as f64,
+        a[2] as f64,
+        a[3] as f64,
+        a[4] as f64,
+        a[5] as f64,
+        a[6] as f64,
+        a[7] as f64,
+    ]
+}
+
+impl I8x16BitcastOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_i8_to_u8(self, a: [i8; 16]) -> [u8; 16] {
         let mut out = [0u8; 16];
@@ -9221,7 +9479,7 @@ impl I8x16Bitcast for archmage::ScalarToken {
     }
 }
 
-impl I8x32Bitcast for archmage::ScalarToken {
+impl I8x32BitcastOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_i8_to_u8(self, a: [i8; 32]) -> [u8; 32] {
         let mut out = [0u8; 32];
@@ -9244,7 +9502,7 @@ impl I8x32Bitcast for archmage::ScalarToken {
     }
 }
 
-impl I16x8Bitcast for archmage::ScalarToken {
+impl I16x8BitcastOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_i16_to_u16(self, a: [i16; 8]) -> [u16; 8] {
         let mut out = [0u16; 8];
@@ -9267,7 +9525,7 @@ impl I16x8Bitcast for archmage::ScalarToken {
     }
 }
 
-impl I16x16Bitcast for archmage::ScalarToken {
+impl I16x16BitcastOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_i16_to_u16(self, a: [i16; 16]) -> [u16; 16] {
         let mut out = [0u16; 16];
@@ -9290,7 +9548,7 @@ impl I16x16Bitcast for archmage::ScalarToken {
     }
 }
 
-impl U64x2Bitcast for archmage::ScalarToken {
+impl U64x2BitcastOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_u64_to_i64(self, a: [u64; 2]) -> [i64; 2] {
         [a[0] as i64, a[1] as i64]
@@ -9301,7 +9559,7 @@ impl U64x2Bitcast for archmage::ScalarToken {
     }
 }
 
-impl U64x4Bitcast for archmage::ScalarToken {
+impl U64x4BitcastOps for archmage::ScalarToken {
     #[inline(always)]
     fn bitcast_u64_to_i64(self, a: [u64; 4]) -> [i64; 4] {
         [a[0] as i64, a[1] as i64, a[2] as i64, a[3] as i64]
@@ -9312,7 +9570,7 @@ impl U64x4Bitcast for archmage::ScalarToken {
     }
 }
 #[cfg(feature = "w512")]
-impl F32x16Backend for archmage::ScalarToken {
+impl F32x16Ops for archmage::ScalarToken {
     type Repr = [f32; 16];
 
     #[inline(always)]
@@ -9569,7 +9827,7 @@ impl F32x16Backend for archmage::ScalarToken {
 }
 
 #[cfg(feature = "w512")]
-impl F64x8Backend for archmage::ScalarToken {
+impl F64x8Ops for archmage::ScalarToken {
     type Repr = [f64; 8];
 
     #[inline(always)]
@@ -9817,7 +10075,7 @@ impl F64x8Backend for archmage::ScalarToken {
 }
 
 #[cfg(feature = "w512")]
-impl I8x64Backend for archmage::ScalarToken {
+impl I8x64Ops for archmage::ScalarToken {
     type Repr = [i8; 64];
 
     #[inline(always)]
@@ -10029,7 +10287,7 @@ impl I8x64Backend for archmage::ScalarToken {
 }
 
 #[cfg(feature = "w512")]
-impl U8x64Backend for archmage::ScalarToken {
+impl U8x64Ops for archmage::ScalarToken {
     type Repr = [u8; 64];
 
     #[inline(always)]
@@ -10256,7 +10514,7 @@ impl U8x64Backend for archmage::ScalarToken {
 }
 
 #[cfg(feature = "w512")]
-impl I16x32Backend for archmage::ScalarToken {
+impl I16x32Ops for archmage::ScalarToken {
     type Repr = [i16; 32];
 
     #[inline(always)]
@@ -10302,6 +10560,11 @@ impl I16x32Backend for archmage::ScalarToken {
     #[inline(always)]
     fn mul(self, a: [i16; 32], b: [i16; 32]) -> [i16; 32] {
         core::array::from_fn(|i| a[i].wrapping_mul(b[i]))
+    }
+
+    #[inline(always)]
+    fn mul_hrs_q15(self, a: [i16; 32], b: [i16; 32]) -> [i16; 32] {
+        core::array::from_fn(|i| ((a[i] as i32 * b[i] as i32 + 0x4000) >> 15) as i16)
     }
 
     #[inline(always)]
@@ -10527,7 +10790,7 @@ impl I16x32Backend for archmage::ScalarToken {
 }
 
 #[cfg(feature = "w512")]
-impl U16x32Backend for archmage::ScalarToken {
+impl U16x32Ops for archmage::ScalarToken {
     type Repr = [u16; 32];
 
     #[inline(always)]
@@ -10774,7 +11037,7 @@ impl U16x32Backend for archmage::ScalarToken {
 }
 
 #[cfg(feature = "w512")]
-impl I32x16Backend for archmage::ScalarToken {
+impl I32x16Ops for archmage::ScalarToken {
     type Repr = [i32; 16];
 
     #[inline(always)]
@@ -11008,7 +11271,7 @@ impl I32x16Backend for archmage::ScalarToken {
 }
 
 #[cfg(feature = "w512")]
-impl U32x16Backend for archmage::ScalarToken {
+impl U32x16Ops for archmage::ScalarToken {
     type Repr = [u32; 16];
 
     #[inline(always)]
@@ -11226,7 +11489,7 @@ impl U32x16Backend for archmage::ScalarToken {
 }
 
 #[cfg(feature = "w512")]
-impl I64x8Backend for archmage::ScalarToken {
+impl I64x8Ops for archmage::ScalarToken {
     type Repr = [i64; 8];
 
     #[inline(always)]
@@ -11413,7 +11676,7 @@ impl I64x8Backend for archmage::ScalarToken {
 }
 
 #[cfg(feature = "w512")]
-impl U64x8Backend for archmage::ScalarToken {
+impl U64x8Ops for archmage::ScalarToken {
     type Repr = [u64; 8];
 
     #[inline(always)]

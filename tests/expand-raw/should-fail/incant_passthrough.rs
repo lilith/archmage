@@ -55,22 +55,25 @@ fn pass_through<T: IntoConcreteToken>(token: T, x: f32) -> f32 {
         }
         #[cfg(target_arch = "wasm32")]
         {
-            if let Some(__t) = __incant_token.as_wasm128() {
-                break '__incant inner_wasm128(__t, x);
+            #[cfg(target_feature = "simd128")]
+            {
+                if let Some(__t) = __incant_token.as_wasm128() {
+                    break '__incant inner_wasm128(__t, x);
+                }
             }
         }
         if let Some(__t) = __incant_token.as_scalar() {
             break '__incant inner_scalar(__t, x);
         }
         {
-            fn __incant_token_name<__T: archmage::SimdToken>(_: &__T) -> &'static str {
-                __T::NAME
+            fn __incant_assert_token<__T: archmage::SimdToken>(token: &__T) -> &__T {
+                token
             }
             ::core::panic!(
                 "incant!(.. with token): the held token `{}` matches none of [{}]. \
                  `with token` dispatches on the token's exact type; add a `default` \
                  arm, or dispatch with the token of a listed tier",
-                __incant_token_name(& __incant_token), "v4, v3, neon, wasm128, scalar",
+                __incant_assert_token(& __incant_token), "v4, v3, neon, wasm128, scalar",
             )
         }
     }

@@ -327,9 +327,9 @@ fn automatic_plan_matches_requested_runtime_context() {
             "v3" => matches!(plan, dispatch::Plan::V3(_)),
             #[cfg(target_arch = "aarch64")]
             "neon" => matches!(plan, dispatch::Plan::Neon(_)),
-            #[cfg(target_arch = "wasm32")]
+            #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
             "wasm-fused" => matches!(plan, dispatch::Plan::Wasm(_, true)),
-            #[cfg(target_arch = "wasm32")]
+            #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
             "wasm-software" => matches!(plan, dispatch::Plan::Wasm(_, false)),
             name => panic!("unknown requested plan {name}"),
         };
@@ -413,7 +413,7 @@ macro_rules! payloads {
 #[archmage::attune(_*_t, +v4(cfg(avx512)), +v4x(cfg(avx512)))]
 fn run_rational(token: Token, expected: &str) {
     assert_eq!(
-        <Token as archmage::SimdToken>::NAME,
+        <Token as archmage::SimdLeafToken>::NAME,
         expected,
         "requested backend did not execute"
     );
@@ -423,7 +423,7 @@ fn run_rational(token: Token, expected: &str) {
 #[archmage::attune(_*_t, +v4(cfg(avx512)), +v4x(cfg(avx512)))]
 fn run_payloads(token: Token, expected: &str, stride: usize) {
     assert_eq!(
-        <Token as archmage::SimdToken>::NAME,
+        <Token as archmage::SimdLeafToken>::NAME,
         expected,
         "requested backend did not execute"
     );
@@ -432,7 +432,6 @@ fn run_payloads(token: Token, expected: &str, stride: usize) {
 
 macro_rules! require_tier {
     ($family:ident $(, $argument:expr)*) => {{
-        use archmage::SimdToken;
         let tier = std::env::var("ARCHMAGE_POWF_TIER").unwrap_or_else(|_| "scalar".into());
         match tier.as_str() {
             "scalar" => archmage::attuned!($family(archmage::ScalarToken::NAME $(, $argument)*), [_scalar_t]),
@@ -444,7 +443,7 @@ macro_rules! require_tier {
             "v4x" => archmage::attuned!($family(archmage::X64V4xToken::NAME $(, $argument)*), [_v4x_t, _scalar_t]),
             #[cfg(target_arch = "aarch64")]
             "neon" => archmage::attuned!($family(archmage::NeonToken::NAME $(, $argument)*), [_neon_t, _scalar_t]),
-            #[cfg(target_arch = "wasm32")]
+            #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
             "wasm128" => archmage::attuned!($family(archmage::Wasm128Token::NAME $(, $argument)*), [_wasm128_t, _scalar_t]),
             other => panic!("unsupported requested powf backend {other}"),
         }

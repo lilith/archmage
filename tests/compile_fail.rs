@@ -77,6 +77,16 @@ fn ui_tests() {
     // Token aliasing: renaming a lower-tier token to a higher-tier name must fail
     t.compile_fail("tests/compile_fail/token_aliasing.rs");
 
+    // Cross-arch, invalid fn shape, manual #[target_feature], and runtime-probe rejections
+    t.compile_fail("tests/compile_fail/cross_arch_arcane.rs");
+    t.compile_fail("tests/compile_fail/cross_arch_scalar_tuple_arcane.rs");
+    t.compile_fail("tests/compile_fail/const_fn_arcane.rs");
+    t.compile_fail("tests/compile_fail/async_fn_rite.rs");
+    t.compile_fail("tests/compile_fail/variadic_attune.rs");
+    t.compile_fail("tests/compile_fail/explicit_target_feature_arcane.rs");
+    t.compile_fail("tests/compile_fail/wasm_runtime_probe_rite.rs");
+    t.compile_fail("tests/compile_fail/wasm_runtime_probe_attune.rs");
+
     // NOTE: from_context()'s rejection cases deliberately live in
     // tests/soundness_exploits.rs, not here. Their rustc output names the
     // target features enabled in the build configuration, and that set differs

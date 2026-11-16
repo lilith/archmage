@@ -70,12 +70,12 @@ If any fail, fix them before starting other work. Report failures to the user.
 
 **Use the thematic names, not the boring ones:**
 
-| ❌ Don't use | ✅ Use instead | Notes |
-|-------------|----------------|-------|
+| ❌ Removed / Avoid | ✅ Use instead | Notes |
+|-------------------|----------------|-------|
 | `#[simd_fn]` | `#[arcane]` | `simd_fn` exists only for migration |
-| `try_new()` | `summon()` | `try_new` exists only for migration |
+| `try_new()` | `summon()` | `try_new()` was removed in 0.10.0 |
 
-**We are mages, not bureaucrats.** Write `Token::summon()`, not `Token::try_new()`.
+**We are mages, not bureaucrats.** Write `Token::summon()`.
 
 ### Descriptive Aliases (for AI-assisted coding)
 
@@ -181,7 +181,7 @@ goes behind one `#[inline(never)]` call because its exact path calls per lane
 cached answer per CI runner via `ARCHMAGE_EXPECT_RELAXED_FUSION`. The first (user, 2026-10-24: allowed when the output is identical and
 the win consistent; `eae93cb0`): portable f64 FMA on x86_64 std builds checks archmage's
 cached V3 token once per call and sends each lane through the FMA
-instruction. On r7900x/i265 that took 0.09-0.43x the software path's time and
+instruction. On Zen 4 / Core Ultra 265K that took 0.09-0.43x the software path's time and
 beat std's per-lane libcall; a simulated CPU without FMA paid 1.00-1.07x (one
 row 1.14x). f32 does not get it: its software path is vectorized, and
 per-call hardware paths lost on f32x8 (array calls: chains 1.4-1.7x; per-lane
@@ -192,10 +192,8 @@ The pair function does two scalar FMAs so LLVM still merges lanes into one
 wide FMA when it inlines into a V3 caller (packed pairs left shuffles on the
 chain: 2.5x slower there). Calls clobber every XMM register, so baseline
 f64x4 chains still spill; only inline asm removed that, and it lost inside V3
-functions. `xtask/codegen.py` probes `mul_add_portable` for every float
-type and tier, plus scalar types inside a V3 function; it flags the packed-pair
-regression. CI runs it only on pull requests, so after changing `soft_fma.rs`
-run `just codegen-diff` (default: `origin/main` against `HEAD`).
+functions. Codegen probes check `mul_add_portable` for every float
+type and tier, plus scalar types inside a V3 function.
 
 Portable software FMA (`magetypes/src/soft_fma.rs`) works on whole lane arrays
 with no per-lane branch, so LLVM vectorizes it: f32 rounds once through f64 and
@@ -234,7 +232,13 @@ for the existing dispatched API, not for separate hardware-only methods.
 Rust generics monomorphize; trait bounds are not inherently indirect calls or
 inlining barriers. `#[magetypes]` supports type and const generics and supplies
 per-tier contexts. `define(f32x8)` is shorthand for the same generic vector with
-`Token` substituted; explicit `f32x8::<Token>` is equally idiomatic.
+`Token` substituted; explicit `f32x8::<Token>` is equally idiomatic. Subtier
+variants (`arm_v2`, `arm_v3`, `v3_vnni`, `avx512_fp16`, `wasm128_relaxed`) bind
+`define(...)` aliases to their parent magetypes backend token (`NeonToken`,
+`X64V3Token`, `X64V4Token`, `Wasm128Token`); extract the backend token with
+`magetypes::simd::MagetypesToken::magetypes(token)` and pass `token` directly to
+subtier-gated operations (such as `Arm64V2Token` dotprod, `Arm64V3Token` FHM,
+`X64V3VnniToken` AVX-VNNI, or `Wasm128RelaxedToken` relaxed-SIMD methods).
 
 A plain backend-generic helper needs a feature-enabled caller and appropriate
 inlining for good codegen. Neither `#[inline(always)]` nor a concrete token
@@ -369,9 +373,9 @@ that set and `-scalar`/`-default` drop the auto-appended fallback. All-plain sta
 override (replace defaults). `default` and `scalar` are interchangeable fallback
 slots (`+default` replaces `scalar`).
 
-Known tiers: `v1`, `v2`, `x64_crypto`, `v3`, `v3_crypto`, `v3_gfni_crypto`, `v4`, `v4x`,
-`arm_v2`, `arm_v3`, `neon`, `neon_aes`, `neon_sha3`, `neon_crc`, `wasm128`,
-`wasm128_relaxed`, `scalar`.
+Known tiers: `v1`, `v2`, `x64_crypto`, `v3`, `v3_vnni`, `v3_crypto`, `v3_gfni_crypto`, `v4`, `v4x`,
+`avx512_fp16`, `arm_v2`, `arm_v3`, `neon`, `neon_aes`, `neon_sha3`, `neon_crc`, `wasm128`,
+`wasm128_relaxed`, `wasm128_relaxed_fma`, `scalar`.
 Always include `scalar` in explicit tier lists. Currently auto-appended if omitted; will become a compile error in v1.0.
 
 **Passthrough mode** (already have token):
@@ -453,9 +457,9 @@ fallback). All-plain stays override.
 - `#[autoversion]` generates its own dispatcher. `#[magetypes]` requires separate `incant!`.
 - Use `#[autoversion]` for scalar auto-vectorization. Use `#[magetypes]` + `incant!` for hand-written intrinsics.
 
-Known tiers: `v1`, `v2`, `v3`, `v3_crypto`, `v3_gfni_crypto`, `v4`, `v4x`, `neon`,
-`neon_aes`, `neon_sha3`, `neon_crc`, `arm_v2`, `arm_v3`, `wasm128`,
-`wasm128_relaxed`, `x64_crypto`, `scalar`.
+Known tiers: `v1`, `v2`, `v3`, `v3_vnni`, `v3_crypto`, `v3_gfni_crypto`, `v4`, `v4x`,
+`avx512_fp16`, `neon`, `neon_aes`, `neon_sha3`, `neon_crc`, `arm_v2`, `arm_v3`, `wasm128`,
+`wasm128_relaxed`, `wasm128_relaxed_fma`, `x64_crypto`, `scalar`.
 
 ### `ScalarToken`
 
@@ -487,10 +491,11 @@ On ARM, `f32x8` is emulated with two `f32x4` operations. The API is identical.
 
 | Level | Features | Token | Trait |
 |-------|----------|-------|-------|
-| **v1** | SSE, SSE2 (baseline) | `X64V1Token` / `Sse2Token` | None (always available on x86_64) |
+| **v1** | SSE, SSE2 (baseline) | `X64V1Token` | `HasX64V1` (always available on x86_64) |
 | **v2** | + SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT | `X64V2Token` | `HasX64V2` |
 | **crypto** | v2 + PCLMULQDQ, AES-NI | `X64CryptoToken` | Use token directly |
 | **v3** | + AVX, AVX2, FMA, BMI1, BMI2, F16C | `X64V3Token` | Use token directly |
+| **v3_vnni** | v3 + AVXVNNI | `X64V3VnniToken` | Use token directly |
 | **v3_crypto** | v3 + VPCLMULQDQ, VAES | `X64V3CryptoToken` | Use token directly |
 | **v3_gfni_crypto** | v3_crypto + GFNI | `X64V3GfniCryptoToken` | Use token directly |
 | **v4** | + AVX512F, AVX512BW, AVX512CD, AVX512DQ, AVX512VL | `X64V4Token` / `Avx512Token` | `HasX64V4` |
@@ -522,9 +527,9 @@ The M1 is the notable chip that gets V2 but not V3 (lacks i8mm/bf16). Budget 202
 2. **Use tier tokens** - `X64V2Token`, `X64V3Token`, `X64V4Token`, `X64V4xToken`
 3. **Single trait per tier** - `HasX64V2`, `HasX64V4`, `HasArm64V2`, `HasArm64V3` only
 4. **NO SVE** - `SveToken`, `Sve2Token`, `HasSve`, `HasSve2` are PROHIBITED (Rust stable lacks SVE support)
-5. **NO WIDTH TRAITS** - `Has128BitSimd`, `Has256BitSimd`, `Has512BitSimd` are DEPRECATED and will be removed:
-   - `Has256BitSimd` only enables AVX, **NOT AVX2 or FMA** — misleading and causes suboptimal codegen
-   - Use concrete tokens (`X64V3Token`) or feature traits (`HasX64V2`, `HasX64V4`) instead
+5. **NO WIDTH TRAITS** - `Has128BitSimd`, `Has256BitSimd`, `Has512BitSimd` were removed in 0.10.0:
+   - `Has256BitSimd` only enabled AVX, **NOT AVX2 or FMA** — misleading and caused suboptimal codegen
+   - Use concrete tokens (`X64V3Token`), `And<Base, Extra>` conjunctions, or capability traits (`HasX64V2`, `HasX64V4`, `HasGfni`, etc.) instead
 
 ---
 
@@ -695,11 +700,9 @@ CI checks (all must pass):
 7. `cargo clippy -p magetypes` (default features) — zero warnings; also the
    macro consumer crates `tests/no-features-crate` and `tests/clippy-consumer`
    (`--all-targets`). The `warning-sweep` CI job (`just warnings`) additionally
-   lints every target/feature/CPU configuration in `xtask/warning_sweep.py`.
-   Its `optin-*` configurations build the library crates with the
-   allow-by-default rustc lints a downstream crate may pass via RUSTFLAGS
-   (list and exclusions in `OPT_IN`). Generated magetypes files get qualified
-   paths shortened by `xtask/src/simd_types/import_paths.rs` after rustfmt.
+   lints every target/feature/CPU configuration across targets. Generated
+   magetypes files get qualified paths shortened by
+   `xtask/src/simd_types/import_paths.rs` after rustfmt.
    The weekly `nightly-lints` workflow runs the same sweep on the nightly
    toolchain and opens a `nightly-lints` issue when it fails (not a CI gate);
    reproduce with `RUSTUP_TOOLCHAIN=nightly just warnings`.
@@ -729,12 +732,6 @@ CI checks (all must pass):
 15. **ARM64 cross-compilation + tests** (requires `cross` + Docker)
 16. **WASM cross-compilation + tests** (requires `wasmtime` + `wasm32-wasip1` target)
 17. **ARM64 clippy** (requires `cross` + Docker)
-18. **Consumer codegen vs `origin/main`** — `xtask/codegen.py` compares
-    optimized code for about 1,600 probes per ISA (x86_64, AArch64, WASM),
-    including `mul_add_portable` in plain and V3 callers; any difference
-    without a reviewed exception fails. CI runs it only for pull requests,
-    so `just ci` runs it for work pushed straight to main (`just codegen-diff`
-    alone).
 
 **Note:** Parity check reports 0 issues. All W128 types have identical APIs across x86/ARM/WASM.
 
@@ -801,7 +798,7 @@ Every token's feature claims MUST be verified by exercising real intrinsics on t
 | `tests/avx512_intrinsics_exercise.rs` | x86_64 | X64V4Token, X64V4xToken (AVX-512 F/BW/CD/DQ/VL + extensions) |
 | `tests/avx512fp16_intrinsics.rs` | x86_64 | Avx512Fp16Token (hierarchy only; no intrinsic exercise yet, see the FP16 row below) |
 | `tests/arm_feature_intrinsics.rs` | aarch64 | Arm64V2Token (RDM, DotProd, SHA2), NeonAesToken, NeonCrcToken, NeonSha3Token |
-| `tests/wasm_intrinsics_exercise.rs` | wasm32 | Wasm128Token (SIMD128 — ~100 intrinsics) |
+| `tests/wasm_intrinsics_exercise.rs` | wasm32 | Wasm128Token (SIMD128 — ~100 intrinsics), Wasm128RelaxedToken (all 28 relaxed-simd intrinsics), Wasm128RelaxedFmaToken (single-rounding FMA) |
 | `tests/feature_consistency.rs` | all | Token hierarchy, cross-arch None checks, feature detection consistency |
 | `magetypes/tests/harvest_shapes.rs` | all | 233 macro signature shapes harvested from 50 consumer crates (`just harvest-shapes ROOT`); compile-only, placeholder types, stub bodies |
 
@@ -825,13 +822,14 @@ Every token's feature claims MUST be verified by exercising real intrinsics on t
 | neon,fp16 | 162/301 | Partial | Rust 1.98.0 database: 162 stable (conversion, div, FMA), 139 unstable |
 | fcma | 0/58 | Nightly | All unstable (Rust 1.98.0 database) |
 | i8mm | 0/22 | Nightly | All unstable (Rust 1.98.0 database) |
-| fhm | 24/24 | Stable | FMLAL/FMLSL, stable since Rust 1.94.0 under `stdarch_neon_fp16`; each needs both `fp16` and `fhm` (the `fhm` gate is a `cfg_attr`, which `xtask/extract_intrinsics.py` reads since 2026-10-05) |
+| fhm | 24/24 | Stable | FMLAL/FMLSL, stable since Rust 1.94.0 under `stdarch_neon_fp16`; each needs both `fp16` and `fhm` |
 | bf16 | 0 | None | No Rust intrinsics in stdarch |
 | avx512fp16 | 438/441 (+266/272 with avx512vl) | Stable | Per `docs/intrinsics/x86_64_intrinsics.csv`; `_mm512_add_ph` on `__m512h` compiles on stable 1.99 (checked 2026-10-05). Intrinsics that take or return the scalar `f16` type still need nightly `f16`. Not yet exercised by a test. |
 | pclmulqdq + aes (128-bit) | ~10 | Full | Tested in x86_crypto_intrinsics.rs |
 | vpclmulqdq + vaes (256-bit) | ~8 | Full | Tested in x86_crypto_intrinsics.rs |
 | gfni (128/256-bit unmasked) | 6 | Full | Tested in x86_crypto_intrinsics.rs |
 | simd128 (wasm) | ~100+ | Full | Tested in wasm_intrinsics_exercise.rs |
+| relaxed-simd (wasm) | 28/28 | Full | All 28 intrinsics + single-rounding FMA tested in wasm_intrinsics_exercise.rs |
 
 **Features with zero stable intrinsics** (bf16, and fcma/i8mm until they stabilize) are documented but cannot have exercise tests on stable Rust. When these stabilize, add tests immediately. dotprod, fhm and avx512fp16 have stable intrinsics now; check `tests/arm_feature_intrinsics.rs` and `tests/avx512fp16_intrinsics.rs` for their exercise tests.
 
@@ -844,12 +842,13 @@ live in `token-registry.toml`. Everything else is derived:
 - `archmage-macros/src/generated/` — macro registry, generated by xtask
 - `magetypes/src/simd/generated/` — SIMD types, generated by xtask
 - `magetypes/src/simd/impls/` — **per-backend trait impls** (`arm_neon.rs`,
-  `x86_v3.rs`, `x86_v4.rs`, `wasm128.rs`, `scalar.rs`, `mod.rs`, and
-  `x86_v4_f32_delegated.rs`, the AVX-512 tokens' W128/W256 f32 backends derived
-  from the trait definitions by `xtask/src/simd_types/v4_delegation_gen.rs`),
-  generated by xtask. The one hand-written file there is
-  `x86_v4_f32_overrides.rs`: the three AVX-512VL pixel-packing helpers the
-  generated delegation calls.
+  `x86_v3.rs`, `x86_v4.rs`, `wasm128.rs`, `scalar.rs`, `mod.rs`, and the four
+  parent-delegation files `x86_v4_f32_delegated.rs`, `x86_v4_narrow_delegated.rs`,
+  `x86_v4_w512_delegated.rs`, and `wasm128_fma_delegated.rs` derived from the
+  trait definitions by `xtask/src/simd_types/v4_delegation_gen.rs`), generated
+  by xtask. The two hand-written files there are `x86_v4_f32_overrides.rs`
+  (AVX-512VL pixel-packing helpers) and `wasm128_fma_overrides.rs`
+  (`Wasm128RelaxedFmaToken` single-rounding `relaxed_madd` helpers).
 - `magetypes/src/simd/generic/generated/` — generic wrapper types, generated by xtask
 - `magetypes/tests/scalar_parity.rs`, `cross_arch_parity.rs`,
   `generated_simd_types.rs` — generated tests (`xtask/src/simd_types/scalar_parity_gen.rs`,
@@ -961,7 +960,7 @@ fn my_kernel(token: X64V3Token, data: &[f32; 8]) -> [f32; 8] {
 
 | Alias | Token | What it means |
 |-------|-------|---------------|
-| `Sse2Token` | `X64V1Token` | SSE + SSE2 (x86_64 baseline — always available) |
+| `Desktop64` | `X64V3Token` | AVX2 + FMA + BMI2 (Haswell 2013+, Zen 1+) |
 | `Server64` | `X64V4Token` | + AVX-512 (Xeon 2017+, Zen 4+) |
 | `Arm64` | `NeonToken` | NEON (all 64-bit ARM) |
 
@@ -990,7 +989,7 @@ archmage/                    # Main crate: tokens, macros, detect
 │   │   ├── mod.rs          # SimdToken trait definition only
 │   │   └── generated/      # Generated from token-registry.toml
 │   │       ├── mod.rs      # cfg-gated module routing + re-exports
-│   │       ├── traits.rs   # Marker traits (Has128BitSimd, HasX64V2, etc.)
+│   │       ├── traits.rs   # Marker traits (HasX64V1, HasX64V2, etc.)
 │   │       ├── x86.rs      # x86 tokens (v2, v3) + detection
 │   │       ├── x86_avx512.rs  # AVX-512 tokens (v4, v4x, fp16)
 │   │       ├── arm.rs      # ARM tokens + detection
@@ -1137,10 +1136,11 @@ When touching ANY codegen file, convert `writeln!` chains to `formatdoc!` in the
 ## Token Hierarchy
 
 **x86:**
-- `X64V1Token` / `Sse2Token` - SSE + SSE2 (x86_64 baseline — always available)
+- `X64V1Token` - SSE + SSE2 (x86_64 baseline — always available)
 - `X64V2Token` - SSE4.2 + POPCNT (Nehalem 2008+)
 - `X64CryptoToken` - V2 + PCLMULQDQ + AES-NI (Westmere 2010+)
 - `X64V3Token` - AVX2 + FMA + BMI2 (Haswell 2013+, Zen 1+)
+- `X64V3VnniToken` - V3 + AVXVNNI (Alder Lake 2021+, Arrow Lake 2024+, Zen 5 2024+)
 - `X64V3CryptoToken` - V3 + VPCLMULQDQ + VAES (Zen 3+ 2020, Alder Lake 2021+)
 - `X64V4Token` / `Avx512Token` - + AVX-512 F/BW/CD/DQ/VL + AES-NI (Skylake-X 2017+, Zen 4+)
 - `X64V4xToken` - + modern extensions + VAES/VPCLMULQDQ/GFNI (Ice Lake 2019+, Zen 4+)
@@ -1155,6 +1155,11 @@ When touching ANY codegen file, convert `writeln!` chains to `formatdoc!` in the
 - `NeonAesToken` - neon + AES
 - `NeonSha3Token` - neon + SHA3
 - `NeonCrcToken` - neon + CRC
+
+**WebAssembly:**
+- `Wasm128Token` - SIMD128 (compile-time `simd128`)
+- `Wasm128RelaxedToken` - SIMD128 + Relaxed SIMD (compile-time `relaxed-simd`)
+- `Wasm128RelaxedFmaToken` - Relaxed SIMD + runtime-verified single-rounding `relaxed_madd` fusion
 
 ## Tier Traits
 
@@ -1219,9 +1224,11 @@ fn process(_token: X64V3Token, data: &[f32; 8]) -> [f32; 8] {
 Magemath migration (2026-11-10): LOWP log1p retains the rational log2 fit's bias
 near zero; a tiny positive input can produce a negative approximation. MIDP
 remains available. This refactor does not introduce a new small-x LOWP graph or
-promote the experimental normal-output exp2 range. Reciprocal/root primitives
-remain in Magetypes until separately implemented and measured replacements
-exist. See `docs/MAGEMATH-MIGRATION.md`.
+promote the experimental normal-output exp2 range. `magemath::cbrtf` provides
+cube root with an in-register `i32` shift-add Kahan seed (`magetypes` flat
+`cbrt_*` methods are deprecated since `0.9.32`); reciprocal and reciprocal-sqrt
+primitives remain in Magetypes until separately implemented and measured
+replacements exist. See `docs/MAGEMATH-MIGRATION.md`.
 
 Canonical HIGHP packed performance (2026-11-09, draft held): the first M6
 32-cell exploratory matrix has 24 Full packed cells within the 2% std cost
@@ -1383,10 +1390,10 @@ FMA path. All retained versions, flag rankings and admission status are in
   1.02–1.38× (f32 x4+) and 3.0–5.9× (f64) as long, and scalar types inside a
   V3 function 1.45–3.6× (f32) and 5.7–11.9× (f64)
   ([recheck](benchmarks/fma_portable_recheck_zen5_2026-10-24.md)). Quiet
-  i265 (Arrow Lake) and r7900x (Zen 4) reruns agree: global V3 and native
+  Core Ultra 265K (Arrow Lake) and Zen 4 reruns agree: global V3 and native
   vectors unchanged; baseline f64 4.2–7.1×, scalar f64 inside V3 6.3–7.4×.
   The vectorizable software path (`06291ec2`) cut main's time to 0.14–0.70×
-  for vector shapes. With the f64 runtime check (`eae93cb0`), r7900x against
+  for vector shapes. With the f64 runtime check (`eae93cb0`), Zen 4 against
   0.9.30: baseline f32 vectors 0.48–0.58×, f64 inside V3 0.27–0.30×, f64x4
   streams 0.90×; still slower: f32x1 chains 1.97×, f32x8 chains inside a V3
   function 1.94× (f32 has no runtime check; per-call hardware paths lost in
@@ -1462,8 +1469,7 @@ Documented accuracy limits, left unfixed because every fix measured slower on ev
   fallback unreachable when the caller's `avx512` feature was on; gated arms
   and the fallback are now mutually exclusive cfg blocks. Coverage:
   `tests/clippy-consumer` (strict lints, linted with -D warnings) and
-  `xtask/warning_sweep.py` (24 configurations, five of them `optin-*`; CI
-  `warning-sweep`).
+  `just warnings` across target/feature configurations.
 
 - **`attuned!` single-arm `diverging_sub_expression` (2026-10-23):** a call
   resolving to one guaranteed arm expanded to `{ 'l: { { break 'l f(x); } } }`;
@@ -1601,7 +1607,7 @@ Design record for #116 (the `mul_add` contract):
   as `mul_add` on AArch64 and on x86 `-Ctarget-cpu` builds
   (`benchmarks/fma_scalar_backend_2026-10-07.md`); the software path remains
   for CPUs without FMA and all WASM.
-  Interim-design records: `benchmarks/fma_software_i265_2026-09-27.md`,
+  Interim-design records: `benchmarks/fma_software_core-ultra-265k_2026-09-27.md`,
   `benchmarks/mul_add_cost_zen5-m4pro_2026-10-05.md`,
   `benchmarks/transcendentals_fused_mul_add_2026-10-05.md`.
 
@@ -1610,10 +1616,8 @@ Design record for #116 (the `mul_add` contract):
 - Beta release tooling (2026-10-10): cargo-semver-checks 0.51.0's
   `safe_inherent_method_requires_more_target_features` lint conflates V4 and
   V4x inherent impls, including when comparing the same rustdoc JSON to itself.
-  `xtask/check_semver.py` now requires a concrete-impl comparison alongside
-  ordinary semver checking. Only this Magetypes lint is replaced, with explicit
-  approval; every other lint remains enabled. Use `just semver magetypes`, not
-  the standalone Cargo command, for the complete guard. Evidence:
+  A concrete-impl comparison was used alongside
+  ordinary semver checking. Evidence:
   [beta validation](benchmarks/attune_beta_validation_2026-10-10.md).
   The Rust 1.99 CI failure was reproduced and fixed on 2026-10-12: formats
   60 (Rust 1.98) and 61 (Rust 1.99) are validated. Format 61 only changes
@@ -1657,7 +1661,7 @@ Design record for #116 (the `mul_add` contract):
   token with `from_context()`. The registry DAG and rustc both check coverage;
   no implicit runtime upgrade. `without token` remains for tokenless callees,
   `with token` explicitly selects by a held token's exact type. Tests are in
-  `tests/tokenless_context.rs`; codegen gate: `xtask/codegen.py --tokenless-context`.
+  `tests/tokenless_context.rs`.
 
 - **`incant_direct!` for inner function calls** (#19): New macro that calls `__arcane_fn_v3()` directly from matching `#[target_feature]` contexts, bypassing the trampoline without depending on `#[inline(always)]`. Requires `#[arcane(pub(crate))]` to expose the inner. Would subsume `#[rite]`'s use case (call inner directly without wrapper). See [issue #19](https://github.com/imazen/archmage/issues/19).
 
@@ -1669,7 +1673,7 @@ Design record for #116 (the `mul_add` contract):
 
 ## Pending Work
 
-- **Completed: consolidate the 27 unpublished magetypes operation traits.** Widening, narrowing, pairwise, absolute-difference and byte-reduction methods live on their source backend traits; cross-type destinations use method-level bounds. Published conversion traits remain supported. `source_backend_bounds_are_sufficient` pins the minimal generic bounds, and `xtask/codegen.py` compares downstream assembly across x86, NEON and WASM.
+- **Completed: consolidate the 27 unpublished magetypes operation traits.** Widening, narrowing, pairwise, absolute-difference and byte-reduction methods live on their source backend traits; cross-type destinations use method-level bounds. Published conversion traits remain supported. `source_backend_bounds_are_sufficient` pins the minimal generic bounds.
 
 ### API Parity Status (0 issues — complete!)
 
@@ -1720,17 +1724,7 @@ The canonical tables are in `docs/site/content/magetypes/isa-quirks.md`; update 
 
 - **v1.0: Require explicit `tier(cfg(feature))` syntax — remove implicit `cfg_feature` auto-gating.** Currently `TierDescriptor.cfg_feature` auto-applies `(avx512)` to v4/v4x in all tier lists (both default and explicit). This is backwards-compatible magic but confusing: plain `v4` in `[v4, v3, default]` silently gets a cfg gate. In v1.0, remove `cfg_feature` from `TierDescriptor` and `default_feature_gates` from `resolve_tiers`. Users must write `v4(cfg(avx512))` explicitly. Plain `v4` means unconditional dispatch — the function MUST exist. Default tier names drop v4 entirely; users add it with the syntax they want. `+v4` in modifier lists adds unconditional v4; `+v4(cfg(avx512))` adds gated v4. This makes the behavior visible and predictable. Migration: search for `[v4,` and `[v4x,` in tier lists, add `(cfg(avx512))`.
 
-- **v1.0: Remove width traits** (`Has128BitSimd`, `Has256BitSimd`, `Has512BitSimd`). `Has256BitSimd` only enables AVX (not AVX2 or FMA) — actively misleading and causes suboptimal codegen. Use concrete tokens (`X64V3Token`) or tier traits (`HasX64V2`, `HasX64V4`).
-
-- **v1.0: Remove `guaranteed()`**. Deprecated since 0.6.0, replaced by `compiled_with()`. Same semantics, better name.
-
-- **v1.0: Remove `SimdToken` parameter support from `#[autoversion]`.** Deprecated since 0.9.11. Users should use tokenless (recommended) or `ScalarToken` for incant! nesting. `SimdToken` is a trait, not a type — it was always a macro-only placeholder.
-
-- **v1.0: Remove `_self = Type` without `in_trait` from `#[autoversion]`.** Plain `self` works in sibling mode since the beginning. With `in_trait` (since 2026-10-07) `_self = Type` names the receiver type for the nested variants and stays.
-
-- **v1.0: Deprecate incant! passthrough mode (`with token`).** Zero uses in zen or any downstream crate. The use case (re-dispatch an existing token) is better served by `#[rite]` multi-tier or `IntoConcreteToken` directly. `default` tier solves the nesting case without passthrough.
-
-- **NOT planned for removal:** `#[simd_fn]`, `simd_route!`, `try_new()`. These are discouraged migration aliases but remain supported — they don't cause confusion or bugs, they just have better-named equivalents. `forge_token_dangerously()` stays supported as a deprecated alias for `Token::from_context()`, which since 0.9.29 is the first-class safe `#[target_feature]` constructor (see "Constructing a token from an existing feature context" in the docs). The old name described only the `unsafe` half of the design; the gate is identical on both.
+- **Removed in 0.10.0:** width traits (`Has128BitSimd`, `Has256BitSimd`, `Has512BitSimd`), legacy aliases (`Sse2Token`, `Avx2FmaToken`), redundant token constructors (`guaranteed()`, `try_new()`, `forge_token_dangerously()`), `suppress_const_test`, and `SimdToken::NAME` (`NAME` moved to `SimdLeafToken`, while `SimdToken: core::fmt::Display` covers both leaves and `And<Base, Extra>` conjunctions). `Token::from_context()` is the context constructor (omitted on `And<Base, Extra>` and runtime-probed `Wasm128RelaxedFmaToken`). `#[simd_fn]` and `simd_route!` remain migration aliases.
 
 - **Generator test fixtures**: Add example input/expected output pairs to each xtask generator (SIMD types, width dispatch, tokens, macro registry). These serve as both documentation of expected output and cross-platform regression tests — run on x86, ARM, and WASM to catch codegen divergence.
 

@@ -1,0 +1,5 @@
+error: cannot combine SIMD tokens from different architectures (Scalar and x86_64) in the same function
+ --> tests/compile_fail/cross_arch_scalar_tuple_arcane.rs:2:41
+  |
+2 | fn cross(_pair: (archmage::ScalarToken, archmage::X64V3Token)) {}
+  |                                         ^^^^^^^^^^^^^^^^^^^^

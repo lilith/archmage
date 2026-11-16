@@ -31,12 +31,15 @@ use crate::tiers::*;
 /// `type f32x8 = GenericF32x8<Token>;` line users would otherwise write
 /// inside every `#[magetypes]` function body.
 pub(crate) fn magetypes_impl(
-    mut input_fn: LightFn,
+    mut input_fn: syn::ItemFn,
     tiers: &[ResolvedTier],
     rite_flag: bool,
     in_impl: bool,
     defines: &[String],
 ) -> TokenStream {
+    if let Err(err) = validate_item_fn(&input_fn, "magetypes") {
+        return err.to_compile_error();
+    }
     // Propagate ordinary attributes once; these macro attributes are consumed
     // or supplied per tier below.
     input_fn.attrs.retain(|attr| {
@@ -46,24 +49,10 @@ pub(crate) fn magetypes_impl(
     });
     let fn_name = &input_fn.sig.ident;
 
-    // Build the `define(...)` type-alias preamble once. Each alias RHS still
-    // references `Token` — the per-tier substitution below rewrites it to the
-    // concrete token type (`X64V3Token`, `ScalarToken`, etc.).
-    let define_preamble: TokenStream = {
-        let aliases = defines.iter().map(|name| {
-            let ident = quote::format_ident!("{name}");
-            quote! {
-                #[allow(non_camel_case_types, dead_code)]
-                type #ident = ::magetypes::simd::generic::#ident<Token>;
-            }
-        });
-        quote! { #(#aliases)* }
-    };
-
     // Dispatch presence is independent of the tier. Scan the original body
     // once, before making variants (the define preamble contains no dispatch).
     let has_dispatch = tokens_contain_ident(
-        &input_fn.body,
+        &block_inner_tokens(&input_fn.block),
         &["incant", "dispatch_variant", "attuned", "reattune"],
     );
     // Token is still a placeholder here. Use the same type inspection as the
@@ -71,7 +60,10 @@ pub(crate) fn magetypes_impl(
     // Do not mistake a vector parameter such as V<Token> for a token parameter.
     let tokenless_rite = rite_flag
         && has_dispatch
-        && crate::token_discovery::find_token_param(&input_fn.sig).is_none()
+        && crate::token_discovery::discover_signature_proofs(&input_fn.sig)
+            .ok()
+            .flatten()
+            .is_none()
         && !input_fn.sig.inputs.iter().any(|arg| {
             let syn::FnArg::Typed(param) = arg else {
                 return false;
@@ -88,15 +80,26 @@ pub(crate) fn magetypes_impl(
         let mut variant_fn = input_fn.clone();
         variant_fn.sig.ident = quote::format_ident!("{}_{}", fn_name, tier.suffix);
 
-        // Prepend the `define(...)` type aliases to the body. They appear
-        // inside the function scope, shadowing any outer `f32x8`/etc. for
-        // this body only.
+        // Prepend the `define(...)` type aliases to the body. Sub-tier tokens
+        // (`v3_vnni`, `arm_v2`, `arm_v3`, `wasm128_relaxed`) resolve to their
+        // base representation token (`X64V3Token`, `NeonToken`, `Wasm128Token`),
+        // matching `#[attune(..., define(...))]`.
         if !defines.is_empty() {
-            let original_body = &variant_fn.body;
-            variant_fn.body = quote! {
-                #define_preamble
-                #original_body
+            let define_token: TokenStream = if tier.token_path.is_empty() {
+                quote!(Token)
+            } else {
+                tier.define_backend_token_path()
+                    .parse()
+                    .expect("tier define_backend_token_path must be valid tokens")
             };
+            let aliases = defines.iter().map(|name| {
+                let ident = quote::format_ident!("{name}");
+                quote! {
+                    #[allow(non_camel_case_types, dead_code)]
+                    type #ident = ::magetypes::simd::generic::#ident<#define_token>;
+                }
+            });
+            prepend_to_block(&mut variant_fn.block, quote! { #(#aliases)* });
         }
 
         // SIMD variants receive the remaining call rewrite from arcane/rite.
@@ -111,7 +114,11 @@ pub(crate) fn magetypes_impl(
                 has_token: false,
                 derive_token: tokenless_rite && tier.target_arch.is_none(),
             };
-            variant_fn.body = crate::rewrite::rewrite_incant_in_body(variant_fn.body, &ctx);
+            let rewritten =
+                crate::rewrite::rewrite_incant_in_body(block_inner_tokens(&variant_fn.block), &ctx);
+            if let Err(err) = set_block_inner_tokens(&mut variant_fn.block, rewritten) {
+                return err.to_compile_error();
+            }
         }
 
         let cfg_guard = tier.variant_cfg_guard();
@@ -132,10 +139,9 @@ pub(crate) fn magetypes_impl(
             continue;
         }
 
-        // Keep the parsed function for the shared emitter. Only fields that
-        // contain the placeholder need reparsing; the body stays opaque.
+        // Specialize the placeholder `Token` across the `syn::ItemFn` AST.
         if let Some(token) = &token
-            && let Err(error) = variant_fn.specialize_token(token)
+            && let Err(error) = specialize_item_fn(&mut variant_fn, token)
         {
             return error.to_compile_error();
         }
@@ -198,7 +204,7 @@ mod specialization_tests {
 
     #[test]
     fn substitution_preserves_all_function_parts_and_dispatch_markers() {
-        let mut function: LightFn = syn::parse_quote! {
+        let mut function: syn::ItemFn = syn::parse_quote! {
             #[some_attribute(Token, "Token")]
             pub(in Token) fn kernel<T: Into<Token>>(proof: Token, x: T) -> Option<Token>
             where Token: Copy
@@ -208,10 +214,8 @@ mod specialization_tests {
                 stringify!("Token", Token)
             }
         };
-        function
-            .specialize_token(&quote!(archmage::ScalarToken))
-            .unwrap();
-        let expected: LightFn = syn::parse_quote! {
+        specialize_item_fn(&mut function, &quote!(archmage::ScalarToken)).unwrap();
+        let expected: syn::ItemFn = syn::parse_quote! {
             #[some_attribute(archmage::ScalarToken, "Token")]
             pub(in archmage::ScalarToken) fn kernel<T: Into<archmage::ScalarToken>>(
                 proof: archmage::ScalarToken, x: T

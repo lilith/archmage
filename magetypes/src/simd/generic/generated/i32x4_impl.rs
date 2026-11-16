@@ -81,7 +81,7 @@ const _: () = {
     );
 };
 
-#[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+#[cfg(target_arch = "wasm32")]
 const _: () = {
     assert!(
         size_of::<i32x4<archmage::Wasm128Token>>()
@@ -582,6 +582,28 @@ impl<T: crate::simd::backends::F32x4Convert> i32x4<T> {
     }
 }
 
+impl<T: crate::simd::backends::F64x2Convert> i32x4<T> {
+    /// Convert the low 2 lanes of `self` to `f64x2`.
+    #[inline(always)]
+    pub fn to_f64x2_low(self) -> super::f64x2<T> {
+        super::f64x2::from_repr_unchecked(self.1, T::convert_i32_low_to_f64(self.1, self.0))
+    }
+}
+
+impl<T: crate::simd::backends::F64x4Convert> i32x4<T> {
+    /// Convert to `f64x4` (numeric conversion).
+    #[inline(always)]
+    pub fn to_f64(self) -> super::f64x4<T> {
+        super::f64x4::from_repr_unchecked(self.1, T::convert_i32_to_f64(self.1, self.0))
+    }
+
+    /// Alias for [`to_f64`](Self::to_f64).
+    #[inline(always)]
+    pub fn to_f64x4(self) -> super::f64x4<T> {
+        self.to_f64()
+    }
+}
+
 // ============================================================================
 // Saturating narrowing (i32x4 -> i16x8 / u16x8)
 // ============================================================================
@@ -649,7 +671,7 @@ impl i32x4<archmage::X64V3Token> {
 
     /// Deprecated spelling of [`Self::from_raw_t`].
     #[deprecated(
-        note = "Use from_raw_t(token, v), or from_raw(v) in a matching feature context; from_m128i is removed in magetypes 0.10."
+        note = "Use from_raw_t(token, v), or from_raw(v) in a matching feature context; from_m128i is removed in magetypes 0.11."
     )]
     #[inline(always)]
     pub fn from_m128i(token: archmage::X64V3Token, v: core::arch::x86_64::__m128i) -> Self {
@@ -755,6 +777,7 @@ impl i32x4<archmage::Wasm128Token> {
     /// # Safety
     /// The CPU must support the enabled target features. Safe calls require a
     /// matching or stronger feature context, which Rust checks.
+    #[cfg(target_feature = "simd128")]
     #[target_feature(enable = "simd128")]
     #[inline]
     pub fn from_raw(value: core::arch::wasm32::v128) -> Self {
@@ -764,66 +787,66 @@ impl i32x4<archmage::Wasm128Token> {
 // Generated deprecated token-constructor forwarders. Do not edit.
 impl<T: I32x4Backend> i32x4<T> {
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::splat_t`].\n\nUse `splat_t` to keep explicit-token construction when `splat` becomes tokenless in magetypes 0.10."]
-    #[deprecated(note = "Use splat_t(token, v); splat becomes tokenless in magetypes 0.10.")]
+    #[doc = "Deprecated token-taking spelling of [`Self::splat_t`].\n\nUse `splat_t` to keep explicit-token construction when `splat` becomes tokenless in magetypes 0.11."]
+    #[deprecated(note = "Use splat_t(token, v); splat becomes tokenless in magetypes 0.11.")]
     #[forbid(unsafe_code)]
     pub fn splat(token: T, v: i32) -> Self {
         Self::splat_t(token, v)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::zero_t`].\n\nUse `zero_t` to keep explicit-token construction when `zero` becomes tokenless in magetypes 0.10."]
-    #[deprecated(note = "Use zero_t(token); zero becomes tokenless in magetypes 0.10.")]
+    #[doc = "Deprecated token-taking spelling of [`Self::zero_t`].\n\nUse `zero_t` to keep explicit-token construction when `zero` becomes tokenless in magetypes 0.11."]
+    #[deprecated(note = "Use zero_t(token); zero becomes tokenless in magetypes 0.11.")]
     #[forbid(unsafe_code)]
     pub fn zero(token: T) -> Self {
         Self::zero_t(token)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::load_t`].\n\nUse `load_t` to keep explicit-token construction when `load` becomes tokenless in magetypes 0.10."]
-    #[deprecated(note = "Use load_t(token, data); load becomes tokenless in magetypes 0.10.")]
+    #[doc = "Deprecated token-taking spelling of [`Self::load_t`].\n\nUse `load_t` to keep explicit-token construction when `load` becomes tokenless in magetypes 0.11."]
+    #[deprecated(note = "Use load_t(token, data); load becomes tokenless in magetypes 0.11.")]
     #[forbid(unsafe_code)]
     pub fn load(token: T, data: &[i32; 4]) -> Self {
         Self::load_t(token, data)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::from_array_t`].\n\nUse `from_array_t` to keep explicit-token construction when `from_array` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::from_array_t`].\n\nUse `from_array_t` to keep explicit-token construction when `from_array` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use from_array_t(token, arr); from_array becomes tokenless in magetypes 0.10."
+        note = "Use from_array_t(token, arr); from_array becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn from_array(token: T, arr: [i32; 4]) -> Self {
         Self::from_array_t(token, arr)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::from_slice_t`].\n\nUse `from_slice_t` to keep explicit-token construction when `from_slice` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::from_slice_t`].\n\nUse `from_slice_t` to keep explicit-token construction when `from_slice` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use from_slice_t(token, slice); from_slice becomes tokenless in magetypes 0.10."
+        note = "Use from_slice_t(token, slice); from_slice becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn from_slice(token: T, slice: &[i32]) -> Self {
         Self::from_slice_t(token, slice)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::partition_slice_t`].\n\nUse `partition_slice_t` to keep explicit-token construction when `partition_slice` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::partition_slice_t`].\n\nUse `partition_slice_t` to keep explicit-token construction when `partition_slice` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use partition_slice_t(token, data); partition_slice becomes tokenless in magetypes 0.10."
+        note = "Use partition_slice_t(token, data); partition_slice becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn partition_slice(token: T, data: &[i32]) -> (&[[i32; 4]], &[i32]) {
         Self::partition_slice_t(token, data)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::partition_slice_mut_t`].\n\nUse `partition_slice_mut_t` to keep explicit-token construction when `partition_slice_mut` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::partition_slice_mut_t`].\n\nUse `partition_slice_mut_t` to keep explicit-token construction when `partition_slice_mut` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use partition_slice_mut_t(token, data); partition_slice_mut becomes tokenless in magetypes 0.10."
+        note = "Use partition_slice_mut_t(token, data); partition_slice_mut becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn partition_slice_mut(token: T, data: &mut [i32]) -> (&mut [[i32; 4]], &mut [i32]) {
         Self::partition_slice_mut_t(token, data)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::from_repr_t`].\n\nUse `from_repr_t` to keep explicit-token construction when `from_repr` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::from_repr_t`].\n\nUse `from_repr_t` to keep explicit-token construction when `from_repr` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use from_repr_t(token, repr); from_repr becomes tokenless in magetypes 0.10."
+        note = "Use from_repr_t(token, repr); from_repr becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn from_repr(token: T, repr: T::Repr) -> Self {

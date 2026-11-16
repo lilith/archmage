@@ -84,13 +84,8 @@ runtime versus constant counts, which also changes instruction selection and
 is not an isolated fixup measurement. Do not label that ratio a clamp cost.
 
 Reproduce the sample/timing run with `cargo run --release -p magetypes --example
-isa_fixups --features avx512`. Use `-- --samples-only` for Wasmtime/QEMU. Capture
-`rustc -Vv` and CPU identification before stdout, then collect runs with
-`python3 xtask/isa_evidence.py CPU=run.txt --output docs/site/static/isa-explorer/data.json`.
-The collector validates array shapes, bit encodings, and saturating-conversion
-outputs against an independent scalar oracle. The dataset records its library
-revision and probe source hash. Store actual outputs per CPU; do not synthesize
-ISA results from a table or report emulator timings as hardware performance.
+isa_fixups --features avx512`. Use `-- --samples-only` for Wasmtime/QEMU,
+capturing `rustc -Vv` and CPU identification before stdout.
 
 ## Results we make portable
 
@@ -160,7 +155,7 @@ selects the second operand when the comparison is false. Rust's numeric min/max
 ignore a single NaN and do not promise which equal signed zero is returned.
 [The scalar contract is documented by Rust](https://doc.rust-lang.org/std/primitive.f32.html#method.min).
 
-The NEON change addresses [issue145](https://github.com/imazen/archmage/issues/145).
+The NEON change addresses [issue145](https://github.com/lilith/archmage/issues/145).
 It does not make min/max bit-identical across every ISA. The resulting legacy exponential quiet-NaN clamp behavior matches scalar/x86
 at 2^-126 for `exp2_midp`, `exp_midp` and `exp2_lowp`; strict WASM still returns
 NaN. These are legacy implementation observations, not an exponential NaN
@@ -211,10 +206,10 @@ wasmtime keep loop state in memory, even when the call never ran. With
 wasmtime 40 on a Ryzen 9 9950X3D, a fusing engine runs f32x4 in 0.08× (chain)
 and 0.15× (stream) of the software path's time, within 5–45% of bare relaxed
 madd; engines that round twice measured the same as plain software
-([layout experiment](https://github.com/imazen/archmage/blob/main/benchmarks/wasm_probe_layout_2026-10-25/README.md)).
+([layout experiment](https://github.com/lilith/archmage/blob/main/benchmarks/wasm_probe_layout_2026-10-25/README.md)).
 V8 (node 26.7.0) made the same choice in its baseline and optimizing tiers,
 with and without host FMA
-([tier check](https://github.com/imazen/archmage/blob/main/benchmarks/soft_fma_simd_2026-10-24.md)). Modules built with relaxed SIMD still require
+([tier check](https://github.com/lilith/archmage/blob/main/benchmarks/soft_fma_simd_2026-10-24.md)). Modules built with relaxed SIMD still require
 an engine that supports those instructions; the arithmetic fallback does not
 make such modules loadable on older engines.
 
@@ -227,22 +222,22 @@ alone does not imply fusion on older CPUs or VMs that hide FMA.
 Single rounding has a price where the hardware cannot fuse, and `mul_add_relaxed` does
 not pay it. Measured against `a * b + c` on 1,024 L1-resident vectors (stream)
 and on 1,024 dependent steps (chain); records:
-[per backend](https://github.com/imazen/archmage/blob/main/benchmarks/mul_add_portable_zen5-m4pro_2026-10-05.md),
-[WASM](https://github.com/imazen/archmage/blob/main/benchmarks/mul_add_wasm_wasmtime_zen5-9950x3d_2026-10-05.md).
+[per backend](https://github.com/lilith/archmage/blob/main/benchmarks/mul_add_portable_zen5-m4pro_2026-10-05.md),
+[WASM](https://github.com/lilith/archmage/blob/main/benchmarks/mul_add_wasm_wasmtime_zen5-9950x3d_2026-10-05.md).
 
 | Backend, machine | `mul_add_relaxed` | `mul_add_fused` |
 |---|---|---|
 | AVX2 and AVX-512, Ryzen 9 9950X3D | Chains take 29–38% less time; streams −10% to +6%, within code-placement noise | The same instruction as `mul_add_relaxed` |
 | NEON, Apple M4 Pro | Chains take 24–31% less time; streams −5% to +8% | The same instruction as `mul_add_relaxed` |
-| Historical scalar hardware path (removed before 0.9.31-beta; AArch64 always; x86-64 built with `-Ctarget-cpu` from Haswell/Zen 1 on), Neoverse-N1 and 9950X3D | The same code as `a * b + c` | The same instruction as `mul_add_relaxed`: 0.92–1.03× in streams, 0.65–0.78× in chains ([record](https://github.com/imazen/archmage/blob/main/benchmarks/fma_scalar_backend_2026-10-07.md)) |
+| Historical scalar hardware path (removed before 0.9.31-beta; AArch64 always; x86-64 built with `-Ctarget-cpu` from Haswell/Zen 1 on), Neoverse-N1 and 9950X3D | The same code as `a * b + c` | The same instruction as `mul_add_relaxed`: 0.92–1.03× in streams, 0.65–0.78× in chains ([record](https://github.com/lilith/archmage/blob/main/benchmarks/fma_scalar_backend_2026-10-07.md)) |
 | Historical scalar cached-dispatch path (removed before 0.9.31-beta), default x86-64 build on 9950X3D | The same code as `a * b + c` | A cached check and a call per lane: 2.7–3.0× (f64), 2.9–5.7× (f32) the time |
 | Scalar software algorithm (measured on the 9950X3D and M4 Pro before the hardware experiment) | The same code as `a * b + c` | 2.7–15.5× (f32), 9.1–29.5× (f64) the time |
 | Historical WASM SIMD128 (per-lane f64), wasmtime on the 9950X3D | The same code as `a * b + c` | 8.2× (`f32x4`), 23× (`f64x2`) the time |
 | Historical WASM relaxed SIMD, same | The engine's madd: 0.96–1.06× the time | 8.2× (`f32x4`), 24× (`f64x2`) the time |
-| Scalar software, array form (current), baseline x86-64 on the Ryzen 9 7900X | The same code as `a * b + c` | 1.7–8.8× (f32), 5.4–27× (f64) the time; inside a V3 function 3.8–4.3× (f32), 7.1–8.4× (f64) ([record](https://github.com/imazen/archmage/blob/main/benchmarks/soft_fma_simd_2026-10-24.md)) |
+| Scalar software, array form (current), baseline x86-64 on the Ryzen 9 7900X | The same code as `a * b + c` | 1.7–8.8× (f32), 5.4–27× (f64) the time; inside a V3 function 3.8–4.3× (f32), 7.1–8.4× (f64) ([record](https://github.com/lilith/archmage/blob/main/benchmarks/soft_fma_simd_2026-10-24.md)) |
 | Scalar f64 with the cached runtime check (current), x86_64 `std` on the 7900X | The same code as `a * b + c` | 0.86–6.6× the time (one call per lane); inside a V3 function 0.67–1.0×, where the call inlines |
 | WASM SIMD128 (current), wasmtime 47 on the 7900X | The same code as `a * b + c` | 7.9–11× (`f32x4`), 9.2–13.5× (`f64x2`) the time |
-| WASM relaxed SIMD (current), wasmtime 40 on the 9950X3D | The engine's madd: 0.65–1.0× the time | Fusing engine: 0.68–1.45× (`f32x4`), 1.6–2.1× (`f64x2`); engine that rounds twice: 8.9–10× (`f32x4`), 10.4–11.3× (`f64x2`) the time ([record](https://github.com/imazen/archmage/blob/main/benchmarks/wasm_probe_layout_2026-10-25/README.md)) |
+| WASM relaxed SIMD (current), wasmtime 40 on the 9950X3D | The engine's madd: 0.65–1.0× the time | Fusing engine: 0.68–1.45× (`f32x4`), 1.6–2.1× (`f64x2`); engine that rounds twice: 8.9–10× (`f32x4`), 10.4–11.3× (`f64x2`) the time ([record](https://github.com/lilith/archmage/blob/main/benchmarks/wasm_probe_layout_2026-10-25/README.md)) |
 
 Portable software fallbacks work on whole lane arrays without a branch per
 lane, so LLVM vectorizes them. f32 computes the exact product in f64, adds
@@ -282,7 +277,7 @@ normalizing local label numbers. That establishes code-generation equivalence
 for those fixtures, not a runtime speedup. Native WASM SIMD's f32 software
 kernel still rounds to odd. The scalar helpers now use the array algorithm
 above and no longer match direct libm. See the
-[relaxed SIMD investigation](https://github.com/imazen/archmage/blob/main/benchmarks/relaxed_madd_2026-10-12.md)
+[relaxed SIMD investigation](https://github.com/lilith/archmage/blob/main/benchmarks/relaxed_madd_2026-10-12.md)
 for the independent counterexample and measured distinction between bare
 relaxed madd and portable software fusion.
 
@@ -291,7 +286,7 @@ chains through the multiplicand, such as Horner polynomials. When the chain runs
 through the addend (a reduction with one accumulator), a separate `a * b + acc` takes
 0.49–0.80× the time of FMA on Arrow Lake and Zen 4, because the add finishes sooner than
 an FMA; with enough independent accumulators the two are equal
-([measurements](https://github.com/imazen/archmage/blob/main/benchmarks/fused_vs_separate_2026-10-25.md);
+([measurements](https://github.com/lilith/archmage/blob/main/benchmarks/fused_vs_separate_2026-10-25.md);
 loop patterns and examples:
 [Reductions](@/magetypes/operations/reductions.md#multiply-add-in-loops-which-form-is-faster)).
 Use `mul_add_fused` where identical results on every backend matter more than speed.
@@ -303,7 +298,7 @@ evaluate their polynomials with `mul_add_relaxed`, so their last bits depend on 
 backend. Over every f32 input, 0.3–0.8% of exp/log results differ by 1–3 ULP
 between the scalar backend and AVX2, and about 11% of `pow_midp(2.4)` results
 by up to 178 ULP; the maxima against the true value move by at most 0.43 ULP
-([record](https://github.com/imazen/archmage/blob/main/benchmarks/transcendental_precision_2026-10-05.md)).
+([record](https://github.com/lilith/archmage/blob/main/benchmarks/transcendental_precision_2026-10-05.md)).
 
 Floating-point reductions retain backend-dependent association. Single-rounding
 multiply-add does not make an entire algorithm independent of reduction order.
@@ -356,6 +351,5 @@ The concrete floating-point examples are asserted in the `isa_quirks` module of
 Integer contracts are covered by `int_widen_narrow.rs`,
 `int_uniform_shift_saturating.rs`, and the constant-shift boundary tests.
 `convert_saturating.rs`, `precise_reciprocals.rs`, and `sigmoid_silu.rs` cover their
-respective fixups. `xtask/codegen.py` checks per-ISA consumer assembly, direct
-storage access, and integer formulations. These gates check the tested shapes
+respective fixups. These tests check the tested shapes
 and contexts; they do not establish optimal codegen for every possible caller.

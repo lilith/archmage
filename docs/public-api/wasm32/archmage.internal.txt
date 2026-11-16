@@ -9,103 +9,1162 @@
 
 ## summary
 #
-#   pub modules                                 1
-#   pub consts/statics                         35
-#   free functions                              1
-#   inherent methods                           23
+#   pub modules                                 3
+#   pub types (struct/enum/trait/alias)       749
+#   pub consts/statics                        129
+#   free functions                            153
+#   inherent methods                           91
 #   re-exports                                  2
-#   trait roster entries (type × trait)        19
+#   trait roster entries (type × trait)       155
+#   conditional trait impls (verbatim)         43
+#   auto-trait-complete types                   7
+#   auto-trait exceptions                       3
 #
 # per-module pub lines:
-#   (root)                            3
+#   (root)                            7
 #   __private                         1
-#   prelude                           2
+#   caps                            130
+#   prelude                           4
 #   testing                           1
-#   tokens                           55
+#   tokens                          984
 
-## items (62 lines)
+## items (1032 lines)
 
+pub const SimdToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const caps::AND_ASSERT_TAG: u32 [also: tokens::caps]
+pub const caps::Flag::ENABLED: bool
+pub const prelude::SimdToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::And<Base, Extra>::__ARCHMAGE_ASSERT_AND_71B5ED46: ()
+pub const tokens::And<Base, Extra>::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::And<Base, Extra>::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::Arm64V2Token::__ARCHMAGE_ASSERT_TIER_B0231590: ()
+pub const tokens::Arm64V2Token::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::Arm64V2Token::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::Arm64V3Token::__ARCHMAGE_ASSERT_TIER_B2F6E2D5: ()
+pub const tokens::Arm64V3Token::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::Arm64V3Token::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::Avx512Fp16Token::__ARCHMAGE_ASSERT_TIER_2F39FFC0: ()
+pub const tokens::Avx512Fp16Token::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::Avx512Fp16Token::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::NeonAesToken::__ARCHMAGE_ASSERT_TIER_8C16863D: ()
+pub const tokens::NeonAesToken::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::NeonAesToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::NeonBf16Token::__ARCHMAGE_ASSERT_TIER_BD1175BF: ()
+pub const tokens::NeonBf16Token::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::NeonBf16Token::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::NeonCrcToken::__ARCHMAGE_ASSERT_TIER_5C2B1B4E: ()
+pub const tokens::NeonCrcToken::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::NeonCrcToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::NeonDotProdToken::__ARCHMAGE_ASSERT_TIER_C5BAFACA: ()
+pub const tokens::NeonDotProdToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::NeonDotProdToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::NeonFcmaToken::__ARCHMAGE_ASSERT_TIER_1651125D: ()
+pub const tokens::NeonFcmaToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::NeonFcmaToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::NeonFhmToken::__ARCHMAGE_ASSERT_TIER_31BD919F: ()
+pub const tokens::NeonFhmToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::NeonFhmToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::NeonFp16Token::__ARCHMAGE_ASSERT_TIER_0B5D99DD: ()
+pub const tokens::NeonFp16Token::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::NeonFp16Token::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::NeonI8mmToken::__ARCHMAGE_ASSERT_TIER_5CCC31B7: ()
+pub const tokens::NeonI8mmToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::NeonI8mmToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::NeonRdmToken::__ARCHMAGE_ASSERT_TIER_4EAE741F: ()
+pub const tokens::NeonRdmToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::NeonRdmToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::NeonSha2Token::__ARCHMAGE_ASSERT_TIER_2D17C59A: ()
+pub const tokens::NeonSha2Token::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::NeonSha2Token::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::NeonSha3Token::__ARCHMAGE_ASSERT_TIER_8215198F: ()
+pub const tokens::NeonSha3Token::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::NeonSha3Token::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::NeonToken::__ARCHMAGE_ASSERT_TIER_72CB52B2: ()
+pub const tokens::NeonToken::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::NeonToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::ScalarToken::__ARCHMAGE_ASSERT_TIER_D141EACA: ()
+pub const tokens::ScalarToken::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::ScalarToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::SimdToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::Wasm128RelaxedFmaToken::__ARCHMAGE_ASSERT_TIER_735B647C: ()
+pub const tokens::Wasm128RelaxedFmaToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::Wasm128RelaxedFmaToken::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::Wasm128RelaxedToken::__ARCHMAGE_ASSERT_TIER_821D5452: ()
+pub const tokens::Wasm128RelaxedToken::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::Wasm128RelaxedToken::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::Wasm128Token::__ARCHMAGE_ASSERT_TIER_1E0DF26B: ()
+pub const tokens::Wasm128Token::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::Wasm128Token::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64AdxToken::__ARCHMAGE_ASSERT_TIER_6090ECC5: ()
+pub const tokens::X64AdxToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64AdxToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64Avx512Bf16Token::__ARCHMAGE_ASSERT_TIER_90F5AF32: ()
+pub const tokens::X64Avx512Bf16Token::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64Avx512Bf16Token::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64AvxIfmaToken::__ARCHMAGE_ASSERT_TIER_998C2B98: ()
+pub const tokens::X64AvxIfmaToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64AvxIfmaToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64AvxNeConvertToken::__ARCHMAGE_ASSERT_TIER_220DA18B: ()
+pub const tokens::X64AvxNeConvertToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64AvxNeConvertToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64AvxVnniInt16Token::__ARCHMAGE_ASSERT_TIER_6F320E60: ()
+pub const tokens::X64AvxVnniInt16Token::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64AvxVnniInt16Token::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64AvxVnniInt8Token::__ARCHMAGE_ASSERT_TIER_8C8D6359: ()
+pub const tokens::X64AvxVnniInt8Token::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64AvxVnniInt8Token::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64AvxVnniToken::__ARCHMAGE_ASSERT_TIER_79810440: ()
+pub const tokens::X64AvxVnniToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64AvxVnniToken::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::X64CryptoToken::__ARCHMAGE_ASSERT_TIER_F5F0FBF5: ()
+pub const tokens::X64CryptoToken::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::X64CryptoToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64GfniToken::__ARCHMAGE_ASSERT_TIER_2713339E: ()
+pub const tokens::X64GfniToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64GfniToken::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64Sha512Token::__ARCHMAGE_ASSERT_TIER_EADE7158: ()
+pub const tokens::X64Sha512Token::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64Sha512Token::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64ShaToken::__ARCHMAGE_ASSERT_TIER_87E0FD2A: ()
+pub const tokens::X64ShaToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64ShaToken::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::X64V1Token::__ARCHMAGE_ASSERT_TIER_510E0DCD: ()
+pub const tokens::X64V1Token::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::X64V1Token::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::X64V2Token::__ARCHMAGE_ASSERT_TIER_8CCD97C6: ()
+pub const tokens::X64V2Token::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::X64V2Token::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::X64V3CryptoToken::__ARCHMAGE_ASSERT_TIER_01EAE708: ()
+pub const tokens::X64V3CryptoToken::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::X64V3CryptoToken::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::X64V3GfniCryptoToken::__ARCHMAGE_ASSERT_TIER_49A7BE90: ()
+pub const tokens::X64V3GfniCryptoToken::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::X64V3GfniCryptoToken::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::X64V3Token::__ARCHMAGE_ASSERT_TIER_F38B284B: ()
+pub const tokens::X64V3Token::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::X64V3Token::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64V3Vnni2Token::__ARCHMAGE_ASSERT_TIER_82D823D4: ()
+pub const tokens::X64V3Vnni2Token::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64V3Vnni2Token::__ARCHMAGE_TIER_TAG: u32
+pub const tokens::X64V3VnniToken::__ARCHMAGE_ASSERT_TIER_256B958C: ()
+pub const tokens::X64V3VnniToken::__ARCHMAGE_CONTRACT_BITS: u64
+pub const tokens::X64V3VnniToken::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::X64V4Token::__ARCHMAGE_ASSERT_TIER_FE1B900C: ()
+pub const tokens::X64V4Token::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::X64V4Token::__ARCHMAGE_TIER_TAG: u32
 pub const tokens::X64V4xToken::__ARCHMAGE_ASSERT_TIER_8F63232A: ()
+pub const tokens::X64V4xToken::__ARCHMAGE_CONTRACT_BITS: u64
 pub const tokens::X64V4xToken::__ARCHMAGE_TIER_TAG: u32
-pub fn SimdToken::try_new() -> core::option::Option<Self>
+pub const tokens::caps::Flag::ENABLED: bool
+pub const tokens::caps::No::ENABLED: bool
+pub const tokens::caps::Yes::ENABLED: bool
 pub fn __private::assert_archmage_token<T: tokens::SimdToken>(&T)
-pub fn prelude::SimdToken::try_new() -> core::option::Option<Self>
+pub fn caps::extract_arm_v2<T: tokens::SimdToken + tokens::caps::ArmCaps<Aes = tokens::caps::Yes, Crc = tokens::caps::Yes, DotProd = tokens::caps::Yes, Fp16 = tokens::caps::Yes, Neon = tokens::caps::Yes, Rdm = tokens::caps::Yes, Sha2 = tokens::caps::Yes>>(T) -> tokens::Arm64V2Token [also: tokens::caps]
+pub fn caps::extract_arm_v2_caps<C3: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C3, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C8, C9, C10, C11>>>(T) -> tokens::Arm64V2Token [also: tokens::caps]
+pub fn caps::extract_arm_v3<T: tokens::SimdToken + tokens::caps::ArmCaps<Aes = tokens::caps::Yes, Bf16 = tokens::caps::Yes, Crc = tokens::caps::Yes, DotProd = tokens::caps::Yes, Fcma = tokens::caps::Yes, Fhm = tokens::caps::Yes, Fp16 = tokens::caps::Yes, I8mm = tokens::caps::Yes, Neon = tokens::caps::Yes, Rdm = tokens::caps::Yes, Sha2 = tokens::caps::Yes, Sha3 = tokens::caps::Yes>>(T) -> tokens::Arm64V3Token [also: tokens::caps]
+pub fn caps::extract_arm_v3_caps<T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes>>>(T) -> tokens::Arm64V3Token [also: tokens::caps]
+pub fn caps::extract_avx512_bf16<T: tokens::SimdToken + tokens::caps::X64Caps<Avx512Bf16 = tokens::caps::Yes, Crypto128 = tokens::caps::Yes, V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, V4 = tokens::caps::Yes>>(T) -> tokens::X64Avx512Bf16Token [also: tokens::caps]
+pub fn caps::extract_avx512_bf16_caps<C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, tokens::caps::Yes, C15, C16, tokens::caps::Yes>>>(T) -> tokens::X64Avx512Bf16Token [also: tokens::caps]
+pub fn caps::extract_fp16<T: tokens::SimdToken + tokens::caps::X64Caps<Avx512Fp16 = tokens::caps::Yes, Crypto128 = tokens::caps::Yes, V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, V4 = tokens::caps::Yes>>(T) -> tokens::Avx512Fp16Token [also: tokens::caps]
+pub fn caps::extract_fp16_caps<C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C15: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, tokens::caps::Yes, C15, tokens::caps::Yes, C17>>>(T) -> tokens::Avx512Fp16Token [also: tokens::caps]
+pub fn caps::extract_neon<T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes>>(T) -> tokens::NeonToken [also: tokens::caps]
+pub fn caps::extract_neon_aes<T: tokens::SimdToken + tokens::caps::ArmCaps<Aes = tokens::caps::Yes, Neon = tokens::caps::Yes>>(T) -> tokens::NeonAesToken [also: tokens::caps]
+pub fn caps::extract_neon_aes_caps<C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::Yes, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>>>(T) -> tokens::NeonAesToken [also: tokens::caps]
+pub fn caps::extract_neon_bf16<T: tokens::SimdToken + tokens::caps::ArmCaps<Bf16 = tokens::caps::Yes, Neon = tokens::caps::Yes>>(T) -> tokens::NeonBf16Token [also: tokens::caps]
+pub fn caps::extract_neon_bf16_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, tokens::caps::Yes>>>(T) -> tokens::NeonBf16Token [also: tokens::caps]
+pub fn caps::extract_neon_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>>>(T) -> tokens::NeonToken [also: tokens::caps]
+pub fn caps::extract_neon_crc<T: tokens::SimdToken + tokens::caps::ArmCaps<Crc = tokens::caps::Yes, Neon = tokens::caps::Yes>>(T) -> tokens::NeonCrcToken [also: tokens::caps]
+pub fn caps::extract_neon_crc_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, C2, C3, tokens::caps::Yes, C5, C6, C7, C8, C9, C10, C11>>>(T) -> tokens::NeonCrcToken [also: tokens::caps]
+pub fn caps::extract_neon_dotprod<T: tokens::SimdToken + tokens::caps::ArmCaps<DotProd = tokens::caps::Yes, Neon = tokens::caps::Yes>>(T) -> tokens::NeonDotProdToken [also: tokens::caps]
+pub fn caps::extract_neon_dotprod_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, tokens::caps::Yes, C7, C8, C9, C10, C11>>>(T) -> tokens::NeonDotProdToken [also: tokens::caps]
+pub fn caps::extract_neon_fcma<T: tokens::SimdToken + tokens::caps::ArmCaps<Fcma = tokens::caps::Yes, Neon = tokens::caps::Yes>>(T) -> tokens::NeonFcmaToken [also: tokens::caps]
+pub fn caps::extract_neon_fcma_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, C8, tokens::caps::Yes, C10, C11>>>(T) -> tokens::NeonFcmaToken [also: tokens::caps]
+pub fn caps::extract_neon_fhm<T: tokens::SimdToken + tokens::caps::ArmCaps<Fhm = tokens::caps::Yes, Fp16 = tokens::caps::Yes, Neon = tokens::caps::Yes>>(T) -> tokens::NeonFhmToken [also: tokens::caps]
+pub fn caps::extract_neon_fhm_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, tokens::caps::Yes, tokens::caps::Yes, C9, C10, C11>>>(T) -> tokens::NeonFhmToken [also: tokens::caps]
+pub fn caps::extract_neon_fp16<T: tokens::SimdToken + tokens::caps::ArmCaps<Fp16 = tokens::caps::Yes, Neon = tokens::caps::Yes>>(T) -> tokens::NeonFp16Token [also: tokens::caps]
+pub fn caps::extract_neon_fp16_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, tokens::caps::Yes, C8, C9, C10, C11>>>(T) -> tokens::NeonFp16Token [also: tokens::caps]
+pub fn caps::extract_neon_i8mm<T: tokens::SimdToken + tokens::caps::ArmCaps<I8mm = tokens::caps::Yes, Neon = tokens::caps::Yes>>(T) -> tokens::NeonI8mmToken [also: tokens::caps]
+pub fn caps::extract_neon_i8mm_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, C8, C9, tokens::caps::Yes, C11>>>(T) -> tokens::NeonI8mmToken [also: tokens::caps]
+pub fn caps::extract_neon_rdm<T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Rdm = tokens::caps::Yes>>(T) -> tokens::NeonRdmToken [also: tokens::caps]
+pub fn caps::extract_neon_rdm_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, C2, C3, C4, tokens::caps::Yes, C6, C7, C8, C9, C10, C11>>>(T) -> tokens::NeonRdmToken [also: tokens::caps]
+pub fn caps::extract_neon_sha2<T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Sha2 = tokens::caps::Yes>>(T) -> tokens::NeonSha2Token [also: tokens::caps]
+pub fn caps::extract_neon_sha2_caps<C1: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, tokens::caps::Yes, C3, C4, C5, C6, C7, C8, C9, C10, C11>>>(T) -> tokens::NeonSha2Token [also: tokens::caps]
+pub fn caps::extract_neon_sha3<T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Sha3 = tokens::caps::Yes>>(T) -> tokens::NeonSha3Token [also: tokens::caps]
+pub fn caps::extract_neon_sha3_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, C1, C2, tokens::caps::Yes, C4, C5, C6, C7, C8, C9, C10, C11>>>(T) -> tokens::NeonSha3Token [also: tokens::caps]
+pub fn caps::extract_v1<T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes>>(T) -> tokens::X64V1Token [also: tokens::caps]
+pub fn caps::extract_v1_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64V1Token [also: tokens::caps]
+pub fn caps::extract_v2<T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes>>(T) -> tokens::X64V2Token [also: tokens::caps]
+pub fn caps::extract_v2_caps<C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64V2Token [also: tokens::caps]
+pub fn caps::extract_v3<T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes>>(T) -> tokens::X64V3Token [also: tokens::caps]
+pub fn caps::extract_v3_caps<C2: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, C2, tokens::caps::Yes, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64V3Token [also: tokens::caps]
+pub fn caps::extract_v3_crypto<T: tokens::SimdToken + tokens::caps::X64Caps<Crypto128 = tokens::caps::Yes, V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, VpclmulVaes = tokens::caps::Yes>>(T) -> tokens::X64V3CryptoToken [also: tokens::caps]
+pub fn caps::extract_v3_crypto_caps<C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64V3CryptoToken [also: tokens::caps]
+pub fn caps::extract_v3_gfni_crypto<T: tokens::SimdToken + tokens::caps::X64Caps<Crypto128 = tokens::caps::Yes, Gfni = tokens::caps::Yes, V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, VpclmulVaes = tokens::caps::Yes>>(T) -> tokens::X64V3GfniCryptoToken [also: tokens::caps]
+pub fn caps::extract_v3_gfni_crypto_caps<C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64V3GfniCryptoToken [also: tokens::caps]
+pub fn caps::extract_v3_vnni2<T: tokens::SimdToken + tokens::caps::X64Caps<Adx = tokens::caps::Yes, AvxIfma = tokens::caps::Yes, AvxNeConvert = tokens::caps::Yes, AvxVnni = tokens::caps::Yes, AvxVnniInt8 = tokens::caps::Yes, Crypto128 = tokens::caps::Yes, Gfni = tokens::caps::Yes, Sha = tokens::caps::Yes, V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, VpclmulVaes = tokens::caps::Yes>>(T) -> tokens::X64V3Vnni2Token [also: tokens::caps]
+pub fn caps::extract_v3_vnni2_caps<C11: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C11, tokens::caps::Yes, C13, C14, C15, C16, C17>>>(T) -> tokens::X64V3Vnni2Token [also: tokens::caps]
+pub fn caps::extract_v3_vnni<T: tokens::SimdToken + tokens::caps::X64Caps<Adx = tokens::caps::Yes, AvxVnni = tokens::caps::Yes, Crypto128 = tokens::caps::Yes, Gfni = tokens::caps::Yes, Sha = tokens::caps::Yes, V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, VpclmulVaes = tokens::caps::Yes>>(T) -> tokens::X64V3VnniToken [also: tokens::caps]
+pub fn caps::extract_v3_vnni_caps<C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64V3VnniToken [also: tokens::caps]
+pub fn caps::extract_v4<T: tokens::SimdToken + tokens::caps::X64Caps<Crypto128 = tokens::caps::Yes, V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, V4 = tokens::caps::Yes>>(T) -> tokens::X64V4Token [also: tokens::caps]
+pub fn caps::extract_v4_caps<C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, tokens::caps::Yes, C15, C16, C17>>>(T) -> tokens::X64V4Token [also: tokens::caps]
+pub fn caps::extract_v4x<T: tokens::SimdToken + tokens::caps::X64Caps<Crypto128 = tokens::caps::Yes, Gfni = tokens::caps::Yes, V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, V4 = tokens::caps::Yes, V4x = tokens::caps::Yes, VpclmulVaes = tokens::caps::Yes>>(T) -> tokens::X64V4xToken [also: tokens::caps]
+pub fn caps::extract_v4x_caps<C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C6, C7, C8, C9, C10, C11, C12, C13, tokens::caps::Yes, tokens::caps::Yes, C16, C17>>>(T) -> tokens::X64V4xToken [also: tokens::caps]
+pub fn caps::extract_wasm128<T: tokens::SimdToken + tokens::caps::WasmCaps<Simd128 = tokens::caps::Yes>>(T) -> tokens::Wasm128Token [also: tokens::caps]
+pub fn caps::extract_wasm128_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::WasmCapSet<tokens::caps::Yes, C1, C2>>>(T) -> tokens::Wasm128Token [also: tokens::caps]
+pub fn caps::extract_wasm128_relaxed<T: tokens::SimdToken + tokens::caps::WasmCaps<Relaxed = tokens::caps::Yes, Simd128 = tokens::caps::Yes>>(T) -> tokens::Wasm128RelaxedToken [also: tokens::caps]
+pub fn caps::extract_wasm128_relaxed_caps<C2: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::WasmCapSet<tokens::caps::Yes, tokens::caps::Yes, C2>>>(T) -> tokens::Wasm128RelaxedToken [also: tokens::caps]
+pub fn caps::extract_wasm128_relaxed_fma<T: tokens::SimdToken + tokens::caps::WasmCaps<Relaxed = tokens::caps::Yes, RelaxedFma = tokens::caps::Yes, Simd128 = tokens::caps::Yes>>(T) -> tokens::Wasm128RelaxedFmaToken [also: tokens::caps]
+pub fn caps::extract_wasm128_relaxed_fma_caps<T: tokens::SimdToken<__Caps = tokens::caps::WasmCapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes>>>(T) -> tokens::Wasm128RelaxedFmaToken [also: tokens::caps]
+pub fn caps::extract_x64_adx<T: tokens::SimdToken + tokens::caps::X64Caps<Adx = tokens::caps::Yes, V1 = tokens::caps::Yes>>(T) -> tokens::X64AdxToken [also: tokens::caps]
+pub fn caps::extract_x64_adx_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, tokens::caps::Yes, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64AdxToken [also: tokens::caps]
+pub fn caps::extract_x64_avx_ifma<T: tokens::SimdToken + tokens::caps::X64Caps<AvxIfma = tokens::caps::Yes, V1 = tokens::caps::Yes>>(T) -> tokens::X64AvxIfmaToken [also: tokens::caps]
+pub fn caps::extract_x64_avx_ifma_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, C8, tokens::caps::Yes, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64AvxIfmaToken [also: tokens::caps]
+pub fn caps::extract_x64_avx_ne_convert<T: tokens::SimdToken + tokens::caps::X64Caps<AvxNeConvert = tokens::caps::Yes, V1 = tokens::caps::Yes>>(T) -> tokens::X64AvxNeConvertToken [also: tokens::caps]
+pub fn caps::extract_x64_avx_ne_convert_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, tokens::caps::Yes, C13, C14, C15, C16, C17>>>(T) -> tokens::X64AvxNeConvertToken [also: tokens::caps]
+pub fn caps::extract_x64_avx_vnni<T: tokens::SimdToken + tokens::caps::X64Caps<AvxVnni = tokens::caps::Yes, V1 = tokens::caps::Yes>>(T) -> tokens::X64AvxVnniToken [also: tokens::caps]
+pub fn caps::extract_x64_avx_vnni_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, tokens::caps::Yes, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64AvxVnniToken [also: tokens::caps]
+pub fn caps::extract_x64_avx_vnni_int16<T: tokens::SimdToken + tokens::caps::X64Caps<AvxVnniInt16 = tokens::caps::Yes, V1 = tokens::caps::Yes>>(T) -> tokens::X64AvxVnniInt16Token [also: tokens::caps]
+pub fn caps::extract_x64_avx_vnni_int16_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, tokens::caps::Yes, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64AvxVnniInt16Token [also: tokens::caps]
+pub fn caps::extract_x64_avx_vnni_int8<T: tokens::SimdToken + tokens::caps::X64Caps<AvxVnniInt8 = tokens::caps::Yes, V1 = tokens::caps::Yes>>(T) -> tokens::X64AvxVnniInt8Token [also: tokens::caps]
+pub fn caps::extract_x64_avx_vnni_int8_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, C8, C9, tokens::caps::Yes, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64AvxVnniInt8Token [also: tokens::caps]
+pub fn caps::extract_x64_crypto<T: tokens::SimdToken + tokens::caps::X64Caps<Crypto128 = tokens::caps::Yes, V1 = tokens::caps::Yes, V2 = tokens::caps::Yes>>(T) -> tokens::X64CryptoToken [also: tokens::caps]
+pub fn caps::extract_x64_crypto_caps<C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64CryptoToken [also: tokens::caps]
+pub fn caps::extract_x64_gfni<T: tokens::SimdToken + tokens::caps::X64Caps<Gfni = tokens::caps::Yes, V1 = tokens::caps::Yes>>(T) -> tokens::X64GfniToken [also: tokens::caps]
+pub fn caps::extract_x64_gfni_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, C1, C2, C3, C4, tokens::caps::Yes, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64GfniToken [also: tokens::caps]
+pub fn caps::extract_x64_sha512<T: tokens::SimdToken + tokens::caps::X64Caps<Sha512 = tokens::caps::Yes, V1 = tokens::caps::Yes>>(T) -> tokens::X64Sha512Token [also: tokens::caps]
+pub fn caps::extract_x64_sha512_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C6: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, tokens::caps::Yes, C14, C15, C16, C17>>>(T) -> tokens::X64Sha512Token [also: tokens::caps]
+pub fn caps::extract_x64_sha<T: tokens::SimdToken + tokens::caps::X64Caps<Sha = tokens::caps::Yes, V1 = tokens::caps::Yes>>(T) -> tokens::X64ShaToken [also: tokens::caps]
+pub fn caps::extract_x64_sha_caps<C1: tokens::caps::Flag, C2: tokens::caps::Flag, C3: tokens::caps::Flag, C4: tokens::caps::Flag, C5: tokens::caps::Flag, C7: tokens::caps::Flag, C8: tokens::caps::Flag, C9: tokens::caps::Flag, C10: tokens::caps::Flag, C11: tokens::caps::Flag, C12: tokens::caps::Flag, C13: tokens::caps::Flag, C14: tokens::caps::Flag, C15: tokens::caps::Flag, C16: tokens::caps::Flag, C17: tokens::caps::Flag, T: tokens::SimdToken<__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, C1, C2, C3, C4, C5, tokens::caps::Yes, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>>>(T) -> tokens::X64ShaToken [also: tokens::caps]
 pub fn testing::CompileTimePolicy::assert_fields_are_eq(&self)
-pub fn tokens::Arm64V2Token::try_new() -> core::option::Option<Self>
-pub fn tokens::Arm64V3Token::try_new() -> core::option::Option<Self>
-pub fn tokens::Avx512Fp16Token::try_new() -> core::option::Option<Self>
-pub fn tokens::NeonAesToken::try_new() -> core::option::Option<Self>
-pub fn tokens::NeonCrcToken::try_new() -> core::option::Option<Self>
-pub fn tokens::NeonSha3Token::try_new() -> core::option::Option<Self>
-pub fn tokens::NeonToken::try_new() -> core::option::Option<Self>
+pub fn tokens::And<Base, Extra>::assert_fields_are_eq(&self)
+pub fn tokens::Arm64V2Token::assert_fields_are_eq(&self)
+pub fn tokens::Arm64V3Token::assert_fields_are_eq(&self)
+pub fn tokens::Avx512Fp16Token::assert_fields_are_eq(&self)
+pub fn tokens::NeonAesToken::assert_fields_are_eq(&self)
+pub fn tokens::NeonBf16Token::assert_fields_are_eq(&self)
+pub fn tokens::NeonCrcToken::assert_fields_are_eq(&self)
+pub fn tokens::NeonDotProdToken::assert_fields_are_eq(&self)
+pub fn tokens::NeonFcmaToken::assert_fields_are_eq(&self)
+pub fn tokens::NeonFhmToken::assert_fields_are_eq(&self)
+pub fn tokens::NeonFp16Token::assert_fields_are_eq(&self)
+pub fn tokens::NeonI8mmToken::assert_fields_are_eq(&self)
+pub fn tokens::NeonRdmToken::assert_fields_are_eq(&self)
+pub fn tokens::NeonSha2Token::assert_fields_are_eq(&self)
+pub fn tokens::NeonSha3Token::assert_fields_are_eq(&self)
+pub fn tokens::NeonToken::assert_fields_are_eq(&self)
 pub fn tokens::ScalarToken::assert_fields_are_eq(&self)
-pub fn tokens::ScalarToken::try_new() -> core::option::Option<Self>
-pub fn tokens::SimdToken::try_new() -> core::option::Option<Self>
-pub fn tokens::Wasm128RelaxedToken::try_new() -> core::option::Option<Self>
-pub fn tokens::Wasm128Token::try_new() -> core::option::Option<Self>
-pub fn tokens::X64CryptoToken::try_new() -> core::option::Option<Self>
-pub fn tokens::X64V1Token::try_new() -> core::option::Option<Self>
-pub fn tokens::X64V2Token::try_new() -> core::option::Option<Self>
-pub fn tokens::X64V3CryptoToken::try_new() -> core::option::Option<Self>
-pub fn tokens::X64V3GfniCryptoToken::try_new() -> core::option::Option<Self>
-pub fn tokens::X64V3Token::try_new() -> core::option::Option<Self>
-pub fn tokens::X64V4Token::try_new() -> core::option::Option<Self>
-pub fn tokens::X64V4xToken::try_new() -> core::option::Option<Self>
+pub fn tokens::Wasm128RelaxedFmaToken::assert_fields_are_eq(&self)
+pub fn tokens::Wasm128RelaxedToken::assert_fields_are_eq(&self)
+pub fn tokens::Wasm128Token::assert_fields_are_eq(&self)
+pub fn tokens::X64AdxToken::assert_fields_are_eq(&self)
+pub fn tokens::X64Avx512Bf16Token::assert_fields_are_eq(&self)
+pub fn tokens::X64AvxIfmaToken::assert_fields_are_eq(&self)
+pub fn tokens::X64AvxNeConvertToken::assert_fields_are_eq(&self)
+pub fn tokens::X64AvxVnniInt16Token::assert_fields_are_eq(&self)
+pub fn tokens::X64AvxVnniInt8Token::assert_fields_are_eq(&self)
+pub fn tokens::X64AvxVnniToken::assert_fields_are_eq(&self)
+pub fn tokens::X64CryptoToken::assert_fields_are_eq(&self)
+pub fn tokens::X64GfniToken::assert_fields_are_eq(&self)
+pub fn tokens::X64Sha512Token::assert_fields_are_eq(&self)
+pub fn tokens::X64ShaToken::assert_fields_are_eq(&self)
+pub fn tokens::X64V1Token::assert_fields_are_eq(&self)
+pub fn tokens::X64V2Token::assert_fields_are_eq(&self)
+pub fn tokens::X64V3CryptoToken::assert_fields_are_eq(&self)
+pub fn tokens::X64V3GfniCryptoToken::assert_fields_are_eq(&self)
+pub fn tokens::X64V3Token::assert_fields_are_eq(&self)
+pub fn tokens::X64V3Vnni2Token::assert_fields_are_eq(&self)
+pub fn tokens::X64V3VnniToken::assert_fields_are_eq(&self)
+pub fn tokens::X64V4Token::assert_fields_are_eq(&self)
+pub fn tokens::X64V4xToken::assert_fields_are_eq(&self)
+pub fn tokens::caps::ArmArch::assert_fields_are_eq(&self)
+pub fn tokens::caps::ArmArch::clone(&self) -> tokens::caps::ArmArch
+pub fn tokens::caps::ArmArch::eq(&self, &tokens::caps::ArmArch) -> bool
+pub fn tokens::caps::ArmArch::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+pub fn tokens::caps::ArmArch::hash<__H: core::hash::Hasher>(&self, &mut __H)
+pub fn tokens::caps::ArmCapSet<Neon, Aes, Sha2, Sha3, Crc, Rdm, DotProd, Fp16, Fhm, Fcma, I8mm, Bf16>::assert_fields_are_eq(&self)
+pub fn tokens::caps::ArmCapSet<Neon, Aes, Sha2, Sha3, Crc, Rdm, DotProd, Fp16, Fhm, Fcma, I8mm, Bf16>::clone(&self) -> tokens::caps::ArmCapSet<Neon, Aes, Sha2, Sha3, Crc, Rdm, DotProd, Fp16, Fhm, Fcma, I8mm, Bf16>
+pub fn tokens::caps::ArmCapSet<Neon, Aes, Sha2, Sha3, Crc, Rdm, DotProd, Fp16, Fhm, Fcma, I8mm, Bf16>::eq(&self, &tokens::caps::ArmCapSet<Neon, Aes, Sha2, Sha3, Crc, Rdm, DotProd, Fp16, Fhm, Fcma, I8mm, Bf16>) -> bool
+pub fn tokens::caps::ArmCapSet<Neon, Aes, Sha2, Sha3, Crc, Rdm, DotProd, Fp16, Fhm, Fcma, I8mm, Bf16>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+pub fn tokens::caps::ArmCapSet<Neon, Aes, Sha2, Sha3, Crc, Rdm, DotProd, Fp16, Fhm, Fcma, I8mm, Bf16>::hash<__H: core::hash::Hasher>(&self, &mut __H)
+pub fn tokens::caps::No::assert_fields_are_eq(&self)
+pub fn tokens::caps::No::clone(&self) -> tokens::caps::No
+pub fn tokens::caps::No::eq(&self, &tokens::caps::No) -> bool
+pub fn tokens::caps::No::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+pub fn tokens::caps::No::hash<__H: core::hash::Hasher>(&self, &mut __H)
+pub fn tokens::caps::ScalarArch::assert_fields_are_eq(&self)
+pub fn tokens::caps::ScalarArch::clone(&self) -> tokens::caps::ScalarArch
+pub fn tokens::caps::ScalarArch::eq(&self, &tokens::caps::ScalarArch) -> bool
+pub fn tokens::caps::ScalarArch::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+pub fn tokens::caps::ScalarArch::hash<__H: core::hash::Hasher>(&self, &mut __H)
+pub fn tokens::caps::ScalarCaps::assert_fields_are_eq(&self)
+pub fn tokens::caps::ScalarCaps::clone(&self) -> tokens::caps::ScalarCaps
+pub fn tokens::caps::ScalarCaps::eq(&self, &tokens::caps::ScalarCaps) -> bool
+pub fn tokens::caps::ScalarCaps::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+pub fn tokens::caps::ScalarCaps::hash<__H: core::hash::Hasher>(&self, &mut __H)
+pub fn tokens::caps::WasmArch::assert_fields_are_eq(&self)
+pub fn tokens::caps::WasmArch::clone(&self) -> tokens::caps::WasmArch
+pub fn tokens::caps::WasmArch::eq(&self, &tokens::caps::WasmArch) -> bool
+pub fn tokens::caps::WasmArch::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+pub fn tokens::caps::WasmArch::hash<__H: core::hash::Hasher>(&self, &mut __H)
+pub fn tokens::caps::WasmCapSet<Simd128, Relaxed, RelaxedFma>::assert_fields_are_eq(&self)
+pub fn tokens::caps::WasmCapSet<Simd128, Relaxed, RelaxedFma>::clone(&self) -> tokens::caps::WasmCapSet<Simd128, Relaxed, RelaxedFma>
+pub fn tokens::caps::WasmCapSet<Simd128, Relaxed, RelaxedFma>::eq(&self, &tokens::caps::WasmCapSet<Simd128, Relaxed, RelaxedFma>) -> bool
+pub fn tokens::caps::WasmCapSet<Simd128, Relaxed, RelaxedFma>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+pub fn tokens::caps::WasmCapSet<Simd128, Relaxed, RelaxedFma>::hash<__H: core::hash::Hasher>(&self, &mut __H)
+pub fn tokens::caps::X64Arch::assert_fields_are_eq(&self)
+pub fn tokens::caps::X64Arch::clone(&self) -> tokens::caps::X64Arch
+pub fn tokens::caps::X64Arch::eq(&self, &tokens::caps::X64Arch) -> bool
+pub fn tokens::caps::X64Arch::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+pub fn tokens::caps::X64Arch::hash<__H: core::hash::Hasher>(&self, &mut __H)
+pub fn tokens::caps::X64CapSet<V1, V2, Crypto128, V3, VpclmulVaes, Gfni, Sha, Adx, AvxVnni, AvxIfma, AvxVnniInt8, AvxVnniInt16, AvxNeConvert, Sha512, V4, V4x, Avx512Fp16, Avx512Bf16>::assert_fields_are_eq(&self)
+pub fn tokens::caps::X64CapSet<V1, V2, Crypto128, V3, VpclmulVaes, Gfni, Sha, Adx, AvxVnni, AvxIfma, AvxVnniInt8, AvxVnniInt16, AvxNeConvert, Sha512, V4, V4x, Avx512Fp16, Avx512Bf16>::clone(&self) -> tokens::caps::X64CapSet<V1, V2, Crypto128, V3, VpclmulVaes, Gfni, Sha, Adx, AvxVnni, AvxIfma, AvxVnniInt8, AvxVnniInt16, AvxNeConvert, Sha512, V4, V4x, Avx512Fp16, Avx512Bf16>
+pub fn tokens::caps::X64CapSet<V1, V2, Crypto128, V3, VpclmulVaes, Gfni, Sha, Adx, AvxVnni, AvxIfma, AvxVnniInt8, AvxVnniInt16, AvxNeConvert, Sha512, V4, V4x, Avx512Fp16, Avx512Bf16>::eq(&self, &tokens::caps::X64CapSet<V1, V2, Crypto128, V3, VpclmulVaes, Gfni, Sha, Adx, AvxVnni, AvxIfma, AvxVnniInt8, AvxVnniInt16, AvxNeConvert, Sha512, V4, V4x, Avx512Fp16, Avx512Bf16>) -> bool
+pub fn tokens::caps::X64CapSet<V1, V2, Crypto128, V3, VpclmulVaes, Gfni, Sha, Adx, AvxVnni, AvxIfma, AvxVnniInt8, AvxVnniInt16, AvxNeConvert, Sha512, V4, V4x, Avx512Fp16, Avx512Bf16>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+pub fn tokens::caps::X64CapSet<V1, V2, Crypto128, V3, VpclmulVaes, Gfni, Sha, Adx, AvxVnni, AvxIfma, AvxVnniInt8, AvxVnniInt16, AvxNeConvert, Sha512, V4, V4x, Avx512Fp16, Avx512Bf16>::hash<__H: core::hash::Hasher>(&self, &mut __H)
+pub fn tokens::caps::Yes::assert_fields_are_eq(&self)
+pub fn tokens::caps::Yes::clone(&self) -> tokens::caps::Yes
+pub fn tokens::caps::Yes::eq(&self, &tokens::caps::Yes) -> bool
+pub fn tokens::caps::Yes::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+pub fn tokens::caps::Yes::hash<__H: core::hash::Hasher>(&self, &mut __H)
 pub mod __private
+pub mod caps
+pub mod tokens::caps
+pub struct caps::ArmArch [also: tokens::caps]
+pub struct caps::ArmCapSet<Neon: tokens::caps::Flag, Aes: tokens::caps::Flag, Sha2: tokens::caps::Flag, Sha3: tokens::caps::Flag, Crc: tokens::caps::Flag, Rdm: tokens::caps::Flag, DotProd: tokens::caps::Flag, Fp16: tokens::caps::Flag, Fhm: tokens::caps::Flag, Fcma: tokens::caps::Flag, I8mm: tokens::caps::Flag, Bf16: tokens::caps::Flag>(_) [also: tokens::caps]
+pub struct caps::No [also: tokens::caps]
+pub struct caps::ScalarArch [also: tokens::caps]
+pub struct caps::ScalarCaps [also: tokens::caps]
+pub struct caps::WasmArch [also: tokens::caps]
+pub struct caps::WasmCapSet<Simd128: tokens::caps::Flag, Relaxed: tokens::caps::Flag, RelaxedFma: tokens::caps::Flag>(_) [also: tokens::caps]
+pub struct caps::X64Arch [also: tokens::caps]
+pub struct caps::X64CapSet<V1: tokens::caps::Flag, V2: tokens::caps::Flag, Crypto128: tokens::caps::Flag, V3: tokens::caps::Flag, VpclmulVaes: tokens::caps::Flag, Gfni: tokens::caps::Flag, Sha: tokens::caps::Flag, Adx: tokens::caps::Flag, AvxVnni: tokens::caps::Flag, AvxIfma: tokens::caps::Flag, AvxVnniInt8: tokens::caps::Flag, AvxVnniInt16: tokens::caps::Flag, AvxNeConvert: tokens::caps::Flag, Sha512: tokens::caps::Flag, V4: tokens::caps::Flag, V4x: tokens::caps::Flag, Avx512Fp16: tokens::caps::Flag, Avx512Bf16: tokens::caps::Flag>(_) [also: tokens::caps]
+pub struct caps::Yes [also: tokens::caps]
+pub trait SameArch<Other: tokens::SimdToken>: tokens::SimdToken + tokens::SameArchCaps<Other> [also: prelude, tokens]
+pub trait caps::ArchMarker: tokens::generated::caps::cap_sealed::Sealed + core::marker::Copy + core::clone::Clone + core::marker::Send + core::marker::Sync + 'static [also: tokens::caps]
+pub trait caps::ArmCaps: tokens::sealed::Sealed [also: tokens::caps]
+pub trait caps::CapSetOr<Rhs>: tokens::generated::caps::cap_sealed::Sealed [also: tokens::caps]
+pub trait caps::Flag: tokens::generated::caps::cap_sealed::Sealed + core::marker::Copy + core::clone::Clone + core::fmt::Debug + core::cmp::PartialEq + core::cmp::Eq + core::hash::Hash + core::marker::Send + core::marker::Sync + 'static [also: tokens::caps]
+pub trait caps::WasmCaps: tokens::sealed::Sealed [also: tokens::caps]
+pub trait caps::X64Caps: tokens::sealed::Sealed [also: tokens::caps]
+pub trait tokens::SameArchCaps<Other: tokens::SimdToken>: tokens::sealed::Sealed
+pub type A::__JoinedCaps = <<A as tokens::SimdToken>::__Caps as tokens::caps::CapSetOr<<B as tokens::SimdToken>::__Caps>>::Output
+pub type SimdToken::__Caps: core::marker::Copy + core::clone::Clone + core::marker::Send + core::marker::Sync + 'static
+pub type caps::ArmCaps::Aes: tokens::caps::Flag
+pub type caps::ArmCaps::Bf16: tokens::caps::Flag
+pub type caps::ArmCaps::Crc: tokens::caps::Flag
+pub type caps::ArmCaps::DotProd: tokens::caps::Flag
+pub type caps::ArmCaps::Fcma: tokens::caps::Flag
+pub type caps::ArmCaps::Fhm: tokens::caps::Flag
+pub type caps::ArmCaps::Fp16: tokens::caps::Flag
+pub type caps::ArmCaps::I8mm: tokens::caps::Flag
+pub type caps::ArmCaps::Neon: tokens::caps::Flag
+pub type caps::ArmCaps::Rdm: tokens::caps::Flag
+pub type caps::ArmCaps::Sha2: tokens::caps::Flag
+pub type caps::ArmCaps::Sha3: tokens::caps::Flag
+pub type caps::CapSetOr::Output: core::marker::Copy + core::clone::Clone + core::marker::Send + core::marker::Sync + 'static
+pub type caps::Flag::And<R: tokens::caps::Flag>: tokens::caps::Flag
+pub type caps::Flag::Or<R: tokens::caps::Flag>: tokens::caps::Flag
+pub type caps::WasmCaps::Relaxed: tokens::caps::Flag
+pub type caps::WasmCaps::RelaxedFma: tokens::caps::Flag
+pub type caps::WasmCaps::Simd128: tokens::caps::Flag
+pub type caps::X64Caps::Adx: tokens::caps::Flag
+pub type caps::X64Caps::Avx512Bf16: tokens::caps::Flag
+pub type caps::X64Caps::Avx512Fp16: tokens::caps::Flag
+pub type caps::X64Caps::AvxIfma: tokens::caps::Flag
+pub type caps::X64Caps::AvxNeConvert: tokens::caps::Flag
+pub type caps::X64Caps::AvxVnni: tokens::caps::Flag
+pub type caps::X64Caps::AvxVnniInt16: tokens::caps::Flag
+pub type caps::X64Caps::AvxVnniInt8: tokens::caps::Flag
+pub type caps::X64Caps::Crypto128: tokens::caps::Flag
+pub type caps::X64Caps::Gfni: tokens::caps::Flag
+pub type caps::X64Caps::Sha512: tokens::caps::Flag
+pub type caps::X64Caps::Sha: tokens::caps::Flag
+pub type caps::X64Caps::V1: tokens::caps::Flag
+pub type caps::X64Caps::V2: tokens::caps::Flag
+pub type caps::X64Caps::V3: tokens::caps::Flag
+pub type caps::X64Caps::V4: tokens::caps::Flag
+pub type caps::X64Caps::V4x: tokens::caps::Flag
+pub type caps::X64Caps::VpclmulVaes: tokens::caps::Flag
+pub type prelude::SimdToken::__Caps: core::marker::Copy + core::clone::Clone + core::marker::Send + core::marker::Sync + 'static
+pub type tokens::And<Base, Extra>::Adx = <<Base as tokens::caps::X64Caps>::Adx as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Aes = <<Base as tokens::caps::ArmCaps>::Aes as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Avx512Bf16 = <<Base as tokens::caps::X64Caps>::Avx512Bf16 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Avx512Fp16 = <<Base as tokens::caps::X64Caps>::Avx512Fp16 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::AvxIfma = <<Base as tokens::caps::X64Caps>::AvxIfma as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::AvxNeConvert = <<Base as tokens::caps::X64Caps>::AvxNeConvert as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::AvxVnni = <<Base as tokens::caps::X64Caps>::AvxVnni as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::AvxVnniInt16 = <<Base as tokens::caps::X64Caps>::AvxVnniInt16 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::AvxVnniInt8 = <<Base as tokens::caps::X64Caps>::AvxVnniInt8 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Bf16 = <<Base as tokens::caps::ArmCaps>::Bf16 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Crc = <<Base as tokens::caps::ArmCaps>::Crc as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Crypto128 = <<Base as tokens::caps::X64Caps>::Crypto128 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::DotProd = <<Base as tokens::caps::ArmCaps>::DotProd as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Fcma = <<Base as tokens::caps::ArmCaps>::Fcma as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Fhm = <<Base as tokens::caps::ArmCaps>::Fhm as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Fp16 = <<Base as tokens::caps::ArmCaps>::Fp16 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Gfni = <<Base as tokens::caps::X64Caps>::Gfni as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::I8mm = <<Base as tokens::caps::ArmCaps>::I8mm as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Neon = <<Base as tokens::caps::ArmCaps>::Neon as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Rdm = <<Base as tokens::caps::ArmCaps>::Rdm as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Relaxed = <<Base as tokens::caps::WasmCaps>::Relaxed as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::RelaxedFma = <<Base as tokens::caps::WasmCaps>::RelaxedFma as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Sha = <<Base as tokens::caps::X64Caps>::Sha as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Sha2 = <<Base as tokens::caps::ArmCaps>::Sha2 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Sha3 = <<Base as tokens::caps::ArmCaps>::Sha3 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Sha512 = <<Base as tokens::caps::X64Caps>::Sha512 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::Simd128 = <<Base as tokens::caps::WasmCaps>::Simd128 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::V1 = <<Base as tokens::caps::X64Caps>::V1 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::V2 = <<Base as tokens::caps::X64Caps>::V2 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::V3 = <<Base as tokens::caps::X64Caps>::V3 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::V4 = <<Base as tokens::caps::X64Caps>::V4 as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::V4x = <<Base as tokens::caps::X64Caps>::V4x as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::VpclmulVaes = <<Base as tokens::caps::X64Caps>::VpclmulVaes as tokens::caps::Flag>::Or
+pub type tokens::And<Base, Extra>::__Caps = <Base as tokens::SameArchCaps<Extra>>::__JoinedCaps
+pub type tokens::Arm64V2Token::Aes = tokens::caps::Yes
+pub type tokens::Arm64V2Token::Bf16 = tokens::caps::No
+pub type tokens::Arm64V2Token::Crc = tokens::caps::Yes
+pub type tokens::Arm64V2Token::DotProd = tokens::caps::Yes
+pub type tokens::Arm64V2Token::Fcma = tokens::caps::No
+pub type tokens::Arm64V2Token::Fhm = tokens::caps::No
+pub type tokens::Arm64V2Token::Fp16 = tokens::caps::Yes
+pub type tokens::Arm64V2Token::I8mm = tokens::caps::No
+pub type tokens::Arm64V2Token::Neon = tokens::caps::Yes
+pub type tokens::Arm64V2Token::Rdm = tokens::caps::Yes
+pub type tokens::Arm64V2Token::Sha2 = tokens::caps::Yes
+pub type tokens::Arm64V2Token::Sha3 = tokens::caps::No
+pub type tokens::Arm64V2Token::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::Arm64V3Token::Aes = tokens::caps::Yes
+pub type tokens::Arm64V3Token::Bf16 = tokens::caps::Yes
+pub type tokens::Arm64V3Token::Crc = tokens::caps::Yes
+pub type tokens::Arm64V3Token::DotProd = tokens::caps::Yes
+pub type tokens::Arm64V3Token::Fcma = tokens::caps::Yes
+pub type tokens::Arm64V3Token::Fhm = tokens::caps::Yes
+pub type tokens::Arm64V3Token::Fp16 = tokens::caps::Yes
+pub type tokens::Arm64V3Token::I8mm = tokens::caps::Yes
+pub type tokens::Arm64V3Token::Neon = tokens::caps::Yes
+pub type tokens::Arm64V3Token::Rdm = tokens::caps::Yes
+pub type tokens::Arm64V3Token::Sha2 = tokens::caps::Yes
+pub type tokens::Arm64V3Token::Sha3 = tokens::caps::Yes
+pub type tokens::Arm64V3Token::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes>
+pub type tokens::Avx512Fp16Token::Adx = tokens::caps::No
+pub type tokens::Avx512Fp16Token::Avx512Bf16 = tokens::caps::No
+pub type tokens::Avx512Fp16Token::Avx512Fp16 = tokens::caps::Yes
+pub type tokens::Avx512Fp16Token::AvxIfma = tokens::caps::No
+pub type tokens::Avx512Fp16Token::AvxNeConvert = tokens::caps::No
+pub type tokens::Avx512Fp16Token::AvxVnni = tokens::caps::No
+pub type tokens::Avx512Fp16Token::AvxVnniInt16 = tokens::caps::No
+pub type tokens::Avx512Fp16Token::AvxVnniInt8 = tokens::caps::No
+pub type tokens::Avx512Fp16Token::Crypto128 = tokens::caps::Yes
+pub type tokens::Avx512Fp16Token::Gfni = tokens::caps::No
+pub type tokens::Avx512Fp16Token::Sha = tokens::caps::No
+pub type tokens::Avx512Fp16Token::Sha512 = tokens::caps::No
+pub type tokens::Avx512Fp16Token::V1 = tokens::caps::Yes
+pub type tokens::Avx512Fp16Token::V2 = tokens::caps::Yes
+pub type tokens::Avx512Fp16Token::V3 = tokens::caps::Yes
+pub type tokens::Avx512Fp16Token::V4 = tokens::caps::Yes
+pub type tokens::Avx512Fp16Token::V4x = tokens::caps::No
+pub type tokens::Avx512Fp16Token::VpclmulVaes = tokens::caps::No
+pub type tokens::Avx512Fp16Token::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::Yes, tokens::caps::No>
+pub type tokens::NeonAesToken::Aes = tokens::caps::Yes
+pub type tokens::NeonAesToken::Bf16 = tokens::caps::No
+pub type tokens::NeonAesToken::Crc = tokens::caps::No
+pub type tokens::NeonAesToken::DotProd = tokens::caps::No
+pub type tokens::NeonAesToken::Fcma = tokens::caps::No
+pub type tokens::NeonAesToken::Fhm = tokens::caps::No
+pub type tokens::NeonAesToken::Fp16 = tokens::caps::No
+pub type tokens::NeonAesToken::I8mm = tokens::caps::No
+pub type tokens::NeonAesToken::Neon = tokens::caps::Yes
+pub type tokens::NeonAesToken::Rdm = tokens::caps::No
+pub type tokens::NeonAesToken::Sha2 = tokens::caps::No
+pub type tokens::NeonAesToken::Sha3 = tokens::caps::No
+pub type tokens::NeonAesToken::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::NeonBf16Token::Aes = tokens::caps::No
+pub type tokens::NeonBf16Token::Bf16 = tokens::caps::Yes
+pub type tokens::NeonBf16Token::Crc = tokens::caps::No
+pub type tokens::NeonBf16Token::DotProd = tokens::caps::No
+pub type tokens::NeonBf16Token::Fcma = tokens::caps::No
+pub type tokens::NeonBf16Token::Fhm = tokens::caps::No
+pub type tokens::NeonBf16Token::Fp16 = tokens::caps::No
+pub type tokens::NeonBf16Token::I8mm = tokens::caps::No
+pub type tokens::NeonBf16Token::Neon = tokens::caps::Yes
+pub type tokens::NeonBf16Token::Rdm = tokens::caps::No
+pub type tokens::NeonBf16Token::Sha2 = tokens::caps::No
+pub type tokens::NeonBf16Token::Sha3 = tokens::caps::No
+pub type tokens::NeonBf16Token::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes>
+pub type tokens::NeonCrcToken::Aes = tokens::caps::No
+pub type tokens::NeonCrcToken::Bf16 = tokens::caps::No
+pub type tokens::NeonCrcToken::Crc = tokens::caps::Yes
+pub type tokens::NeonCrcToken::DotProd = tokens::caps::No
+pub type tokens::NeonCrcToken::Fcma = tokens::caps::No
+pub type tokens::NeonCrcToken::Fhm = tokens::caps::No
+pub type tokens::NeonCrcToken::Fp16 = tokens::caps::No
+pub type tokens::NeonCrcToken::I8mm = tokens::caps::No
+pub type tokens::NeonCrcToken::Neon = tokens::caps::Yes
+pub type tokens::NeonCrcToken::Rdm = tokens::caps::No
+pub type tokens::NeonCrcToken::Sha2 = tokens::caps::No
+pub type tokens::NeonCrcToken::Sha3 = tokens::caps::No
+pub type tokens::NeonCrcToken::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::NeonDotProdToken::Aes = tokens::caps::No
+pub type tokens::NeonDotProdToken::Bf16 = tokens::caps::No
+pub type tokens::NeonDotProdToken::Crc = tokens::caps::No
+pub type tokens::NeonDotProdToken::DotProd = tokens::caps::Yes
+pub type tokens::NeonDotProdToken::Fcma = tokens::caps::No
+pub type tokens::NeonDotProdToken::Fhm = tokens::caps::No
+pub type tokens::NeonDotProdToken::Fp16 = tokens::caps::No
+pub type tokens::NeonDotProdToken::I8mm = tokens::caps::No
+pub type tokens::NeonDotProdToken::Neon = tokens::caps::Yes
+pub type tokens::NeonDotProdToken::Rdm = tokens::caps::No
+pub type tokens::NeonDotProdToken::Sha2 = tokens::caps::No
+pub type tokens::NeonDotProdToken::Sha3 = tokens::caps::No
+pub type tokens::NeonDotProdToken::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::NeonFcmaToken::Aes = tokens::caps::No
+pub type tokens::NeonFcmaToken::Bf16 = tokens::caps::No
+pub type tokens::NeonFcmaToken::Crc = tokens::caps::No
+pub type tokens::NeonFcmaToken::DotProd = tokens::caps::No
+pub type tokens::NeonFcmaToken::Fcma = tokens::caps::Yes
+pub type tokens::NeonFcmaToken::Fhm = tokens::caps::No
+pub type tokens::NeonFcmaToken::Fp16 = tokens::caps::No
+pub type tokens::NeonFcmaToken::I8mm = tokens::caps::No
+pub type tokens::NeonFcmaToken::Neon = tokens::caps::Yes
+pub type tokens::NeonFcmaToken::Rdm = tokens::caps::No
+pub type tokens::NeonFcmaToken::Sha2 = tokens::caps::No
+pub type tokens::NeonFcmaToken::Sha3 = tokens::caps::No
+pub type tokens::NeonFcmaToken::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No>
+pub type tokens::NeonFhmToken::Aes = tokens::caps::No
+pub type tokens::NeonFhmToken::Bf16 = tokens::caps::No
+pub type tokens::NeonFhmToken::Crc = tokens::caps::No
+pub type tokens::NeonFhmToken::DotProd = tokens::caps::No
+pub type tokens::NeonFhmToken::Fcma = tokens::caps::No
+pub type tokens::NeonFhmToken::Fhm = tokens::caps::Yes
+pub type tokens::NeonFhmToken::Fp16 = tokens::caps::Yes
+pub type tokens::NeonFhmToken::I8mm = tokens::caps::No
+pub type tokens::NeonFhmToken::Neon = tokens::caps::Yes
+pub type tokens::NeonFhmToken::Rdm = tokens::caps::No
+pub type tokens::NeonFhmToken::Sha2 = tokens::caps::No
+pub type tokens::NeonFhmToken::Sha3 = tokens::caps::No
+pub type tokens::NeonFhmToken::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::NeonFp16Token::Aes = tokens::caps::No
+pub type tokens::NeonFp16Token::Bf16 = tokens::caps::No
+pub type tokens::NeonFp16Token::Crc = tokens::caps::No
+pub type tokens::NeonFp16Token::DotProd = tokens::caps::No
+pub type tokens::NeonFp16Token::Fcma = tokens::caps::No
+pub type tokens::NeonFp16Token::Fhm = tokens::caps::No
+pub type tokens::NeonFp16Token::Fp16 = tokens::caps::Yes
+pub type tokens::NeonFp16Token::I8mm = tokens::caps::No
+pub type tokens::NeonFp16Token::Neon = tokens::caps::Yes
+pub type tokens::NeonFp16Token::Rdm = tokens::caps::No
+pub type tokens::NeonFp16Token::Sha2 = tokens::caps::No
+pub type tokens::NeonFp16Token::Sha3 = tokens::caps::No
+pub type tokens::NeonFp16Token::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::NeonI8mmToken::Aes = tokens::caps::No
+pub type tokens::NeonI8mmToken::Bf16 = tokens::caps::No
+pub type tokens::NeonI8mmToken::Crc = tokens::caps::No
+pub type tokens::NeonI8mmToken::DotProd = tokens::caps::No
+pub type tokens::NeonI8mmToken::Fcma = tokens::caps::No
+pub type tokens::NeonI8mmToken::Fhm = tokens::caps::No
+pub type tokens::NeonI8mmToken::Fp16 = tokens::caps::No
+pub type tokens::NeonI8mmToken::I8mm = tokens::caps::Yes
+pub type tokens::NeonI8mmToken::Neon = tokens::caps::Yes
+pub type tokens::NeonI8mmToken::Rdm = tokens::caps::No
+pub type tokens::NeonI8mmToken::Sha2 = tokens::caps::No
+pub type tokens::NeonI8mmToken::Sha3 = tokens::caps::No
+pub type tokens::NeonI8mmToken::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No>
+pub type tokens::NeonRdmToken::Aes = tokens::caps::No
+pub type tokens::NeonRdmToken::Bf16 = tokens::caps::No
+pub type tokens::NeonRdmToken::Crc = tokens::caps::No
+pub type tokens::NeonRdmToken::DotProd = tokens::caps::No
+pub type tokens::NeonRdmToken::Fcma = tokens::caps::No
+pub type tokens::NeonRdmToken::Fhm = tokens::caps::No
+pub type tokens::NeonRdmToken::Fp16 = tokens::caps::No
+pub type tokens::NeonRdmToken::I8mm = tokens::caps::No
+pub type tokens::NeonRdmToken::Neon = tokens::caps::Yes
+pub type tokens::NeonRdmToken::Rdm = tokens::caps::Yes
+pub type tokens::NeonRdmToken::Sha2 = tokens::caps::No
+pub type tokens::NeonRdmToken::Sha3 = tokens::caps::No
+pub type tokens::NeonRdmToken::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::NeonSha2Token::Aes = tokens::caps::No
+pub type tokens::NeonSha2Token::Bf16 = tokens::caps::No
+pub type tokens::NeonSha2Token::Crc = tokens::caps::No
+pub type tokens::NeonSha2Token::DotProd = tokens::caps::No
+pub type tokens::NeonSha2Token::Fcma = tokens::caps::No
+pub type tokens::NeonSha2Token::Fhm = tokens::caps::No
+pub type tokens::NeonSha2Token::Fp16 = tokens::caps::No
+pub type tokens::NeonSha2Token::I8mm = tokens::caps::No
+pub type tokens::NeonSha2Token::Neon = tokens::caps::Yes
+pub type tokens::NeonSha2Token::Rdm = tokens::caps::No
+pub type tokens::NeonSha2Token::Sha2 = tokens::caps::Yes
+pub type tokens::NeonSha2Token::Sha3 = tokens::caps::No
+pub type tokens::NeonSha2Token::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::NeonSha3Token::Aes = tokens::caps::No
+pub type tokens::NeonSha3Token::Bf16 = tokens::caps::No
+pub type tokens::NeonSha3Token::Crc = tokens::caps::No
+pub type tokens::NeonSha3Token::DotProd = tokens::caps::No
+pub type tokens::NeonSha3Token::Fcma = tokens::caps::No
+pub type tokens::NeonSha3Token::Fhm = tokens::caps::No
+pub type tokens::NeonSha3Token::Fp16 = tokens::caps::No
+pub type tokens::NeonSha3Token::I8mm = tokens::caps::No
+pub type tokens::NeonSha3Token::Neon = tokens::caps::Yes
+pub type tokens::NeonSha3Token::Rdm = tokens::caps::No
+pub type tokens::NeonSha3Token::Sha2 = tokens::caps::No
+pub type tokens::NeonSha3Token::Sha3 = tokens::caps::Yes
+pub type tokens::NeonSha3Token::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::NeonToken::Aes = tokens::caps::No
+pub type tokens::NeonToken::Bf16 = tokens::caps::No
+pub type tokens::NeonToken::Crc = tokens::caps::No
+pub type tokens::NeonToken::DotProd = tokens::caps::No
+pub type tokens::NeonToken::Fcma = tokens::caps::No
+pub type tokens::NeonToken::Fhm = tokens::caps::No
+pub type tokens::NeonToken::Fp16 = tokens::caps::No
+pub type tokens::NeonToken::I8mm = tokens::caps::No
+pub type tokens::NeonToken::Neon = tokens::caps::Yes
+pub type tokens::NeonToken::Rdm = tokens::caps::No
+pub type tokens::NeonToken::Sha2 = tokens::caps::No
+pub type tokens::NeonToken::Sha3 = tokens::caps::No
+pub type tokens::NeonToken::__Caps = tokens::caps::ArmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::SameArchCaps::__JoinedCaps: core::marker::Copy + core::clone::Clone + core::marker::Send + core::marker::Sync + 'static
+pub type tokens::ScalarToken::__Caps = tokens::caps::ScalarCaps
+pub type tokens::SimdToken::__Caps: core::marker::Copy + core::clone::Clone + core::marker::Send + core::marker::Sync + 'static
+pub type tokens::Wasm128RelaxedFmaToken::Relaxed = tokens::caps::Yes
+pub type tokens::Wasm128RelaxedFmaToken::RelaxedFma = tokens::caps::Yes
+pub type tokens::Wasm128RelaxedFmaToken::Simd128 = tokens::caps::Yes
+pub type tokens::Wasm128RelaxedFmaToken::__Caps = tokens::caps::WasmCapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes>
+pub type tokens::Wasm128RelaxedToken::Relaxed = tokens::caps::Yes
+pub type tokens::Wasm128RelaxedToken::RelaxedFma = tokens::caps::No
+pub type tokens::Wasm128RelaxedToken::Simd128 = tokens::caps::Yes
+pub type tokens::Wasm128RelaxedToken::__Caps = tokens::caps::WasmCapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No>
+pub type tokens::Wasm128Token::Relaxed = tokens::caps::No
+pub type tokens::Wasm128Token::RelaxedFma = tokens::caps::No
+pub type tokens::Wasm128Token::Simd128 = tokens::caps::Yes
+pub type tokens::Wasm128Token::__Caps = tokens::caps::WasmCapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64AdxToken::Adx = tokens::caps::Yes
+pub type tokens::X64AdxToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64AdxToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64AdxToken::AvxIfma = tokens::caps::No
+pub type tokens::X64AdxToken::AvxNeConvert = tokens::caps::No
+pub type tokens::X64AdxToken::AvxVnni = tokens::caps::No
+pub type tokens::X64AdxToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64AdxToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64AdxToken::Crypto128 = tokens::caps::No
+pub type tokens::X64AdxToken::Gfni = tokens::caps::No
+pub type tokens::X64AdxToken::Sha = tokens::caps::No
+pub type tokens::X64AdxToken::Sha512 = tokens::caps::No
+pub type tokens::X64AdxToken::V1 = tokens::caps::Yes
+pub type tokens::X64AdxToken::V2 = tokens::caps::No
+pub type tokens::X64AdxToken::V3 = tokens::caps::No
+pub type tokens::X64AdxToken::V4 = tokens::caps::No
+pub type tokens::X64AdxToken::V4x = tokens::caps::No
+pub type tokens::X64AdxToken::VpclmulVaes = tokens::caps::No
+pub type tokens::X64AdxToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64Avx512Bf16Token::Adx = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::Avx512Bf16 = tokens::caps::Yes
+pub type tokens::X64Avx512Bf16Token::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::AvxIfma = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::AvxNeConvert = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::AvxVnni = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::Crypto128 = tokens::caps::Yes
+pub type tokens::X64Avx512Bf16Token::Gfni = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::Sha = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::Sha512 = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::V1 = tokens::caps::Yes
+pub type tokens::X64Avx512Bf16Token::V2 = tokens::caps::Yes
+pub type tokens::X64Avx512Bf16Token::V3 = tokens::caps::Yes
+pub type tokens::X64Avx512Bf16Token::V4 = tokens::caps::Yes
+pub type tokens::X64Avx512Bf16Token::V4x = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::VpclmulVaes = tokens::caps::No
+pub type tokens::X64Avx512Bf16Token::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::Yes>
+pub type tokens::X64AvxIfmaToken::Adx = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::AvxIfma = tokens::caps::Yes
+pub type tokens::X64AvxIfmaToken::AvxNeConvert = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::AvxVnni = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::Crypto128 = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::Gfni = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::Sha = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::Sha512 = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::V1 = tokens::caps::Yes
+pub type tokens::X64AvxIfmaToken::V2 = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::V3 = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::V4 = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::V4x = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::VpclmulVaes = tokens::caps::No
+pub type tokens::X64AvxIfmaToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64AvxNeConvertToken::Adx = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::AvxIfma = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::AvxNeConvert = tokens::caps::Yes
+pub type tokens::X64AvxNeConvertToken::AvxVnni = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::Crypto128 = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::Gfni = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::Sha = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::Sha512 = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::V1 = tokens::caps::Yes
+pub type tokens::X64AvxNeConvertToken::V2 = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::V3 = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::V4 = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::V4x = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::VpclmulVaes = tokens::caps::No
+pub type tokens::X64AvxNeConvertToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64AvxVnniInt16Token::Adx = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::AvxIfma = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::AvxNeConvert = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::AvxVnni = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::AvxVnniInt16 = tokens::caps::Yes
+pub type tokens::X64AvxVnniInt16Token::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::Crypto128 = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::Gfni = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::Sha = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::Sha512 = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::V1 = tokens::caps::Yes
+pub type tokens::X64AvxVnniInt16Token::V2 = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::V3 = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::V4 = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::V4x = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::VpclmulVaes = tokens::caps::No
+pub type tokens::X64AvxVnniInt16Token::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64AvxVnniInt8Token::Adx = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::AvxIfma = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::AvxNeConvert = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::AvxVnni = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::AvxVnniInt8 = tokens::caps::Yes
+pub type tokens::X64AvxVnniInt8Token::Crypto128 = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::Gfni = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::Sha = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::Sha512 = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::V1 = tokens::caps::Yes
+pub type tokens::X64AvxVnniInt8Token::V2 = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::V3 = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::V4 = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::V4x = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::VpclmulVaes = tokens::caps::No
+pub type tokens::X64AvxVnniInt8Token::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64AvxVnniToken::Adx = tokens::caps::No
+pub type tokens::X64AvxVnniToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64AvxVnniToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64AvxVnniToken::AvxIfma = tokens::caps::No
+pub type tokens::X64AvxVnniToken::AvxNeConvert = tokens::caps::No
+pub type tokens::X64AvxVnniToken::AvxVnni = tokens::caps::Yes
+pub type tokens::X64AvxVnniToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64AvxVnniToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64AvxVnniToken::Crypto128 = tokens::caps::No
+pub type tokens::X64AvxVnniToken::Gfni = tokens::caps::No
+pub type tokens::X64AvxVnniToken::Sha = tokens::caps::No
+pub type tokens::X64AvxVnniToken::Sha512 = tokens::caps::No
+pub type tokens::X64AvxVnniToken::V1 = tokens::caps::Yes
+pub type tokens::X64AvxVnniToken::V2 = tokens::caps::No
+pub type tokens::X64AvxVnniToken::V3 = tokens::caps::No
+pub type tokens::X64AvxVnniToken::V4 = tokens::caps::No
+pub type tokens::X64AvxVnniToken::V4x = tokens::caps::No
+pub type tokens::X64AvxVnniToken::VpclmulVaes = tokens::caps::No
+pub type tokens::X64AvxVnniToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64CryptoToken::Adx = tokens::caps::No
+pub type tokens::X64CryptoToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64CryptoToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64CryptoToken::AvxIfma = tokens::caps::No
+pub type tokens::X64CryptoToken::AvxNeConvert = tokens::caps::No
+pub type tokens::X64CryptoToken::AvxVnni = tokens::caps::No
+pub type tokens::X64CryptoToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64CryptoToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64CryptoToken::Crypto128 = tokens::caps::Yes
+pub type tokens::X64CryptoToken::Gfni = tokens::caps::No
+pub type tokens::X64CryptoToken::Sha = tokens::caps::No
+pub type tokens::X64CryptoToken::Sha512 = tokens::caps::No
+pub type tokens::X64CryptoToken::V1 = tokens::caps::Yes
+pub type tokens::X64CryptoToken::V2 = tokens::caps::Yes
+pub type tokens::X64CryptoToken::V3 = tokens::caps::No
+pub type tokens::X64CryptoToken::V4 = tokens::caps::No
+pub type tokens::X64CryptoToken::V4x = tokens::caps::No
+pub type tokens::X64CryptoToken::VpclmulVaes = tokens::caps::No
+pub type tokens::X64CryptoToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64GfniToken::Adx = tokens::caps::No
+pub type tokens::X64GfniToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64GfniToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64GfniToken::AvxIfma = tokens::caps::No
+pub type tokens::X64GfniToken::AvxNeConvert = tokens::caps::No
+pub type tokens::X64GfniToken::AvxVnni = tokens::caps::No
+pub type tokens::X64GfniToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64GfniToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64GfniToken::Crypto128 = tokens::caps::No
+pub type tokens::X64GfniToken::Gfni = tokens::caps::Yes
+pub type tokens::X64GfniToken::Sha = tokens::caps::No
+pub type tokens::X64GfniToken::Sha512 = tokens::caps::No
+pub type tokens::X64GfniToken::V1 = tokens::caps::Yes
+pub type tokens::X64GfniToken::V2 = tokens::caps::No
+pub type tokens::X64GfniToken::V3 = tokens::caps::No
+pub type tokens::X64GfniToken::V4 = tokens::caps::No
+pub type tokens::X64GfniToken::V4x = tokens::caps::No
+pub type tokens::X64GfniToken::VpclmulVaes = tokens::caps::No
+pub type tokens::X64GfniToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64Sha512Token::Adx = tokens::caps::No
+pub type tokens::X64Sha512Token::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64Sha512Token::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64Sha512Token::AvxIfma = tokens::caps::No
+pub type tokens::X64Sha512Token::AvxNeConvert = tokens::caps::No
+pub type tokens::X64Sha512Token::AvxVnni = tokens::caps::No
+pub type tokens::X64Sha512Token::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64Sha512Token::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64Sha512Token::Crypto128 = tokens::caps::No
+pub type tokens::X64Sha512Token::Gfni = tokens::caps::No
+pub type tokens::X64Sha512Token::Sha = tokens::caps::No
+pub type tokens::X64Sha512Token::Sha512 = tokens::caps::Yes
+pub type tokens::X64Sha512Token::V1 = tokens::caps::Yes
+pub type tokens::X64Sha512Token::V2 = tokens::caps::No
+pub type tokens::X64Sha512Token::V3 = tokens::caps::No
+pub type tokens::X64Sha512Token::V4 = tokens::caps::No
+pub type tokens::X64Sha512Token::V4x = tokens::caps::No
+pub type tokens::X64Sha512Token::VpclmulVaes = tokens::caps::No
+pub type tokens::X64Sha512Token::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64ShaToken::Adx = tokens::caps::No
+pub type tokens::X64ShaToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64ShaToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64ShaToken::AvxIfma = tokens::caps::No
+pub type tokens::X64ShaToken::AvxNeConvert = tokens::caps::No
+pub type tokens::X64ShaToken::AvxVnni = tokens::caps::No
+pub type tokens::X64ShaToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64ShaToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64ShaToken::Crypto128 = tokens::caps::No
+pub type tokens::X64ShaToken::Gfni = tokens::caps::No
+pub type tokens::X64ShaToken::Sha = tokens::caps::Yes
+pub type tokens::X64ShaToken::Sha512 = tokens::caps::No
+pub type tokens::X64ShaToken::V1 = tokens::caps::Yes
+pub type tokens::X64ShaToken::V2 = tokens::caps::No
+pub type tokens::X64ShaToken::V3 = tokens::caps::No
+pub type tokens::X64ShaToken::V4 = tokens::caps::No
+pub type tokens::X64ShaToken::V4x = tokens::caps::No
+pub type tokens::X64ShaToken::VpclmulVaes = tokens::caps::No
+pub type tokens::X64ShaToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64V1Token::Adx = tokens::caps::No
+pub type tokens::X64V1Token::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64V1Token::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64V1Token::AvxIfma = tokens::caps::No
+pub type tokens::X64V1Token::AvxNeConvert = tokens::caps::No
+pub type tokens::X64V1Token::AvxVnni = tokens::caps::No
+pub type tokens::X64V1Token::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64V1Token::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64V1Token::Crypto128 = tokens::caps::No
+pub type tokens::X64V1Token::Gfni = tokens::caps::No
+pub type tokens::X64V1Token::Sha = tokens::caps::No
+pub type tokens::X64V1Token::Sha512 = tokens::caps::No
+pub type tokens::X64V1Token::V1 = tokens::caps::Yes
+pub type tokens::X64V1Token::V2 = tokens::caps::No
+pub type tokens::X64V1Token::V3 = tokens::caps::No
+pub type tokens::X64V1Token::V4 = tokens::caps::No
+pub type tokens::X64V1Token::V4x = tokens::caps::No
+pub type tokens::X64V1Token::VpclmulVaes = tokens::caps::No
+pub type tokens::X64V1Token::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64V2Token::Adx = tokens::caps::No
+pub type tokens::X64V2Token::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64V2Token::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64V2Token::AvxIfma = tokens::caps::No
+pub type tokens::X64V2Token::AvxNeConvert = tokens::caps::No
+pub type tokens::X64V2Token::AvxVnni = tokens::caps::No
+pub type tokens::X64V2Token::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64V2Token::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64V2Token::Crypto128 = tokens::caps::No
+pub type tokens::X64V2Token::Gfni = tokens::caps::No
+pub type tokens::X64V2Token::Sha = tokens::caps::No
+pub type tokens::X64V2Token::Sha512 = tokens::caps::No
+pub type tokens::X64V2Token::V1 = tokens::caps::Yes
+pub type tokens::X64V2Token::V2 = tokens::caps::Yes
+pub type tokens::X64V2Token::V3 = tokens::caps::No
+pub type tokens::X64V2Token::V4 = tokens::caps::No
+pub type tokens::X64V2Token::V4x = tokens::caps::No
+pub type tokens::X64V2Token::VpclmulVaes = tokens::caps::No
+pub type tokens::X64V2Token::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64V3CryptoToken::Adx = tokens::caps::No
+pub type tokens::X64V3CryptoToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64V3CryptoToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64V3CryptoToken::AvxIfma = tokens::caps::No
+pub type tokens::X64V3CryptoToken::AvxNeConvert = tokens::caps::No
+pub type tokens::X64V3CryptoToken::AvxVnni = tokens::caps::No
+pub type tokens::X64V3CryptoToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64V3CryptoToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64V3CryptoToken::Crypto128 = tokens::caps::Yes
+pub type tokens::X64V3CryptoToken::Gfni = tokens::caps::No
+pub type tokens::X64V3CryptoToken::Sha = tokens::caps::No
+pub type tokens::X64V3CryptoToken::Sha512 = tokens::caps::No
+pub type tokens::X64V3CryptoToken::V1 = tokens::caps::Yes
+pub type tokens::X64V3CryptoToken::V2 = tokens::caps::Yes
+pub type tokens::X64V3CryptoToken::V3 = tokens::caps::Yes
+pub type tokens::X64V3CryptoToken::V4 = tokens::caps::No
+pub type tokens::X64V3CryptoToken::V4x = tokens::caps::No
+pub type tokens::X64V3CryptoToken::VpclmulVaes = tokens::caps::Yes
+pub type tokens::X64V3CryptoToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64V3GfniCryptoToken::Adx = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::AvxIfma = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::AvxNeConvert = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::AvxVnni = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::Crypto128 = tokens::caps::Yes
+pub type tokens::X64V3GfniCryptoToken::Gfni = tokens::caps::Yes
+pub type tokens::X64V3GfniCryptoToken::Sha = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::Sha512 = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::V1 = tokens::caps::Yes
+pub type tokens::X64V3GfniCryptoToken::V2 = tokens::caps::Yes
+pub type tokens::X64V3GfniCryptoToken::V3 = tokens::caps::Yes
+pub type tokens::X64V3GfniCryptoToken::V4 = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::V4x = tokens::caps::No
+pub type tokens::X64V3GfniCryptoToken::VpclmulVaes = tokens::caps::Yes
+pub type tokens::X64V3GfniCryptoToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64V3Token::Adx = tokens::caps::No
+pub type tokens::X64V3Token::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64V3Token::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64V3Token::AvxIfma = tokens::caps::No
+pub type tokens::X64V3Token::AvxNeConvert = tokens::caps::No
+pub type tokens::X64V3Token::AvxVnni = tokens::caps::No
+pub type tokens::X64V3Token::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64V3Token::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64V3Token::Crypto128 = tokens::caps::No
+pub type tokens::X64V3Token::Gfni = tokens::caps::No
+pub type tokens::X64V3Token::Sha = tokens::caps::No
+pub type tokens::X64V3Token::Sha512 = tokens::caps::No
+pub type tokens::X64V3Token::V1 = tokens::caps::Yes
+pub type tokens::X64V3Token::V2 = tokens::caps::Yes
+pub type tokens::X64V3Token::V3 = tokens::caps::Yes
+pub type tokens::X64V3Token::V4 = tokens::caps::No
+pub type tokens::X64V3Token::V4x = tokens::caps::No
+pub type tokens::X64V3Token::VpclmulVaes = tokens::caps::No
+pub type tokens::X64V3Token::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64V3Vnni2Token::Adx = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64V3Vnni2Token::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64V3Vnni2Token::AvxIfma = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::AvxNeConvert = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::AvxVnni = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64V3Vnni2Token::AvxVnniInt8 = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::Crypto128 = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::Gfni = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::Sha = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::Sha512 = tokens::caps::No
+pub type tokens::X64V3Vnni2Token::V1 = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::V2 = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::V3 = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::V4 = tokens::caps::No
+pub type tokens::X64V3Vnni2Token::V4x = tokens::caps::No
+pub type tokens::X64V3Vnni2Token::VpclmulVaes = tokens::caps::Yes
+pub type tokens::X64V3Vnni2Token::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64V3VnniToken::Adx = tokens::caps::Yes
+pub type tokens::X64V3VnniToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64V3VnniToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64V3VnniToken::AvxIfma = tokens::caps::No
+pub type tokens::X64V3VnniToken::AvxNeConvert = tokens::caps::No
+pub type tokens::X64V3VnniToken::AvxVnni = tokens::caps::Yes
+pub type tokens::X64V3VnniToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64V3VnniToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64V3VnniToken::Crypto128 = tokens::caps::Yes
+pub type tokens::X64V3VnniToken::Gfni = tokens::caps::Yes
+pub type tokens::X64V3VnniToken::Sha = tokens::caps::Yes
+pub type tokens::X64V3VnniToken::Sha512 = tokens::caps::No
+pub type tokens::X64V3VnniToken::V1 = tokens::caps::Yes
+pub type tokens::X64V3VnniToken::V2 = tokens::caps::Yes
+pub type tokens::X64V3VnniToken::V3 = tokens::caps::Yes
+pub type tokens::X64V3VnniToken::V4 = tokens::caps::No
+pub type tokens::X64V3VnniToken::V4x = tokens::caps::No
+pub type tokens::X64V3VnniToken::VpclmulVaes = tokens::caps::Yes
+pub type tokens::X64V3VnniToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64V4Token::Adx = tokens::caps::No
+pub type tokens::X64V4Token::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64V4Token::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64V4Token::AvxIfma = tokens::caps::No
+pub type tokens::X64V4Token::AvxNeConvert = tokens::caps::No
+pub type tokens::X64V4Token::AvxVnni = tokens::caps::No
+pub type tokens::X64V4Token::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64V4Token::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64V4Token::Crypto128 = tokens::caps::Yes
+pub type tokens::X64V4Token::Gfni = tokens::caps::No
+pub type tokens::X64V4Token::Sha = tokens::caps::No
+pub type tokens::X64V4Token::Sha512 = tokens::caps::No
+pub type tokens::X64V4Token::V1 = tokens::caps::Yes
+pub type tokens::X64V4Token::V2 = tokens::caps::Yes
+pub type tokens::X64V4Token::V3 = tokens::caps::Yes
+pub type tokens::X64V4Token::V4 = tokens::caps::Yes
+pub type tokens::X64V4Token::V4x = tokens::caps::No
+pub type tokens::X64V4Token::VpclmulVaes = tokens::caps::No
+pub type tokens::X64V4Token::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No>
+pub type tokens::X64V4xToken::Adx = tokens::caps::No
+pub type tokens::X64V4xToken::Avx512Bf16 = tokens::caps::No
+pub type tokens::X64V4xToken::Avx512Fp16 = tokens::caps::No
+pub type tokens::X64V4xToken::AvxIfma = tokens::caps::No
+pub type tokens::X64V4xToken::AvxNeConvert = tokens::caps::No
+pub type tokens::X64V4xToken::AvxVnni = tokens::caps::No
+pub type tokens::X64V4xToken::AvxVnniInt16 = tokens::caps::No
+pub type tokens::X64V4xToken::AvxVnniInt8 = tokens::caps::No
+pub type tokens::X64V4xToken::Crypto128 = tokens::caps::Yes
+pub type tokens::X64V4xToken::Gfni = tokens::caps::Yes
+pub type tokens::X64V4xToken::Sha = tokens::caps::No
+pub type tokens::X64V4xToken::Sha512 = tokens::caps::No
+pub type tokens::X64V4xToken::V1 = tokens::caps::Yes
+pub type tokens::X64V4xToken::V2 = tokens::caps::Yes
+pub type tokens::X64V4xToken::V3 = tokens::caps::Yes
+pub type tokens::X64V4xToken::V4 = tokens::caps::Yes
+pub type tokens::X64V4xToken::V4x = tokens::caps::Yes
+pub type tokens::X64V4xToken::VpclmulVaes = tokens::caps::Yes
+pub type tokens::X64V4xToken::__Caps = tokens::caps::X64CapSet<tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::No, tokens::caps::Yes, tokens::caps::Yes, tokens::caps::No, tokens::caps::No>
+pub type tokens::caps::ArmCapSet<L0, L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11>::Output = tokens::caps::ArmCapSet<<L0 as tokens::caps::Flag>::Or, <L1 as tokens::caps::Flag>::Or, <L2 as tokens::caps::Flag>::Or, <L3 as tokens::caps::Flag>::Or, <L4 as tokens::caps::Flag>::Or, <L5 as tokens::caps::Flag>::Or, <L6 as tokens::caps::Flag>::Or, <L7 as tokens::caps::Flag>::Or, <L8 as tokens::caps::Flag>::Or, <L9 as tokens::caps::Flag>::Or, <L10 as tokens::caps::Flag>::Or, <L11 as tokens::caps::Flag>::Or>
+pub type tokens::caps::ArmCaps::Aes: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::Bf16: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::Crc: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::DotProd: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::Fcma: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::Fhm: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::Fp16: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::I8mm: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::Neon: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::Rdm: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::Sha2: tokens::caps::Flag
+pub type tokens::caps::ArmCaps::Sha3: tokens::caps::Flag
+pub type tokens::caps::CapSetOr::Output: core::marker::Copy + core::clone::Clone + core::marker::Send + core::marker::Sync + 'static
+pub type tokens::caps::Flag::And<R: tokens::caps::Flag>: tokens::caps::Flag
+pub type tokens::caps::Flag::Or<R: tokens::caps::Flag>: tokens::caps::Flag
+pub type tokens::caps::No::And<R: tokens::caps::Flag> = tokens::caps::No
+pub type tokens::caps::No::Or<R: tokens::caps::Flag> = R
+pub type tokens::caps::ScalarCaps::Output = tokens::caps::ScalarCaps
+pub type tokens::caps::WasmCapSet<L0, L1, L2>::Output = tokens::caps::WasmCapSet<<L0 as tokens::caps::Flag>::Or, <L1 as tokens::caps::Flag>::Or, <L2 as tokens::caps::Flag>::Or>
+pub type tokens::caps::WasmCaps::Relaxed: tokens::caps::Flag
+pub type tokens::caps::WasmCaps::RelaxedFma: tokens::caps::Flag
+pub type tokens::caps::WasmCaps::Simd128: tokens::caps::Flag
+pub type tokens::caps::X64CapSet<L0, L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12, L13, L14, L15, L16, L17>::Output = tokens::caps::X64CapSet<<L0 as tokens::caps::Flag>::Or, <L1 as tokens::caps::Flag>::Or, <L2 as tokens::caps::Flag>::Or, <L3 as tokens::caps::Flag>::Or, <L4 as tokens::caps::Flag>::Or, <L5 as tokens::caps::Flag>::Or, <L6 as tokens::caps::Flag>::Or, <L7 as tokens::caps::Flag>::Or, <L8 as tokens::caps::Flag>::Or, <L9 as tokens::caps::Flag>::Or, <L10 as tokens::caps::Flag>::Or, <L11 as tokens::caps::Flag>::Or, <L12 as tokens::caps::Flag>::Or, <L13 as tokens::caps::Flag>::Or, <L14 as tokens::caps::Flag>::Or, <L15 as tokens::caps::Flag>::Or, <L16 as tokens::caps::Flag>::Or, <L17 as tokens::caps::Flag>::Or>
+pub type tokens::caps::X64Caps::Adx: tokens::caps::Flag
+pub type tokens::caps::X64Caps::Avx512Bf16: tokens::caps::Flag
+pub type tokens::caps::X64Caps::Avx512Fp16: tokens::caps::Flag
+pub type tokens::caps::X64Caps::AvxIfma: tokens::caps::Flag
+pub type tokens::caps::X64Caps::AvxNeConvert: tokens::caps::Flag
+pub type tokens::caps::X64Caps::AvxVnni: tokens::caps::Flag
+pub type tokens::caps::X64Caps::AvxVnniInt16: tokens::caps::Flag
+pub type tokens::caps::X64Caps::AvxVnniInt8: tokens::caps::Flag
+pub type tokens::caps::X64Caps::Crypto128: tokens::caps::Flag
+pub type tokens::caps::X64Caps::Gfni: tokens::caps::Flag
+pub type tokens::caps::X64Caps::Sha512: tokens::caps::Flag
+pub type tokens::caps::X64Caps::Sha: tokens::caps::Flag
+pub type tokens::caps::X64Caps::V1: tokens::caps::Flag
+pub type tokens::caps::X64Caps::V2: tokens::caps::Flag
+pub type tokens::caps::X64Caps::V3: tokens::caps::Flag
+pub type tokens::caps::X64Caps::V4: tokens::caps::Flag
+pub type tokens::caps::X64Caps::V4x: tokens::caps::Flag
+pub type tokens::caps::X64Caps::VpclmulVaes: tokens::caps::Flag
+pub type tokens::caps::Yes::And<R: tokens::caps::Flag> = R
+pub type tokens::caps::Yes::Or<R: tokens::caps::Flag> = tokens::caps::Yes
 pub use prelude::simd_fn
 pub use simd_fn
 
-## trait impls (19 types)
+## trait impls (53 types)
 
 testing::CompileTimePolicy: TrivialClone
-tokens::Arm64V2Token: TrivialClone
-tokens::Arm64V3Token: TrivialClone
-tokens::Avx512Fp16Token: TrivialClone
-tokens::NeonAesToken: TrivialClone
-tokens::NeonCrcToken: TrivialClone
-tokens::NeonSha3Token: TrivialClone
-tokens::NeonToken: TrivialClone
+tokens::Arm64V2Token: TrivialClone, tokens::caps::ArmCaps
+tokens::Arm64V3Token: TrivialClone, tokens::caps::ArmCaps
+tokens::Avx512Fp16Token: TrivialClone, tokens::caps::X64Caps
+tokens::NeonAesToken: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonBf16Token: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonCrcToken: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonDotProdToken: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonFcmaToken: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonFhmToken: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonFp16Token: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonI8mmToken: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonRdmToken: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonSha2Token: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonSha3Token: TrivialClone, tokens::caps::ArmCaps
+tokens::NeonToken: TrivialClone, tokens::caps::ArmCaps
 tokens::ScalarToken: TrivialClone
-tokens::Wasm128RelaxedToken: TrivialClone
-tokens::Wasm128Token: TrivialClone
-tokens::X64CryptoToken: TrivialClone
-tokens::X64V1Token: TrivialClone
-tokens::X64V2Token: TrivialClone
-tokens::X64V3CryptoToken: TrivialClone
-tokens::X64V3GfniCryptoToken: TrivialClone
-tokens::X64V3Token: TrivialClone
-tokens::X64V4Token: TrivialClone
-tokens::X64V4xToken: TrivialClone
+tokens::Wasm128RelaxedFmaToken: TrivialClone, tokens::caps::WasmCaps
+tokens::Wasm128RelaxedToken: TrivialClone, tokens::caps::WasmCaps
+tokens::Wasm128Token: TrivialClone, tokens::caps::WasmCaps
+tokens::X64AdxToken: TrivialClone, tokens::caps::X64Caps
+tokens::X64Avx512Bf16Token: TrivialClone, tokens::caps::X64Caps
+tokens::X64AvxIfmaToken: TrivialClone, tokens::caps::X64Caps
+tokens::X64AvxNeConvertToken: TrivialClone, tokens::caps::X64Caps
+tokens::X64AvxVnniInt16Token: TrivialClone, tokens::caps::X64Caps
+tokens::X64AvxVnniInt8Token: TrivialClone, tokens::caps::X64Caps
+tokens::X64AvxVnniToken: TrivialClone, tokens::caps::X64Caps
+tokens::X64CryptoToken: TrivialClone, tokens::caps::X64Caps
+tokens::X64GfniToken: TrivialClone, tokens::caps::X64Caps
+tokens::X64Sha512Token: TrivialClone, tokens::caps::X64Caps
+tokens::X64ShaToken: TrivialClone, tokens::caps::X64Caps
+tokens::X64V1Token: TrivialClone, tokens::caps::X64Caps
+tokens::X64V2Token: TrivialClone, tokens::caps::X64Caps
+tokens::X64V3CryptoToken: TrivialClone, tokens::caps::X64Caps
+tokens::X64V3GfniCryptoToken: TrivialClone, tokens::caps::X64Caps
+tokens::X64V3Token: TrivialClone, tokens::caps::X64Caps
+tokens::X64V3Vnni2Token: TrivialClone, tokens::caps::X64Caps
+tokens::X64V3VnniToken: TrivialClone, tokens::caps::X64Caps
+tokens::X64V4Token: TrivialClone, tokens::caps::X64Caps
+tokens::X64V4xToken: TrivialClone, tokens::caps::X64Caps
+tokens::caps::ArmArch: Clone, Copy, Debug, Eq, Hash, PartialEq, TrivialClone, tokens::caps::ArchMarker
+tokens::caps::ArmCapSet<L0, L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11>: tokens::caps::CapSetOr<tokens::caps::ArmCapSet<R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11>>
+tokens::caps::ArmCapSet<Neon, Aes, Sha2, Sha3, Crc, Rdm, DotProd, Fp16, Fhm, Fcma, I8mm, Bf16>: Clone, Copy, Debug, Eq, Hash, PartialEq
+tokens::caps::No: Clone, Copy, Debug, Eq, Hash, PartialEq, TrivialClone, tokens::caps::Flag
+tokens::caps::ScalarArch: Clone, Copy, Debug, Eq, Hash, PartialEq, TrivialClone, tokens::caps::ArchMarker
+tokens::caps::ScalarCaps: Clone, Copy, Debug, Eq, Hash, PartialEq, TrivialClone, tokens::caps::CapSetOr<tokens::caps::ScalarCaps>
+tokens::caps::WasmArch: Clone, Copy, Debug, Eq, Hash, PartialEq, TrivialClone, tokens::caps::ArchMarker
+tokens::caps::WasmCapSet<L0, L1, L2>: tokens::caps::CapSetOr<tokens::caps::WasmCapSet<R0, R1, R2>>
+tokens::caps::WasmCapSet<Simd128, Relaxed, RelaxedFma>: Clone, Copy, Debug, Eq, Hash, PartialEq
+tokens::caps::X64Arch: Clone, Copy, Debug, Eq, Hash, PartialEq, TrivialClone, tokens::caps::ArchMarker
+tokens::caps::X64CapSet<L0, L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12, L13, L14, L15, L16, L17>: tokens::caps::CapSetOr<tokens::caps::X64CapSet<R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17>>
+tokens::caps::X64CapSet<V1, V2, Crypto128, V3, VpclmulVaes, Gfni, Sha, Adx, AvxVnni, AvxIfma, AvxVnniInt8, AvxVnniInt16, AvxNeConvert, Sha512, V4, V4x, Avx512Fp16, Avx512Bf16>: Clone, Copy, Debug, Eq, Hash, PartialEq
+tokens::caps::Yes: Clone, Copy, Debug, Eq, Hash, PartialEq, TrivialClone, tokens::caps::Flag
+impl<A, B> tokens::SameArch<B> for A where A: tokens::SimdToken, B: tokens::SimdToken + tokens::sealed::Sealed<Arch = <A as tokens::sealed::Sealed>::Arch>, <A as tokens::SimdToken>::__Caps: tokens::caps::CapSetOr<<B as tokens::SimdToken>::__Caps>
+impl<A, B> tokens::SameArchCaps<B> for A where A: tokens::SimdToken, B: tokens::SimdToken, <A as tokens::SimdToken>::__Caps: tokens::caps::CapSetOr<<B as tokens::SimdToken>::__Caps>
+impl<Base, Extra> tokens::caps::ArmCaps for tokens::And<Base, Extra> where Base: tokens::SameArch<Extra> + tokens::caps::ArmCaps, Extra: tokens::SimdToken + tokens::caps::ArmCaps
+impl<Base, Extra> tokens::caps::WasmCaps for tokens::And<Base, Extra> where Base: tokens::SameArch<Extra> + tokens::caps::WasmCaps, Extra: tokens::SimdToken + tokens::caps::WasmCaps
+impl<Base, Extra> tokens::caps::X64Caps for tokens::And<Base, Extra> where Base: tokens::SameArch<Extra> + tokens::caps::X64Caps, Extra: tokens::SimdToken + tokens::caps::X64Caps
+impl<T> tokens::HasAdx for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, Adx = tokens::caps::Yes>
+impl<T> tokens::HasArm64V2 for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Crc = tokens::caps::Yes, Rdm = tokens::caps::Yes, DotProd = tokens::caps::Yes, Fp16 = tokens::caps::Yes, Aes = tokens::caps::Yes, Sha2 = tokens::caps::Yes>
+impl<T> tokens::HasArm64V3 for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Crc = tokens::caps::Yes, Rdm = tokens::caps::Yes, DotProd = tokens::caps::Yes, Fp16 = tokens::caps::Yes, Aes = tokens::caps::Yes, Sha2 = tokens::caps::Yes, Fhm = tokens::caps::Yes, Fcma = tokens::caps::Yes, Sha3 = tokens::caps::Yes, I8mm = tokens::caps::Yes, Bf16 = tokens::caps::Yes>
+impl<T> tokens::HasAvx512Bf16 for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, V4 = tokens::caps::Yes, Avx512Bf16 = tokens::caps::Yes>
+impl<T> tokens::HasAvx512Fp16 for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, V4 = tokens::caps::Yes, Avx512Fp16 = tokens::caps::Yes>
+impl<T> tokens::HasAvxIfma for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, AvxIfma = tokens::caps::Yes>
+impl<T> tokens::HasAvxNeConvert for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, AvxNeConvert = tokens::caps::Yes>
+impl<T> tokens::HasAvxVnni for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, AvxVnni = tokens::caps::Yes>
+impl<T> tokens::HasAvxVnniInt16 for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, AvxVnniInt16 = tokens::caps::Yes>
+impl<T> tokens::HasAvxVnniInt8 for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, AvxVnniInt8 = tokens::caps::Yes>
+impl<T> tokens::HasGfni for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, Gfni = tokens::caps::Yes>
+impl<T> tokens::HasNeon for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes>
+impl<T> tokens::HasNeonAes for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Aes = tokens::caps::Yes>
+impl<T> tokens::HasNeonBf16 for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Bf16 = tokens::caps::Yes>
+impl<T> tokens::HasNeonCrc for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Crc = tokens::caps::Yes>
+impl<T> tokens::HasNeonDotProd for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, DotProd = tokens::caps::Yes>
+impl<T> tokens::HasNeonFcma for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Fcma = tokens::caps::Yes>
+impl<T> tokens::HasNeonFhm for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Fp16 = tokens::caps::Yes, Fhm = tokens::caps::Yes>
+impl<T> tokens::HasNeonFp16 for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Fp16 = tokens::caps::Yes>
+impl<T> tokens::HasNeonI8mm for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, I8mm = tokens::caps::Yes>
+impl<T> tokens::HasNeonRdm for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Rdm = tokens::caps::Yes>
+impl<T> tokens::HasNeonSha2 for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Sha2 = tokens::caps::Yes>
+impl<T> tokens::HasNeonSha3 for T where T: tokens::SimdToken + tokens::caps::ArmCaps<Neon = tokens::caps::Yes, Sha3 = tokens::caps::Yes>
+impl<T> tokens::HasSha for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, Sha = tokens::caps::Yes>
+impl<T> tokens::HasSha512 for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, Sha512 = tokens::caps::Yes>
+impl<T> tokens::HasWasm128 for T where T: tokens::SimdToken + tokens::caps::WasmCaps<Simd128 = tokens::caps::Yes>
+impl<T> tokens::HasWasm128Relaxed for T where T: tokens::SimdToken + tokens::caps::WasmCaps<Simd128 = tokens::caps::Yes, Relaxed = tokens::caps::Yes>
+impl<T> tokens::HasWasm128RelaxedFma for T where T: tokens::SimdToken + tokens::caps::WasmCaps<Simd128 = tokens::caps::Yes, Relaxed = tokens::caps::Yes, RelaxedFma = tokens::caps::Yes>
+impl<T> tokens::HasX64Crypto for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, Crypto128 = tokens::caps::Yes>
+impl<T> tokens::HasX64V1 for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes>
+impl<T> tokens::HasX64V2 for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes>
+impl<T> tokens::HasX64V3 for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes>
+impl<T> tokens::HasX64V3Crypto for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, Crypto128 = tokens::caps::Yes, V3 = tokens::caps::Yes, VpclmulVaes = tokens::caps::Yes>
+impl<T> tokens::HasX64V3GfniCrypto for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, Crypto128 = tokens::caps::Yes, V3 = tokens::caps::Yes, VpclmulVaes = tokens::caps::Yes, Gfni = tokens::caps::Yes>
+impl<T> tokens::HasX64V3Vnni for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, Crypto128 = tokens::caps::Yes, V3 = tokens::caps::Yes, VpclmulVaes = tokens::caps::Yes, Gfni = tokens::caps::Yes, AvxVnni = tokens::caps::Yes, Adx = tokens::caps::Yes, Sha = tokens::caps::Yes>
+impl<T> tokens::HasX64V3Vnni2 for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, Crypto128 = tokens::caps::Yes, V3 = tokens::caps::Yes, VpclmulVaes = tokens::caps::Yes, Gfni = tokens::caps::Yes, AvxVnni = tokens::caps::Yes, Adx = tokens::caps::Yes, Sha = tokens::caps::Yes, AvxVnniInt8 = tokens::caps::Yes, AvxNeConvert = tokens::caps::Yes, AvxIfma = tokens::caps::Yes>
+impl<T> tokens::HasX64V4 for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, V3 = tokens::caps::Yes, V4 = tokens::caps::Yes>
+impl<T> tokens::HasX64V4x for T where T: tokens::SimdToken + tokens::caps::X64Caps<V1 = tokens::caps::Yes, V2 = tokens::caps::Yes, Crypto128 = tokens::caps::Yes, V3 = tokens::caps::Yes, VpclmulVaes = tokens::caps::Yes, Gfni = tokens::caps::Yes, V4 = tokens::caps::Yes, V4x = tokens::caps::Yes>
+
+## auto traits
+
+7 types implement all of: Freeze, RefUnwindSafe, Send, Sync, Unpin, UnwindSafe
+tokens::caps::ArmCapSet<Neon, Aes, Sha2, Sha3, Crc, Rdm, DotProd, Fp16, Fhm, Fcma, I8mm, Bf16>: !Freeze !RefUnwindSafe !Send !Sync !Unpin !UnwindSafe
+tokens::caps::WasmCapSet<Simd128, Relaxed, RelaxedFma>: !Freeze !RefUnwindSafe !Send !Sync !Unpin !UnwindSafe
+tokens::caps::X64CapSet<V1, V2, Crypto128, V3, VpclmulVaes, Gfni, Sha, Adx, AvxVnni, AvxIfma, AvxVnniInt8, AvxVnniInt16, AvxNeConvert, Sha512, V4, V4x, Avx512Fp16, Avx512Bf16>: !Freeze !RefUnwindSafe !Send !Sync !Unpin !UnwindSafe

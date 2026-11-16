@@ -2,6 +2,9 @@
 //!
 //! cfg-gated module imports and re-exports for all token types.
 
+#[doc(hidden)]
+pub mod caps;
+
 mod traits;
 pub use traits::*;
 

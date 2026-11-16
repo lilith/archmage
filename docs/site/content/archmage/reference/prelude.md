@@ -17,4 +17,4 @@ An import does not enable CPU features. `#[magetypes]`, `#[arcane]`, and
 For direct intrinsics, `import_intrinsics` on `#[arcane]` or `#[rite]` imports
 the appropriate combined intrinsic namespace. Reference-based memory wrappers
 are available for supported operations; not every raw pointer intrinsic has a
-safe wrapper. Consult the [intrinsics browser](https://imazen.github.io/archmage/intrinsics/).
+safe wrapper. Consult the [intrinsics browser](https://lilith.github.io/archmage/intrinsics/).

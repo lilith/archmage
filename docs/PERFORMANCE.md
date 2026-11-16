@@ -278,7 +278,7 @@ reports are identical.
 
 ### Consumer builds
 
-`xtask/macro_perf.py` tests linear-srgb 0.6.12 (with `transfer`) and
+A historical comparison harness tested linear-srgb 0.6.12 (with `transfer`) and
 zenpixels-convert 0.2.16 from the same source archives used in earlier consumer
 comparisons: linear-srgb `6bae33ee657d0cc29eaae6fd869894ec78a41b1c` and zenpixels
 `03bedaa73ae2b8c013765fd7eef59104fd307127`. The archived manifests and edited
@@ -333,15 +333,12 @@ cargo test -p archmage-macros --lib profile_allocations -- --ignored --nocapture
 cargo llvm-cov -p archmage -p archmage-macros --lib \
   --test macro_behavioral_contracts --test incant_macro --test tokenless_context \
   --include-build-script
-python3 xtask/codegen.py 0373579 WORKTREE
-# See the harness docstring for source archive and before/after tree preparation.
-python3 xtask/macro_perf.py "$HOME/tmp/archmage-macro-perf"
 
 # Profile the crate USING the macros, not just archmage-macros itself.
-mkdir -p "$HOME/tmp/macro-profile"
+mkdir -p "target/macro-profile"
 CARGO_INCREMENTAL=0 cargo +nightly rustc -p magetypes --lib -- \
-  -Zmacro-stats -Zself-profile="$HOME/tmp/macro-profile"
-summarize summarize "$HOME"/tmp/macro-profile/*.mm_profdata
+  -Zmacro-stats -Zself-profile="target/macro-profile"
+summarize summarize target/macro-profile/*.mm_profdata
 ```
 
 `-Zmacro-stats` describes expansion sizes/counts; it is not a timer.

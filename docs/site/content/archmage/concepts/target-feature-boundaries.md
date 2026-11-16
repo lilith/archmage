@@ -69,6 +69,6 @@ no helper calls caused by lost feature context, and array chunk indexing has
 no panic path in that loop. Compare equivalent algorithms, tails, and floating
 point contracts. Vector width alone does not establish throughput.
 
-Use the repository's `xtask/codegen.py` checks and representative downstream
-kernels. Benchmark each ISA on hardware that supports it. QEMU and WASM test
-runners can check correctness; they do not substitute for native timing.
+Inspect generated assembly for representative downstream kernels. Benchmark each
+ISA on hardware that supports it. QEMU and WASM test runners can check
+correctness; they do not substitute for native timing.

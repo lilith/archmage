@@ -16,6 +16,8 @@ use std::path::Path;
 /// Top-level registry file.
 #[derive(Debug, Deserialize)]
 pub struct Registry {
+    #[serde(default)]
+    pub cap_slot: Vec<CapSlotDef>,
     pub token: Vec<TokenDef>,
     #[serde(rename = "trait")]
     pub traits: Vec<TraitDef>,
@@ -26,6 +28,18 @@ pub struct Registry {
     pub polyfill_w512: Vec<PolyfillW512>,
 }
 
+/// An atomic capability slot for an architecture's `*Caps` trait.
+#[derive(Debug, Deserialize)]
+pub struct CapSlotDef {
+    pub arch: String,
+    pub name: String,
+    pub features: Vec<String>,
+    /// True when compile-time target features alone do not imply this slot
+    /// (requires a runtime semantic contract via `extra_caps`).
+    #[serde(default)]
+    pub explicit_only: bool,
+}
+
 /// A token definition.
 #[derive(Debug, Deserialize)]
 pub struct TokenDef {
@@ -33,18 +47,17 @@ pub struct TokenDef {
     pub arch: String,
     #[serde(default)]
     pub aliases: Vec<String>,
-    /// Aliases that are deprecated. Map of alias name → deprecation message.
-    /// These still generate type aliases but with `#[deprecated]`.
-    #[serde(default)]
-    pub deprecated_aliases: std::collections::HashMap<String, String>,
     pub features: Vec<String>,
+    /// Extra capability slots enabled by runtime contract (e.g. `"RelaxedFma"`).
+    #[serde(default)]
+    pub extra_caps: Vec<String>,
     pub traits: Vec<String>,
     #[serde(default)]
     pub cargo_feature: Option<String>,
     #[serde(default)]
     #[allow(dead_code)]
     pub always_available: bool,
-    /// SimdToken::NAME const value (human-readable).
+    /// SimdToken name value (human-readable).
     #[serde(default)]
     pub display_name: Option<String>,
     /// Extraction method name (e.g., "v2", "v3", "neon").
@@ -71,22 +84,37 @@ pub struct TokenDef {
     /// Used by `import_magetypes` parameter in `#[arcane]`/`#[rite]`.
     #[serde(default)]
     pub magetypes_namespace: Option<String>,
+    /// True when availability requires a runtime semantic probe beyond
+    /// compile-time `#[target_feature]` validation (e.g. `Wasm128RelaxedFmaToken`
+    /// checking single-rounding fusion of `f32x4`/`f64x2` `relaxed_madd`).
+    /// Omits `from_context()` completely and blocks static target-feature
+    /// promotion without an explicit runtime proof.
+    #[serde(default)]
+    pub runtime_probe: bool,
+    /// True when `magetypes` implements the full SIMD backend trait suite
+    /// directly for this token (either natively or via parent delegation).
+    #[serde(default)]
+    pub has_magetypes_backend: bool,
 }
 
 /// A trait definition.
 #[derive(Debug, Deserialize)]
 pub struct TraitDef {
     pub name: String,
-    /// Target architecture (e.g., "x86_64", "aarch64").
+    /// Target architecture (e.g., "x86_64", "aarch64", "wasm32").
     /// Used by `import_intrinsics` to determine which `core::arch::` module to import.
     #[serde(default)]
     pub arch: Option<String>,
-    /// Features for x86 arch (used when trait is a generic bound in macro).
-    #[serde(default)]
-    pub x86_features: Vec<String>,
-    /// Features for the trait's primary arch (non-x86).
+    /// Features required by this trait.
     #[serde(default)]
     pub features: Vec<String>,
+    /// Capability slot names required by this trait's single blanket impl.
+    #[serde(default)]
+    pub cap_req: Vec<String>,
+    /// True if this trait requires a runtime semantic contract (cannot be forged
+    /// from compile-time `#[target_feature]` alone).
+    #[serde(default)]
+    pub runtime_probe: bool,
     #[serde(default)]
     pub parents: Vec<String>,
     /// Doc comment for the trait.
@@ -96,9 +124,6 @@ pub struct TraitDef {
     /// Used by `import_magetypes` parameter in `#[arcane]`/`#[rite]`.
     #[serde(default)]
     pub magetypes_namespace: Option<String>,
-    /// Deprecation message. When set, generates `#[deprecated(since = "...", note = "...")]`.
-    #[serde(default)]
-    pub deprecated: Option<String>,
 }
 
 /// A width namespace for simd type re-exports.
@@ -162,7 +187,7 @@ impl Registry {
     /// Get the feature set for a token or trait by name.
     ///
     /// For tokens, returns the token's features. For traits, returns the
-    /// trait's features (preferring x86_features for x86 width traits).
+    /// trait's features.
     #[allow(dead_code)] // exercised by tests; kept as registry API
     pub fn features_for(&self, name: &str) -> Option<Vec<&str>> {
         // Try tokens first (including aliases)
@@ -170,15 +195,44 @@ impl Registry {
             return Some(token.features.iter().map(|s| s.as_str()).collect());
         }
         // Try traits
-        if let Some(trait_def) = self.traits.iter().find(|t| t.name == name) {
-            if !trait_def.x86_features.is_empty() {
-                return Some(trait_def.x86_features.iter().map(|s| s.as_str()).collect());
-            }
-            if !trait_def.features.is_empty() {
-                return Some(trait_def.features.iter().map(|s| s.as_str()).collect());
-            }
+        if let Some(trait_def) = self.traits.iter().find(|t| t.name == name)
+            && !trait_def.features.is_empty()
+        {
+            return Some(trait_def.features.iter().map(|s| s.as_str()).collect());
         }
         None
+    }
+
+    /// Normalize trait arch (`"x86_64"`, `"wasm32"`) to slot/token arch (`"x86"`, `"wasm"`).
+    pub fn normalize_arch(arch: &str) -> &str {
+        match arch {
+            "x86_64" => "x86",
+            "wasm32" => "wasm",
+            other => other,
+        }
+    }
+
+    /// All capability slots defined for `arch` (accepts both `"x86"`/`"x86_64"` and `"wasm"`/`"wasm32"`).
+    pub fn cap_slots_for_arch(&self, arch: &str) -> Vec<&CapSlotDef> {
+        let norm = Self::normalize_arch(arch);
+        self.cap_slot.iter().filter(|s| s.arch == norm).collect()
+    }
+
+    /// Capability slot names enabled by `token`.
+    pub fn token_cap_slots(&self, token: &TokenDef) -> BTreeSet<&str> {
+        let token_features: BTreeSet<&str> = token.features.iter().map(|s| s.as_str()).collect();
+        self.cap_slots_for_arch(&token.arch)
+            .into_iter()
+            .filter(|slot| {
+                token.extra_caps.contains(&slot.name)
+                    || (!slot.explicit_only
+                        && slot
+                            .features
+                            .iter()
+                            .all(|f| token_features.contains(f.as_str())))
+            })
+            .map(|slot| slot.name.as_str())
+            .collect()
     }
 
     /// All token names including aliases.
@@ -198,6 +252,26 @@ impl Registry {
     #[allow(dead_code)]
     pub fn all_trait_names(&self) -> Vec<&str> {
         self.traits.iter().map(|t| t.name.as_str()).collect()
+    }
+
+    /// BFS through parent DAG and collect all ancestors (deduplicated, stable order).
+    pub fn collect_ancestors<'a>(&'a self, token: &'a TokenDef) -> Vec<&'a TokenDef> {
+        let mut ancestors = Vec::new();
+        let mut visited = HashSet::new();
+        let mut queue: std::collections::VecDeque<&str> =
+            token.parents.iter().map(|s| s.as_str()).collect();
+        while let Some(name) = queue.pop_front() {
+            if !visited.insert(name) {
+                continue;
+            }
+            if let Some(parent) = self.token.iter().find(|t| t.name == name) {
+                ancestors.push(parent);
+                for gp in &parent.parents {
+                    queue.push_back(gp.as_str());
+                }
+            }
+        }
+        ancestors
     }
 }
 
@@ -219,11 +293,140 @@ impl Registry {
                 bail!("{} needs a short_name for dispatch", token.name);
             }
         }
+        self.validate_cap_slots()?;
         self.validate_trait_references()?;
         self.validate_token_trait_features()?;
         self.validate_width_namespace_tokens()?;
         self.validate_polyfill_tokens()?;
         self.validate_token_parents()?;
+        Ok(())
+    }
+
+    fn validate_cap_slots(&self) -> Result<()> {
+        let mut seen = HashSet::new();
+        for slot in &self.cap_slot {
+            if !matches!(slot.arch.as_str(), "x86" | "aarch64" | "wasm") {
+                bail!("cap_slot {} has invalid arch '{}'", slot.name, slot.arch);
+            }
+            if !seen.insert((slot.arch.as_str(), slot.name.as_str())) {
+                bail!(
+                    "Duplicate cap_slot '{}' for arch '{}'",
+                    slot.name,
+                    slot.arch
+                );
+            }
+        }
+
+        // Validate extra_caps on tokens
+        for token in &self.token {
+            let valid_slots: HashSet<&str> = self
+                .cap_slots_for_arch(&token.arch)
+                .into_iter()
+                .map(|s| s.name.as_str())
+                .collect();
+            for cap in &token.extra_caps {
+                if !valid_slots.contains(cap.as_str()) {
+                    bail!(
+                        "Token {} references unknown cap slot '{}' for arch '{}'",
+                        token.name,
+                        cap,
+                        token.arch
+                    );
+                }
+            }
+        }
+
+        // Validate traits' cap_req, parent cap_reqs, and feature consistency
+        for trait_def in &self.traits {
+            let arch = trait_def
+                .arch
+                .as_deref()
+                .with_context(|| format!("Trait {} must specify arch", trait_def.name))?;
+            let slots = self.cap_slots_for_arch(arch);
+            let slot_map: std::collections::HashMap<&str, &CapSlotDef> =
+                slots.into_iter().map(|s| (s.name.as_str(), s)).collect();
+
+            let mut union_features: BTreeSet<&str> = BTreeSet::new();
+            let mut has_explicit = false;
+            for req in &trait_def.cap_req {
+                let slot = slot_map.get(req.as_str()).with_context(|| {
+                    format!(
+                        "Trait {} requires unknown cap slot '{}' for arch '{}'",
+                        trait_def.name, req, arch
+                    )
+                })?;
+                if slot.explicit_only {
+                    has_explicit = true;
+                }
+                for f in &slot.features {
+                    union_features.insert(f.as_str());
+                }
+            }
+            if has_explicit && !trait_def.runtime_probe {
+                bail!(
+                    "Trait {} requires an explicit_only cap slot and must set runtime_probe = true",
+                    trait_def.name
+                );
+            }
+            let declared_features: BTreeSet<&str> =
+                trait_def.features.iter().map(|s| s.as_str()).collect();
+            if union_features != declared_features {
+                bail!(
+                    "Trait {} features {:?} do not match union of cap_req slots {:?}",
+                    trait_def.name,
+                    declared_features,
+                    union_features
+                );
+            }
+
+            // Every parent trait's cap_req must be a subset of this trait's cap_req
+            let my_caps: BTreeSet<&str> = trait_def.cap_req.iter().map(|s| s.as_str()).collect();
+            for parent_name in &trait_def.parents {
+                if let Some(parent) = self.traits.iter().find(|t| t.name == *parent_name) {
+                    for p_cap in &parent.cap_req {
+                        if !my_caps.contains(p_cap.as_str()) {
+                            bail!(
+                                "Trait {} inherits from {} but misses cap_req '{}'",
+                                trait_def.name,
+                                parent_name,
+                                p_cap
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        // Verify token.traits equals exact set of arch traits whose cap_req <= token_cap_slots
+        for token in &self.token {
+            let token_caps = self.token_cap_slots(token);
+            let declared_traits: BTreeSet<&str> = token.traits.iter().map(|s| s.as_str()).collect();
+            let mut expected_traits: BTreeSet<&str> = BTreeSet::new();
+            for trait_def in &self.traits {
+                let trait_arch = trait_def
+                    .arch
+                    .as_deref()
+                    .map(Self::normalize_arch)
+                    .unwrap_or("");
+                if trait_arch == token.arch
+                    && trait_def
+                        .cap_req
+                        .iter()
+                        .all(|req| token_caps.contains(req.as_str()))
+                {
+                    expected_traits.insert(trait_def.name.as_str());
+                }
+            }
+            if declared_traits != expected_traits {
+                bail!(
+                    "Token {} declared traits {:?} != cap-slot implied traits {:?}",
+                    token.name,
+                    declared_traits,
+                    expected_traits
+                );
+            }
+        }
+
         Ok(())
     }
 
@@ -287,15 +490,11 @@ impl Registry {
 
             for trait_name in &token.traits {
                 if let Some(trait_def) = self.traits.iter().find(|t| t.name == *trait_name) {
-                    // Determine which features the trait requires
-                    let trait_features: Vec<&str> =
-                        if token.arch == "x86" && !trait_def.x86_features.is_empty() {
-                            trait_def.x86_features.iter().map(|s| s.as_str()).collect()
-                        } else if !trait_def.features.is_empty() {
-                            trait_def.features.iter().map(|s| s.as_str()).collect()
-                        } else {
-                            continue; // No features to check
-                        };
+                    let trait_features: Vec<&str> = if !trait_def.features.is_empty() {
+                        trait_def.features.iter().map(|s| s.as_str()).collect()
+                    } else {
+                        continue;
+                    };
 
                     for f in &trait_features {
                         if !token_features.contains(f) {
@@ -468,13 +667,21 @@ mod tests {
         let registry = Registry::load(&path).expect("Failed to load token-registry.toml");
 
         // Basic counts
-        assert_eq!(registry.token.len(), 17, "Expected 17 tokens");
-        assert_eq!(registry.traits.len(), 10, "Expected 10 traits");
+        assert_eq!(registry.cap_slot.len(), 33, "Expected 33 cap slots");
+        assert_eq!(registry.token.len(), 38, "Expected 38 tokens");
+        assert_eq!(registry.traits.len(), 38, "Expected 38 traits");
         assert_eq!(
             registry.width_namespace.len(),
             4,
             "Expected 4 width namespaces"
         );
+        // Spot-check Wasm128RelaxedFmaToken
+        let wasm_fma = registry
+            .find_token("Wasm128RelaxedFmaToken")
+            .expect("Wasm128RelaxedFmaToken not found");
+        assert!(wasm_fma.runtime_probe);
+        assert!(wasm_fma.has_magetypes_backend);
+        assert_eq!(wasm_fma.parents, vec!["Wasm128RelaxedToken"]);
         // Spot-check X64V3Token
         let v3 = registry
             .find_token("X64V3Token")
@@ -483,21 +690,58 @@ mod tests {
         assert!(v3.features.contains(&"fma".to_string()));
         assert!(v3.features.contains(&"f16c".to_string()));
         assert!(v3.features.contains(&"lzcnt".to_string()));
-        assert_eq!(v3.features.len(), 16); // sse, sse2, + v2 (5+cmpxchg16b) + v3 (avx2, fma, bmi1, bmi2, f16c, lzcnt, movbe, avx)
+        assert_eq!(v3.features.len(), 16);
 
         let v3_gfni_crypto = registry
             .find_token("X64V3GfniCryptoToken")
             .expect("X64V3GfniCryptoToken not found");
         assert!(v3_gfni_crypto.features.contains(&"gfni".to_string()));
-        assert_eq!(
-            v3_gfni_crypto.parents,
-            vec!["X64V3CryptoToken"],
-            "V3 GFNI Crypto should extend V3 Crypto"
+        assert!(
+            v3_gfni_crypto
+                .parents
+                .contains(&"X64V3CryptoToken".to_string())
+        );
+        assert!(v3_gfni_crypto.parents.contains(&"X64GfniToken".to_string()));
+
+        let v3_vnni = registry
+            .find_token("X64V3VnniToken")
+            .expect("X64V3VnniToken not found");
+        assert!(v3_vnni.features.contains(&"avxvnni".to_string()));
+        assert!(v3_vnni.features.contains(&"adx".to_string()));
+        assert!(v3_vnni.features.contains(&"sha".to_string()));
+        assert!(
+            v3_vnni
+                .parents
+                .contains(&"X64V3GfniCryptoToken".to_string())
         );
 
-        // Spot-check aliases
+        let v3_vnni2 = registry
+            .find_token("X64V3Vnni2Token")
+            .expect("X64V3Vnni2Token not found");
+        assert!(v3_vnni2.features.contains(&"avxvnniint8".to_string()));
+        assert!(v3_vnni2.features.contains(&"avxneconvert".to_string()));
+        assert!(v3_vnni2.features.contains(&"avxifma".to_string()));
+        assert!(v3_vnni2.features.contains(&"adx".to_string()));
+        assert!(v3_vnni2.features.contains(&"sha".to_string()));
+        assert!(v3_vnni2.parents.contains(&"X64V3VnniToken".to_string()));
+
+        // Orthogonal clumps
+        let sha512 = registry
+            .find_token("X64Sha512Token")
+            .expect("X64Sha512Token");
+        assert!(sha512.features.contains(&"avx".to_string()));
+        assert!(sha512.features.contains(&"sha512".to_string()));
+        let bf16 = registry
+            .find_token("X64Avx512Bf16Token")
+            .expect("X64Avx512Bf16Token");
+        assert_eq!(bf16.parents, vec!["X64V4Token"]);
+        let i8mm = registry.find_token("NeonI8mmToken").expect("NeonI8mmToken");
+        assert_eq!(i8mm.features, vec!["neon", "i8mm"]);
+
+        // Non-deprecated aliases kept cleanly in 0.10
         assert!(registry.find_token("Desktop64").is_some());
-        assert!(registry.find_token("Avx2FmaToken").is_some());
+        assert!(registry.find_token("Avx2FmaToken").is_none());
+        assert!(registry.find_token("Sse2Token").is_none());
         assert!(registry.find_token("Arm64").is_some());
         assert!(registry.find_token("Server64").is_some());
 

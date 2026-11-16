@@ -10,12 +10,12 @@ L1-resident vectors (stream) and 1,024 dependent steps (chain), zenbench means.
 `mul_add_portable` is shown as time over the same run's `a * b + c`.
 
 ```
-cargo bench -p magetypes --bench mul_add_cost --features avx512 -- --group="scalar backend" --format=md   # dev
-RUSTFLAGS="-Ctarget-cpu=x86-64-v3" CARGO_TARGET_DIR=target/v3 cargo bench ... (same)                         # dev, v3 build
-cargo bench -p magetypes --bench mul_add_cost -- --group="scalar backend" --format=md                       # zen-arm-xl
+cargo bench -p magetypes --bench mul_add_cost --features avx512 -- --group="scalar backend" --format=md   # Zen 5
+RUSTFLAGS="-Ctarget-cpu=x86-64-v3" CARGO_TARGET_DIR=target/v3 cargo bench ... (same)                         # Zen 5, v3 build
+cargo bench -p magetypes --bench mul_add_cost -- --group="scalar backend" --format=md                       # arm64-n1
 ```
 
-## AArch64, Neoverse-N1 (zen-arm-xl, 16 vCPU)
+## AArch64, Neoverse-N1 (arm64-n1, 16 vCPU)
 
 NEON is in the baseline: `NeonToken::summon()` folds to a constant and the
 `#[arcane]` helper inlines, so `mul_add_portable` is one `fmadd` per lane.
@@ -27,7 +27,7 @@ NEON is in the baseline: `NeonToken::summon()` folds to a constant and the
 | `f64x2` stream | 772 / 780 ns | 22.79 µs (29.5×) | 719 ns (0.92×) |
 | `f64x2` chain | 1.74 / 1.80 µs | 21.30 µs (12.2×) | 1.41 µs (0.78×) |
 
-## x86-64, Ryzen 9 9950X3D (dev), `-Ctarget-cpu=x86-64-v3` build
+## x86-64, Ryzen 9 9950X3D (Zen 5), `-Ctarget-cpu=x86-64-v3` build
 
 `X64V3Token::summon()` is a constant and the helper inlines: one `vfmadd` per
 lane.
@@ -39,7 +39,7 @@ lane.
 | `f64x4` stream | 632 / 630 ns | 15.15 µs (24.0×) | 600 ns (0.95×) |
 | `f64x4` chain | 1.15 / 1.09 µs | 12.90 µs (11.2×) | 709 ns (0.65×) |
 
-## x86-64, Ryzen 9 9950X3D (dev), default build
+## x86-64, Ryzen 9 9950X3D (Zen 5), default build
 
 Without `-Ctarget-cpu`, `summon()` is a cached check and the FMA helper cannot
 inline into a caller compiled without `fma`, so every lane pays a call. This

@@ -123,23 +123,23 @@ fn stubs_return_none_on_wrong_arch() {
 // Category 3: Macros
 // =============================================================================
 
-#[cfg(all(target_arch = "x86_64", feature = "macros"))]
+#[cfg(target_arch = "x86_64")]
 mod macro_tests {
     use archmage::prelude::*;
 
     #[arcane]
-    fn arcane_via_prelude(_token: Desktop64, x: f32) -> f32 {
+    fn arcane_via_prelude(_token: X64V3Token, x: f32) -> f32 {
         x * 2.0
     }
 
     #[rite]
-    fn rite_via_prelude(_token: Desktop64, x: f32) -> f32 {
+    fn rite_via_prelude(_token: X64V3Token, x: f32) -> f32 {
         x + 1.0
     }
 
     #[test]
     fn arcane_works_through_prelude() {
-        if let Some(token) = Desktop64::summon() {
+        if let Some(token) = X64V3Token::summon() {
             assert_eq!(arcane_via_prelude(token, 21.0), 42.0);
         }
     }

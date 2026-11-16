@@ -297,21 +297,21 @@ pub(crate) fn gen_incant_passthrough(
     // `with token` dispatches on the held token's exact type, so a token that
     // is not in the list reaches the end: a `X64V4Token` matches no `v3` arm
     // and only a real `ScalarToken` matches `scalar`. Only a `default` arm
-    // takes every token. The panic names the token (through `SimdToken::NAME`)
+    // takes every token. The panic names the token (through `SimdToken`'s `Display` formatting)
     // and the tiers, so the reader can add `default` or dispatch with the
     // tier the token proves.
     let has_default = tiers.iter().any(|t| t.name == "default");
     let tier_names = tiers.iter().map(|t| t.name).collect::<Vec<_>>().join(", ");
     let no_match = quote! {
         {
-            fn __incant_token_name<__T: archmage::SimdToken>(_: &__T) -> &'static str {
-                __T::NAME
+            fn __incant_assert_token<__T: archmage::SimdToken>(token: &__T) -> &__T {
+                token
             }
             ::core::panic!(
                 "incant!(.. with token): the held token `{}` matches none of [{}]. \
                  `with token` dispatches on the token's exact type; add a `default` \
                  arm, or dispatch with the token of a listed tier",
-                __incant_token_name(&__incant_token),
+                __incant_assert_token(&__incant_token),
                 #tier_names,
             )
         }

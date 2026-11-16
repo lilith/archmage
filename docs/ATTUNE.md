@@ -1,4 +1,4 @@
-# Unified macros in 0.9.31
+# Unified macros in 0.10
 
 `#[attune]` defines feature bodies, proof wrappers, and dispatchers. `attuned!`
 calls a family using the enclosing feature context or proof; `reattune!` permits
@@ -44,7 +44,7 @@ function kernels do not need them.
 
 ## One function
 
-The [interactive expansion view](https://imazen.github.io/archmage/attunement/expansions/)
+The [interactive expansion view](https://lilith.github.io/archmage/attunement/expansions/)
 compares source and actual `cargo expand` output for the main forms on x86-64,
 AArch64, and WASM. Architecture guards are generated automatically; that output
 shows the functions remaining after rustc evaluates the guards.
@@ -209,7 +209,7 @@ for the default family and sixteen for V4. Neither declaration emits the
 unsuffixed name, so they do not collide. Keep their data signatures identical
 and expose a slice boundary so callers do not need to know the lane count.
 
-This simplifies the [BRISQUE row-convolution pattern](https://github.com/imazen/zenmetrics/blob/2fb351fea29745b7123454b77a3336576b102a6a/crates/brisque/src/kernels.rs#L110)
+This simplifies a row-convolution pattern
 to elementwise scaling. The consumer uses V4x; this example needs only V4.
 
 ```rust
@@ -296,7 +296,11 @@ assert_eq!(caller(1), 2);
 `define(f32x8)` creates a magetypes alias specialized for each generated tier.
 It requires a concrete tier or family ("define(...) requires a concrete tier;
 use a direct tier body or a family", "define(...) on a proof wrapper requires a
-generated family").
+generated family"). Subtier variants (`arm_v2`, `arm_v3`, `v3_vnni`, `v3_vnni2`,
+`avx512_fp16`, `wasm128_relaxed`) bind `define(...)` aliases to their parent
+magetypes backend token (`NeonToken`, `X64V3Token`, `X64V4Token`, `Wasm128Token`);
+obtain the backend token via `magetypes::simd::MagetypesToken::magetypes(token)`
+while passing `token` directly to subtier-gated methods.
 
 ```rust
 use archmage::prelude::*;
@@ -520,7 +524,7 @@ attributes keep their own defaults, so mixed files behave exactly as before.
 | `#[rite(v3)] fn helper(x)` | `#[attune(v3)] fn helper(x)` | None: same emitter, name, visibility, and `#[inline]` default. `#[attune]` preserves a written `#[inline(...)]`; `#[rite]` replaced it with `#[inline]`. |
 | `#[rite] fn helper(token: X64V3Token, x)` | `#[attune] fn helper_v3(token: X64V3Token, x)` | Token-based `#[rite]` becomes suffix inference: the name must carry `_v3`, or pass `#[attune(v3)]`. The parameter is still forwarded, not consumed by a wrapper. |
 | `#[rite(v3, v4, neon)] fn helper(x)` | `#[attune(_v3, _v4(cfg(avx512)), _neon)] fn helper(x)` | Same `helper_v3`/`helper_v4`/`helper_neon` names. `#[rite]` emits V4 unconditionally; `_v4(cfg(avx512))` is the portable spelling for downstream crates. |
-| `#[arcane] fn kernel(token: X64V3Token, x)` | `#[attune(wrap)] fn kernel(token: X64V3Token, x)` or `#[attune] fn kernel_v3_t(token: X64V3Token, x)` | Identical boundary: public `#[inline(always)]` wrapper, private `#[doc(hidden)]` `__arcane_*` body with `#[inline]`. The `_v3_t` form changes the name unless the source already ends in it. Arcane-only `suppress_const_test` and `inline_always` have no unified spelling. |
+| `#[arcane] fn kernel(token: X64V3Token, x)` | `#[attune(wrap)] fn kernel(token: X64V3Token, x)` or `#[attune] fn kernel_v3_t(token: X64V3Token, x)` | Identical boundary: public `#[inline(always)]` wrapper, private `#[doc(hidden)]` `__arcane_*` body with `#[inline]`. The `_v3_t` form changes the name unless the source already ends in it. Compile-time token, conjunction, and bound assertions are emitted unconditionally (`suppress_const_test` was removed in 0.10.0). Arcane-only `inline_always` has no unified spelling. |
 | `#[magetypes(define(f32x8), v3, neon, wasm128, scalar)] fn gain(token: Token, ...)` | `#[attune(_*_t, define(f32x8))] fn gain(token: Token, ...)` | Variant names gain `_t` (`gain_v3_t`), keeping token-first signatures and source visibility. Dispatch moves from `incant!` to `attuned!` or a dispatcher. |
 | `incant!(gain(plane, factor), [v3, scalar])` | `attuned!(gain(plane, factor), [_v3, _scalar])` | Call-list tier names take the `_` prefix. Outside a feature context the proof wrappers are called. `incant!` remains supported for legacy families and cannot dispatch unified direct bodies (E0133). |
 | `incant!(m(data) with token, [v3, scalar])` | `attuned!(m(data), [_v3, _scalar], using(token))` | `using(...)` selects by exact token type, evaluates once, and never probes. |
@@ -625,7 +629,7 @@ apply(&mut data);
 assert_eq!(data, [2.0; 8]);
 ```
 
-## Beta scope and validation
+## Scope and validation
 
 The beta keeps migration manual: there is no complete source converter or exact
 replacement deprecation machinery. The measured cold-compile overhead was
@@ -658,29 +662,18 @@ emitters, not only the examples:
   the call-side proof, modifier, and receiver rules now name their actual
   diagnostics.
 
-Runnable examples are compiled and executed by `xtask/check_docs.py` with
-default features and with `--features avx512`. `just docs-test` runs both. The
-guide's reproducibility limits match the corpus: finite syntax products, no
+The guide's reproducibility limits match the corpus: finite syntax products, no
 claim of arbitrary signatures, and x86/AArch64 execution for the runnable
 examples with WASM covered by the raw expansion matrix.
 
-Release checklist (original beta review; retained for context):
+Validation context:
 
-- The owner authorized the stable release on 2026-11-07.
 - The tagged release workflow runs the full CI matrix before publication.
-- No source converter or legacy deprecation warnings ship in this beta.
 - The site includes the simplified [Path of Attunement](site/content/attunement/_index.md)
-  and a complete reference generated from this guide. Verify the deployed pages
-  at the final release commit.
+  and a complete reference generated from this guide.
 - The syntax and rejection evidence lives in `archmage-macros/src/attune/` and
   `tests/attune_expansion/`; the corpus does not claim the full Cartesian
   product across independent groups.
-- `use(...)` constructor modes and adaptive aliases stay on
-  `draft/attune-rewrite`.
-
-The [precise semver guard](../xtask/check_semver.py) is integrated in local and
-release CI (`94d828e2`); run `just attune-beta-semver` to compare against 0.9.30.
-Its [validation record](../benchmarks/attune_beta_validation_2026-10-10.md)
-explains the single replaced lint. The stable candidate also passed explicit semver comparisons against 0.9.30
-and beta.2; see [downstream compatibility](DOWNSTREAM-COMPATIBILITY.md).
-The release workflow gates publication on its full CI matrix and package checks.
+- See the [validation record](../benchmarks/attune_beta_validation_2026-10-10.md)
+  and [downstream compatibility](DOWNSTREAM-COMPATIBILITY.md) for historical
+  notes.

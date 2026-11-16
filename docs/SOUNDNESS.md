@@ -93,7 +93,10 @@ site:
   it — `summon()`, the cold detect functions, the extraction methods and
   `IntoConcreteToken` are all feature-free functions.
 
-`forge_token_dangerously()` is a deprecated alias with the identical gate.
+`And<Base, Extra>` conjunctions and runtime-probed `Wasm128RelaxedFmaToken`
+intentionally expose **no** `from_context()` constructor: `And` is composed from
+proven tokens via `.and()` or `And::join()`, and `Wasm128RelaxedFmaToken` is
+constructed only through its runtime fusion probe in `summon()`.
 
 Three properties are load-bearing and pinned by tests:
 
@@ -113,8 +116,15 @@ all — only the `unsafe fn` alias
 (`tests/soundness/from_context_wrong_arch.rs`). On **WASM**, Rust permits safe
 calls to `#[target_feature]` functions from any context; the engine validates
 the required instructions when the module is loaded, so a module that runs at
-all has the features. `ScalarToken` asserts the empty feature set, so its
-constructor carries no gate.
+all has the features. Unless `testable_dispatch` is active, WASM tokens gate
+`summon()` and `compiled_with()` on `#[cfg(target_feature = ...)]`, and
+`magetypes`'s WASM backend trait implementations exist only when the matching
+target feature (`simd128`, plus `relaxed-simd` for `Wasm128RelaxedFmaToken`) is
+enabled at compile time — so WASM SIMD intrinsics are never emitted into scalar
+`wasm32` builds even with `testable_dispatch` enabled. `Wasm128RelaxedFmaToken`
+additionally runs a cached one-time runtime probe verifying that `f32x4.relaxed_madd`
+and `f64x2.relaxed_madd` fuse with single IEEE rounding across all lanes.
+`ScalarToken` asserts the empty feature set, so its constructor carries no gate.
 
 Forging performs no runtime detection, so it also bypasses process-wide token
 disabling (including `testable_dispatch`). That is intentional: the caller's
@@ -134,11 +144,11 @@ instead — and the fragments are our own identifiers, not rustc prose, so a
 reworded diagnostic cannot break them either. `cargo xtask validate` enforces
 the boundary: it rejects any committed trybuild `.stderr` that names target
 features, quotes the build configuration, embeds an absolute or toolchain path,
-carries a rustc version, or depends on pointer width. The soundness scanner's structural rules ban
-`forge_token_dangerously` from magetypes. `from_context()` is allowed there only
-inside a safe function whose own `#[target_feature]` set covers the token's
-features (the generated `from_raw` constructors); `xtask/src/soundness/raw_context.rs`
-checks every such call against its enclosing function.
+carries a rustc version, or depends on pointer width. The soundness scanner's structural rules verify `from_context()` usage in
+magetypes: it is allowed there only inside a safe function whose own
+`#[target_feature]` set covers the token's features (the generated `from_raw`
+constructors); `xtask/src/soundness/raw_context.rs` checks every such call
+against its enclosing function.
 
 **The feature gate is free.** `#[inline(always)]` is not permitted on a
 `#[target_feature]` function, so `from_context()` is plain `#[inline]`, and
@@ -169,18 +179,18 @@ backend needs no context, for the module-validation reason above.
 
 | Surface | Count | Invariant | Discipline |
 |---|---|---|---|
-| `src/tokens/generated/{x86,arm,wasm}.rs` `from_context()` call sites | 90 (58 x86 + 29 arm + 3 wasm) | summon/detect just verified the features, the features are compile-time guaranteed, or the source token's feature set is a registry-verified superset (extraction methods) | per-block `// SAFETY:` comments, generator-emitted, checker-enforced |
-| `src/tokens/mod.rs` (`ScalarToken` constructors) | 0 | `ScalarToken` proves the empty feature set, so `from_context()` and its deprecated alias are ungated safe `const fn`s | doc sections |
-| `src/tokens/generated/{x86,arm,wasm}_stubs.rs` forge definitions | 17 total (9 x86 + 6 arm + 2 wasm); 8–15 visible per target | foreign-architecture constructors: `unsafe fn` with an *unsatisfiable* `# Safety` contract — they exist so cross-architecture code compiles, not to be called | doc sections; `tests/soundness/from_context_wrong_arch.rs` |
+| `src/tokens/generated/{x86,arm,wasm}.rs` `from_context()` call sites | 96 `unsafe` blocks (67 x86 + 29 arm; wasm needs 0 because Rust permits safe `#[target_feature]` calls on wasm32) | summon/detect just verified the features, the features are compile-time guaranteed, or the source token's feature set is a registry-verified superset (extraction methods) | per-block `// SAFETY:` comments, generator-emitted, checker-enforced |
+| `src/tokens/mod.rs` (`ScalarToken` constructors) | 0 | `ScalarToken` proves the empty feature set, so `from_context()` is an ungated safe `const fn` | doc sections |
+| `src/tokens/generated/{x86,arm,wasm}_stubs.rs` stub constructors | 38 total (`x86` + `arm` + `wasm` leaf stubs per target) | foreign-architecture constructors: `unsafe fn` with an *unsatisfiable* `# Safety` contract (omitted for `Wasm128RelaxedFmaToken`) — they exist so cross-architecture code compiles, not to be called | doc sections; `tests/soundness/from_context_wrong_arch.rs` |
 | `magetypes/src/simd/impls/{x86_v3,x86_v4,arm_neon,wasm128}.rs` | **0** (was ~1,960) | per-method `#[arcane(_self = Token)]` turns each x86 and NEON body into a `#[target_feature]` region, and WASM SIMD intrinsics are safe to call from any context, so the 5,395 value intrinsics in these files need no `unsafe` at all; `x86_v3.rs`'s SSE2-only operations (`sse2_baseline!`) run in `#[arcane]` regions for `X64V1Token`, so they inline into callers without AVX | the crate-wide `deny(unsafe_code)`; every intrinsic re-verified against the registry per run |
 | `magetypes/src/simd_storage.rs`, the only magetypes module allowed `unsafe` | **14 blocks** (was 225 across magetypes), plus the `Pod` and `TokenStorage` traits and impls and the `Upcast` declaration (deprecated in 0.9.30, never implemented) | size/align-guarded layout casts over `Pod` (all-bit-patterns-valid) storage; the four token-taking helpers additionally require a token value and const-assert the token is a 1-ZST; `TokenStorage` is implemented only through `impl_token_storage!`, whose expansion checks that each wrapper is exactly `(T::Repr, T)` with `T::Repr` at offset 0 and no extra size; the six AVX-512 gather/scatter helpers (`simd_storage::gather`, `X64V4Token` only) bound every accessed lane's offset to `0..len` of the borrow: wrapping gathers mask with `N - 1` (`N` a power of two no larger than 2^31, const-asserted), and slice gathers and scatters enable only lanes whose unsigned index is below `min(len, 2^31)` | per-block `// SAFETY:` comments, checker-enforced; `#![deny(unsafe_code)]` at the crate root with `#[allow(unsafe_code)]` only on this module; structural rules reject the `unsafe` keyword and any other `allow(unsafe_code)` elsewhere in magetypes (including code cfg'd out for the host), and gather/scatter intrinsics outside this file; every `Pod` registration declares a field-byte total; hostile-index gather/scatter tests in `magetypes/tests/gather_scatter_v4.rs`; the `gather` module quotes the Intel Intrinsics Guide entry (description and Operation pseudocode) for each intrinsic it uses, and each gather/scatter `SAFETY` comment cites the Operation it relies on |
 | `archmage-macros` emitted code (`#[arcane]` wrappers etc.) | 1 `unsafe` block per wrapper | the token parameter (tier-tag const-asserted) proves the sibling's `#[target_feature]` set | justified in macro source; expansion snapshots under `tests/expand/` are re-verified by the intrinsic scanner (comments cannot survive tokenization, so snapshots carry no SAFETY text) |
 
 Notable absences, enforced by structural rules: no `MaybeUninit`, no
-`mem::zeroed`, no forged tokens (`forge_token_dangerously`), no `from_context()`
-outside a safe function whose target features cover the token (checked by
-`raw_context.rs`), no `unsafe` of any kind outside `simd_storage.rs` (the
-compiler denies it, and the scanner also checks code cfg'd out for the host), no
+`mem::zeroed`, no `from_context()` outside a safe function whose target features
+cover the token (checked by `raw_context.rs`), no `unsafe` of any kind outside
+`simd_storage.rs` (the compiler denies it, and the scanner also checks code
+cfg'd out for the host), no
 gather/scatter intrinsics outside `simd_storage.rs`, no `Default`/serde/bytemuck
 construction of SIMD wrappers anywhere in magetypes. The `unsafe` blocks that
 `#[arcane]` emits are not magetypes code: the lint skips external proc-macro
@@ -233,7 +243,7 @@ Run everything with `just ci`. Individually:
 | `just validate-tokens` | Every token's `summon()` checks exactly the features the registry declares (parses the generated detection code). |
 | `just parity` | API parity across x86/ARM/WASM backends (0 issues). |
 | `just miri` | UB detection over magetypes under Miri (layout casts, transmutes, pointer ops — the obligations the intrinsic scanner does *not* prove). It skips three expensive tests whose `unsafe` coverage it keeps elsewhere: `int_widen_narrow::scalar_backend`, whose exhaustive loops reach the bitcast path that the retained `scalar_w512_bitcast_values` test covers; the `fused_arithmetic` binary, which is safe code only; and `cbrt_range::cbrt_midp_precise_covers_the_whole_range`, about 33,000 cbrt calls per function that run only safe code on the scalar backend Miri uses. `MIRI_SKIPPED_TESTS` in `xtask/src/main.rs` lists the reasons; native, SDE and cross-arch runs still execute all three. |
-| `just audit` | A report, not a check: counts `CRITICAL`/`FRAGILE`/`SAFETY` markers, `unsafe` blocks without a nearby `// SAFETY:` comment, and every `forge_token_dangerously`/`from_context` call. It never fails; `just soundness` enforces. See `docs/SAFETY-CRITICAL.md`. |
+| `just audit` | A report, not a check: counts `CRITICAL`/`FRAGILE`/`SAFETY` markers, `unsafe` blocks without a nearby `// SAFETY:` comment, and every `from_context` call. It never fails; `just soundness` enforces. See `docs/SAFETY-CRITICAL.md`. |
 | `cargo test` (all platforms in CI) | Exercise tests: every token's claimed features drive real intrinsics on x86-64, ARM64 (cross/QEMU), WASM (wasmtime), Windows ARM64, macOS — see `tests/*_intrinsics*.rs`, `tests/feature_consistency.rs`. |
 | Compile-fail suites (`tests/compile_fail.rs`, `magetypes/src/bypass_adversarial.rs` doctests, `tests/soundness/*`) | Negative space: tokenless UFCS calls, token shadowing/aliasing around `#[arcane]`, raw-pointer intrinsics without `unsafe` — all fail to compile. |
 | Source-guard tests (`tests/apple_fallback_guard.rs`, `tests/winarm_registry_path_guard.rs`) | Platform detection paths that CI hardware cannot execute are pinned at the source level so known-bad patterns can't silently return. |
@@ -253,8 +263,10 @@ Run everything with `just ci`. Individually:
   (Linux), `winarm-cpufeatures` registry decoding (Windows), and the Apple
   Silicon fallback **only** on provably-M1+ hosts (macOS, Catalyst,
   simulators — device iOS/tvOS/watchOS/visionOS use genuine runtime
-  detection and otherwise fail closed). WASM is compile-time-only by
-  design: a validated module implies the features.
+  detection and otherwise fail closed). WASM instruction legality is
+  compile-time-only by design (a validated module implies `+simd128` /
+  `+relaxed-simd`); `Wasm128RelaxedFmaToken` adds a runtime rounding-semantics
+  probe over `f32x4.relaxed_madd` and `f64x2.relaxed_madd`.
 - **The scanner is textual, not an AST.** Comments are stripped; braces are
   matched; generated code is formatting-stable. The floors plus the
   scanner's own unit tests are the defense against it silently rotting —

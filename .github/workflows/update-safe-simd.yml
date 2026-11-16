@@ -78,10 +78,10 @@ jobs:
         run: cargo run -p xtask -- generate
 
       - name: Run tests
-        run: cargo test --features safe-simd
+        run: cargo test --workspace --features "std avx512"
 
       - name: Run clippy
-        run: cargo clippy --features safe-simd -- -D warnings
+        run: cargo clippy --workspace --all-targets --features "std avx512" -- -D warnings
 
       - name: Check for changes
         id: changes

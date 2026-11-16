@@ -1,14 +1,14 @@
 //! Proc-macros for archmage SIMD capability tokens.
 //!
-//! [Official guide and examples](https://imazen.github.io/archmage/) ·
-//! [Intrinsics browser](https://imazen.github.io/archmage/intrinsics/) ·
+//! [Official guide and examples](https://lilith.github.io/archmage/) ·
+//! [Intrinsics browser](https://lilith.github.io/archmage/intrinsics/) ·
 //! [Archmage API](https://docs.rs/archmage/latest/archmage/) ·
 //! [Magetypes vector API](https://docs.rs/magetypes/latest/magetypes/)
 //!
 //! Applications should import these macros through `archmage`, which pins the
 //! compatible macro release. `#[magetypes]` generates functions; the separate
 //! magetypes crate supplies their vector types. See the
-//! [complete generic call chains](https://imazen.github.io/archmage/magetypes/dispatch/types-and-dispatch/).
+//! [complete generic call chains](https://lilith.github.io/archmage/magetypes/dispatch/types-and-dispatch/).
 //!
 //! Provides `#[arcane]`, `#[rite]`, `#[autoversion]`, `incant!`, and `#[magetypes]`.
 
@@ -51,7 +51,7 @@ use syn::{FnArg, PatType};
 #[cfg(test)]
 use token_discovery::*;
 
-// LightFn, filter_inline_attrs, is_lint_attr, filter_lint_attrs, gen_cfg_guard,
+// ItemFn helpers, filter_inline_attrs, is_lint_attr, filter_lint_attrs, gen_cfg_guard,
 // build_turbofish, replace_self_in_tokens, suffix_path → moved to common.rs
 // ArcaneArgs, arcane_impl, arcane_impl_* → moved to arcane.rs
 // generate_imports → moved to common.rs
@@ -60,7 +60,7 @@ use token_discovery::*;
 #[proc_macro_attribute]
 pub fn arcane(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(attr as ArcaneArgs);
-    let input_fn = parse_macro_input!(item as LightFn);
+    let input_fn = parse_macro_input!(item as syn::ItemFn);
     arcane_impl(input_fn, "arcane", args).into()
 }
 
@@ -71,7 +71,7 @@ pub fn arcane(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[doc(hidden)]
 pub fn simd_fn(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(attr as ArcaneArgs);
-    let input_fn = parse_macro_input!(item as LightFn);
+    let input_fn = parse_macro_input!(item as syn::ItemFn);
     arcane_impl(input_fn, "simd_fn", args).into()
 }
 
@@ -90,7 +90,7 @@ pub fn simd_fn(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn token_target_features_boundary(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(attr as ArcaneArgs);
-    let input_fn = parse_macro_input!(item as LightFn);
+    let input_fn = parse_macro_input!(item as syn::ItemFn);
     arcane_impl(input_fn, "token_target_features_boundary", args).into()
 }
 
@@ -182,7 +182,7 @@ pub fn token_target_features_boundary(attr: TokenStream, item: TokenStream) -> T
 #[proc_macro_attribute]
 pub fn rite(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(attr as RiteArgs);
-    let input_fn = parse_macro_input!(item as LightFn);
+    let input_fn = parse_macro_input!(item as syn::ItemFn);
     rite_impl(input_fn, args).into()
 }
 
@@ -199,7 +199,7 @@ pub fn rite(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn token_target_features(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(attr as RiteArgs);
-    let input_fn = parse_macro_input!(item as LightFn);
+    let input_fn = parse_macro_input!(item as syn::ItemFn);
     rite_impl(input_fn, args).into()
 }
 
@@ -273,7 +273,7 @@ pub fn token_target_features(attr: TokenStream, item: TokenStream) -> TokenStrea
 /// ```
 #[proc_macro_attribute]
 pub fn magetypes(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let input_fn = parse_macro_input!(item as LightFn);
+    let input_fn = parse_macro_input!(item as syn::ItemFn);
 
     // Parse attribute args: [rite,] [define(type, ...),] tier1, tier2(feature), ...
     //
@@ -673,7 +673,7 @@ pub fn dispatch_variant(input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn autoversion(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(attr as AutoversionArgs);
-    let input_fn = parse_macro_input!(item as LightFn);
+    let input_fn = parse_macro_input!(item as syn::ItemFn);
     autoversion_impl(input_fn, args).into()
 }
 
@@ -703,6 +703,8 @@ mod tests;
 /// `inline(none)`, `inline(hint)`, and `inline(never)` select explicit body policies.
 /// Per-output `make(inline(...) _v3)` overrides the definition-level policy.
 /// Definition-level policy does not alter proof-wrapper or dispatcher defaults.
+/// Target-feature proof wrappers emit compile-time token assertions unconditionally.
+/// (`wrap` or `_t`) to omit the token-name mismatch const check.
 #[proc_macro_attribute]
 pub fn attune(attr: TokenStream, item: TokenStream) -> TokenStream {
     attune::expand(attr.into(), item.into())

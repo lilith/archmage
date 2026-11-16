@@ -15,7 +15,7 @@
 //!   and `compiled_with()` for compile-time queries.
 //! - [`IntoConcreteToken`] — Enables generic dispatch. Given an opaque token,
 //!   try to downcast it to a concrete platform token.
-//! - Tier traits: [`HasX64V2`], [`HasX64V4`] (with `avx512`), [`HasNeon`],
+//! - Tier traits: [`HasX64V2`], [`HasX64V3`], [`HasX64V4`], [`HasNeon`],
 //!   [`HasNeonAes`], [`HasNeonSha3`] — For generic bounds when you want to
 //!   accept any token at a given capability level.
 //!
@@ -26,22 +26,21 @@
 //! means you rarely need `#[cfg(target_arch)]` in user code.
 //!
 //! **Friendly aliases:**
-//! - [`X64V3Token`] = [`X64V3Token`] — AVX2 + FMA (Haswell 2013+, Zen 1+)
-//! - [`Server64`] = [`X64V4Token`] — + AVX-512 (with `avx512` feature)
+//! - [`Desktop64`] = [`X64V3Token`] — AVX2 + FMA (Haswell 2013+, Zen 1+)
+//! - [`Server64`] = [`X64V4Token`] — + AVX-512 (token is unconditional; `avx512` feature enables intrinsics)
 //! - [`Arm64`] = [`NeonToken`] — NEON (all 64-bit ARM)
 //!
 //! Also includes: [`ScalarToken`] (always available), [`X64V2Token`],
 //! [`X64CryptoToken`] (V2 + PCLMULQDQ + AES-NI),
 //! [`X64V3CryptoToken`] (V3 + VPCLMULQDQ + VAES, Zen 3+/Alder Lake+),
 //! [`X64V3GfniCryptoToken`] (V3 Crypto + GFNI, including AVX2 without AVX-512),
-//! [`Wasm128Token`], [`Wasm128RelaxedToken`],
+//! [`X64V3VnniToken`] (V3 GFNI Crypto + ADX + SHA + VEX AVX-VNNI on non-AVX-512 client/hybrid CPUs),
+//! [`X64V3Vnni2Token`] (V3 VNNI + AVX-VNNI-INT8 + AVX-NE-CONVERT + AVX-IFMA, Arrow Lake+/Zen 6),
+//! [`Wasm128Token`], [`Wasm128RelaxedToken`], [`Wasm128RelaxedFmaToken`],
 //! [`NeonAesToken`], [`NeonSha3Token`], [`NeonCrcToken`],
-//! and the AVX-512 tokens ([`Avx512Token`], [`X64V4xToken`],
-//! [`Avx512Fp16Token`]) when the `avx512` feature is enabled.
+//! [`Avx512Token`], [`X64V4xToken`], and [`Avx512Fp16Token`].
 //!
 //! ## 3. Macros
-//!
-//! Requires the `macros` feature (enabled by default).
 //!
 //! - [`arcane`] — The SIMD macro. Generates `#[target_feature]` wrappers
 //!   with automatic `#[cfg(target_arch)]` gating. Use for all SIMD functions.
@@ -106,14 +105,15 @@
 //! incant!(func(data), [v1, v3, neon, scalar])  // explicit tiers (scalar required)
 //! ```
 //!
-//! Known tiers: `v1`, `v2`, `x64_crypto`, `v3`, `v4`, `v4x`, `neon`, `neon_aes`,
-//! `neon_sha3`, `neon_crc`, `arm_v2`, `arm_v3`, `wasm128`, `wasm128_relaxed`, `scalar`.
+//! Known tiers: `v1`, `v2`, `x64_crypto`, `v3`, `v3_crypto`, `v3_gfni_crypto`, `v3_vnni`,
+//! `v3_vnni2`, `v4`, `v4x`, `neon`, `neon_aes`, `neon_sha3`, `neon_crc`, `arm_v2`, `arm_v3`,
+//! `wasm128`, `wasm128_relaxed`, `wasm128_relaxed_fma`, `scalar`.
 //!
 //! **Required variants per platform (default tiers):**
 //!
 //! | Platform | Required | Optional |
 //! |----------|----------|----------|
-//! | x86_64 | `_v3`, `_scalar` | `_v4` (with `avx512` feature) |
+//! | x86_64 | `_v3`, `_scalar` | `_v4(cfg(avx512))` (opt-in) |
 //! | aarch64 | `_neon`, `_scalar` | — |
 //! | wasm32 | `_wasm128`, `_scalar` | — |
 //!
@@ -128,25 +128,36 @@
 
 //! ```
 
-// -- Traits --
-pub use crate::tokens::HasX64V2;
-pub use crate::tokens::HasX64V4;
+// -- Core Types & Traits --
+pub use crate::tokens::And;
 pub use crate::tokens::IntoConcreteToken;
+pub use crate::tokens::SameArch;
+pub use crate::tokens::SimdLeafToken;
 pub use crate::tokens::SimdToken;
-pub use crate::tokens::{HasArm64V2, HasArm64V3, HasNeon, HasNeonAes, HasNeonSha3};
+pub use crate::tokens::{
+    HasAdx, HasArm64V2, HasArm64V3, HasAvx512Bf16, HasAvx512Fp16, HasAvxIfma, HasAvxNeConvert,
+    HasAvxVnni, HasAvxVnniInt8, HasAvxVnniInt16, HasGfni, HasNeon, HasNeonAes, HasNeonBf16,
+    HasNeonCrc, HasNeonDotProd, HasNeonFcma, HasNeonFhm, HasNeonFp16, HasNeonI8mm, HasNeonRdm,
+    HasNeonSha2, HasNeonSha3, HasSha, HasSha512, HasWasm128, HasWasm128Relaxed,
+    HasWasm128RelaxedFma, HasX64Crypto, HasX64V1, HasX64V2, HasX64V3, HasX64V3Crypto,
+    HasX64V3GfniCrypto, HasX64V3Vnni, HasX64V3Vnni2, HasX64V4, HasX64V4x,
+};
 
 // -- Tokens (all compile on all platforms; summon() returns None on wrong arch) --
 pub use crate::tokens::ScalarToken;
 pub use crate::tokens::{
-    Arm64, Arm64V2Token, Arm64V3Token, NeonAesToken, NeonCrcToken, NeonSha3Token, NeonToken,
+    Arm64, Arm64V2Token, Arm64V3Token, NeonAesToken, NeonBf16Token, NeonCrcToken, NeonDotProdToken,
+    NeonFcmaToken, NeonFhmToken, NeonFp16Token, NeonI8mmToken, NeonRdmToken, NeonSha2Token,
+    NeonSha3Token, NeonToken,
 };
-#[allow(deprecated)]
 pub use crate::tokens::{
-    Avx2FmaToken, Desktop64, Sse2Token, X64CryptoToken, X64V1Token, X64V2Token, X64V3CryptoToken,
-    X64V3GfniCryptoToken, X64V3Token,
+    Avx512Fp16Token, Avx512ModernToken, Avx512Token, Desktop64, Server64, X64AdxToken,
+    X64Avx512Bf16Token, X64AvxIfmaToken, X64AvxNeConvertToken, X64AvxVnniInt8Token,
+    X64AvxVnniInt16Token, X64AvxVnniToken, X64CryptoToken, X64GfniToken, X64Sha512Token,
+    X64ShaToken, X64V1Token, X64V2Token, X64V3CryptoToken, X64V3GfniCryptoToken, X64V3Token,
+    X64V3Vnni2Token, X64V3VnniToken, X64V4Token, X64V4xToken,
 };
-pub use crate::tokens::{Avx512Fp16Token, Avx512Token, Server64, X64V4Token, X64V4xToken};
-pub use crate::tokens::{Wasm128RelaxedToken, Wasm128Token};
+pub use crate::tokens::{Wasm128RelaxedFmaToken, Wasm128RelaxedToken, Wasm128Token};
 
 // -- Macros --
 pub use archmage_macros::{

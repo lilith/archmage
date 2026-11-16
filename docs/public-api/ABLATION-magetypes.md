@@ -6,18 +6,17 @@
 split: `docs/public-api/x86_64/magetypes.txt` — this report predates it)
 **Method:** Read snapshot (4 MB / 46,496 lines) in sections via grep + source reads;
 org-wide grep for every candidate item, excluding the archmage repo dir itself, `target/`,
-`.jj/`, `docs/public-api/`, `downloaded-crates/`, and `archmage-artisan/`.
+`.jj/`, `docs/public-api/`, and `downloaded-crates/`.
 `docs/site/` content checked as "documented = KEEP."
 **Conservative bar:** flag only clear mistakes. If >1 % of items flagged, bar is too low.
 
 **Grep command template:**
 ```
-grep -r "<ITEM>" /home/lilith/work/ \
+grep -r "<ITEM>" ../ \
   --include="*.rs" \
   --exclude-dir=target \
   --exclude-dir=".jj" \
   --exclude-dir=archmage \
-  --exclude-dir=archmage-artisan \
   --exclude-dir=downloaded-crates \
   -l
 ```

@@ -69,7 +69,7 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
 name = "archmage"
-version = "0.9.31"
+version = "0.10.0"
 dependencies = [
  "archmage-macros",
  "macrotest",
@@ -90,7 +90,7 @@ dependencies = [
 
 [[package]]
 name = "archmage-macros"
-version = "0.9.31"
+version = "0.10.0"
 dependencies = [
  "prettyplease 0.3.0",
  "proc-macro2",
@@ -331,7 +331,7 @@ dependencies = [
 
 [[package]]
 name = "magemath"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "archmage",
  "magetypes",
@@ -339,7 +339,7 @@ dependencies = [
 
 [[package]]
 name = "magetypes"
-version = "0.9.31"
+version = "0.10.0"
 dependencies = [
  "archmage",
  "macrotest",
@@ -1014,6 +1014,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "indoc",
+ "proc-macro2",
  "quote",
  "regex",
  "serde",

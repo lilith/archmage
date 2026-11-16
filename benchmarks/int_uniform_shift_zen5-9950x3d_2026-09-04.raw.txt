@@ -321,7 +321,7 @@
   ╰─ _      66.5 ±0.3µs  [66.3–66.7]µs   
 [zenbench] calibration: int=0.19ns/iter mem_bw=103.8GiB/s mem_lat=9.1ns
 [zenbench] timer resolution: 10ns, loop overhead: 0.19ns/iter, TSC: 4.300 ticks/ns (invariant)
-[zenbench] results → /tmp/zenbench/zenbench-1788479851-8a390.txt
+[zenbench] results → <scratch>/zenbench/zenbench-1788479851-8a390.txt
 
 ═══════════════════════════════════════════════════════════════
   zenbench  1788479851-8a390
@@ -657,7 +657,7 @@
   ╰─ _      67.1 ±0.4µs  [67.0–67.3]µs   
 [zenbench] calibration: int=0.19ns/iter mem_bw=92.9GiB/s mem_lat=9.1ns
 [zenbench] timer resolution: 10ns, loop overhead: 0.19ns/iter, TSC: 4.300 ticks/ns (invariant)
-[zenbench] results → /tmp/zenbench/zenbench-1788479877-95267.txt
+[zenbench] results → <scratch>/zenbench/zenbench-1788479877-95267.txt
 
 ═══════════════════════════════════════════════════════════════
   zenbench  1788479877-95267

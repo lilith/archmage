@@ -162,7 +162,7 @@ Works with concrete tokens, `impl Trait` bounds, and generic parameters.
 #![feature(target_feature_inline_always)]
 
 #[arcane(inline_always)]
-fn fast_kernel(token: Avx2Token, data: &mut [f32]) {
+fn fast_kernel(token: X64V3Token, data: &mut [f32]) {
     // Inner function will use #[inline(always)]
 }
 ```
@@ -172,11 +172,5 @@ This rejects accidental token-name aliases without reevaluating a tag comparison
 in every expansion. The matching archmage release pins this macro crate exactly.
 Getting past the check takes deliberately shadowing archmage's type names and
 copying their hidden constants, which gives undefined behavior on CPUs without
-the features; see the [safety model](https://imazen.github.io/archmage/archmage/concepts/safety/).
+the features; see the [safety model](https://lilith.github.io/archmage/archmage/concepts/safety/).
 
-`#[arcane(suppress_const_test)]` omits this accidental-misuse check for trusted
-generators. The caller must ensure the actual token proves the tier selected
-by its name. Intrinsic target-feature checking remains enabled, but does not
-authenticate that token: it checks instructions against the generated feature
-context. Ordinary callers should keep the default check enabled. This option
-is intended for generators whose registry already establishes that match.

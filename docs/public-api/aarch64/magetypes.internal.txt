@@ -11,17 +11,26 @@
 #
 #   pub modules                                 2
 #   pub types (struct/enum/trait/alias)         1
+#   pub consts/statics                          4
 #   free functions                             29
+#   inherent methods                            2
 #   trait roster entries (type × trait)        14
 #
 # per-module pub lines:
-#   (root)                            2
-#   bypass_adversarial                1
+#   (root)                            3
+#   bypass_adversarial                3
 #   nostd_math                       21
-#   simd                              8
+#   prelude                           1
+#   simd                             10
 
-## items (25 lines)
+## items (31 lines)
 
+pub const T::__IS_SCALAR_BACKED: bool
+pub const prelude::MagetypesToken::__IS_SCALAR_BACKED: bool
+pub const simd::MagetypesToken::__IS_SCALAR_BACKED: bool
+pub const simd::generic::MagetypesToken::__IS_SCALAR_BACKED: bool
+pub fn bypass_adversarial::BypassAdversarialProofs::clone(&self) -> bypass_adversarial::BypassAdversarialProofs
+pub fn bypass_adversarial::BypassAdversarialProofs::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 pub fn nostd_math::cbrt_lowp_f32(f32) -> f32
 pub fn nostd_math::cbrt_midp_f32(f32) -> f32
 pub fn nostd_math::ceil(f64) -> f64

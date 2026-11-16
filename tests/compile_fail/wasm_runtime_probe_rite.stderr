@@ -1,0 +1,5 @@
+error: `wasm128_relaxed_fma` requires a runtime fusion probe beyond compile-time `#[target_feature]`: take a `Wasm128RelaxedFmaToken` parameter (e.g., `#[attune(_*_t, +wasm128_relaxed_fma)]` or `fn probe(_: Wasm128RelaxedFmaToken)`) or mark the function `unsafe fn`
+ --> tests/compile_fail/wasm_runtime_probe_rite.rs:4:4
+  |
+4 | fn probe() {}
+  |    ^^^^^

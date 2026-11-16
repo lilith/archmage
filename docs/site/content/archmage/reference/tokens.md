@@ -4,7 +4,7 @@ weight = 1
 +++
 
 Use feature requirements, not CPU marketing names, to select tokens. The
-[token registry](https://github.com/imazen/archmage/blob/main/token-registry.toml)
+[token registry](https://github.com/lilith/archmage/blob/main/token-registry.toml)
 is the complete list of instruction features and implication edges. This table
 is an orientation, not a replacement for those full feature sets.
 
@@ -21,6 +21,7 @@ is an orientation, not a replacement for those full feature sets.
 | ARM AES/SHA3/CRC tokens | Narrow feature groups for specialized kernels |
 | `Wasm128Token` | WebAssembly SIMD128 compilation support |
 | `Wasm128RelaxedToken` | Relaxed SIMD support; distinct numerical semantics |
+| `Wasm128RelaxedFmaToken` | Relaxed SIMD plus runtime probe confirming single-rounding FMA |
 | `ScalarToken` | Always-available scalar backend |
 
 `Desktop64` aliases V3; `Arm64` aliases NEON; `Server64` aliases V4. Aliases do

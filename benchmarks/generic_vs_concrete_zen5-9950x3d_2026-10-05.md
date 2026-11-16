@@ -6,7 +6,7 @@ Host: AMD Ryzen 9 9950X3D, Linux 7.0.0-34-generic, rustc 1.99.0 (b940084d7
 documentation commits; no code change). Raw means: the `.raw.txt` file beside
 this one.
 
-Commands: run 1 `~/work/zen/scripts/run-heavy --mem 16G -- cargo bench -p
+Commands: run 1 `cargo bench -p
 magetypes --bench generic_vs_concrete`; runs 2 and 3 the same `cargo bench`
 under `nice -n 19`. zenbench printed its "0 rounds" warning on every group; the
 means are still measured.

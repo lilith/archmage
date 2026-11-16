@@ -32,8 +32,7 @@
 //!    feature context covers the tier, and any other call is `unsafe`
 //!    with the obligation on the caller. magetypes never forges: the
 //!    soundness scanner permits explicit `archmage::Token::from_context()`
-//!    only in safe functions with matching target features, and rejects
-//!    `forge_token_dangerously` in this crate.
+//!    only in safe functions with matching target features.
 //!
 //! 2. **The repr-construction operation is sound under those features.**
 //!    For native intrinsic paths, the chosen instruction is documented
@@ -68,7 +67,7 @@
 //! | f32x8→f32x16 | X64V4Token | `__m512` (AVX-512) | `vinsertf32x8` (native) |
 //!
 //! V4xToken / Avx512Fp16Token inherit X64V4Token's behavior at every
-//! width via the same backend delegation in `impls/x86_v4_f32_delegated.rs`.
+//! width via the unified `Sealed` + blanket delegation in `impls/delegated.rs`.
 
 use archmage::SimdToken;
 
@@ -107,113 +106,132 @@ pub trait F32x8FromHalves:
 
     /// Extract the high 128-bit half of a 256-bit representation.
     fn high(self, wide: <Self as F32x8Backend>::Repr) -> <Self as F32x4Backend>::Repr;
+
+    /// Multiply `a` (`f32x8`) by `v_in[LANE]` (`LANE` in `0..4`, from `f32x4`) and
+    /// accumulate into `acc`: `a * v_in[LANE] + acc`.
+    #[inline(always)]
+    fn mul_add_lane4_relaxed<const LANE: i32>(
+        self,
+        a: <Self as F32x8Backend>::Repr,
+        v_in: <Self as F32x4Backend>::Repr,
+        acc: <Self as F32x8Backend>::Repr,
+    ) -> <Self as F32x8Backend>::Repr {
+        const { assert!(LANE >= 0 && LANE < 4, "LANE must be in 0..4") };
+        let arr = <Self as F32x4Backend>::to_array(self, v_in);
+        let b = <Self as F32x8Backend>::splat(self, arr[LANE as usize]);
+        <Self as F32x8Backend>::mul_add(self, a, b, acc)
+    }
 }
 
-// X64V3Token (AVX) — load-bearing token, native intrinsics
-//
-// Soundness: X64V3Token's feature set includes AVX. `_mm256_insertf128_ps`
-// requires AVX (Intel SDM Vol. 2A, INSERTF128 — encoded as VEX.256), which
-// the token guarantees. `_mm256_castps128_ps256` is a no-op cast.
-// `_mm256_extractf128_ps` requires AVX (EXTRACTF128). All operate on stack
-// register state with no aliasing concerns.
-#[cfg(target_arch = "x86_64")]
-impl F32x8FromHalves for archmage::X64V3Token {
-    #[archmage::arcane(suppress_const_test, _self = archmage::X64V3Token)]
+/// Crate-private canonical implementation of 128↔256 f32 cross-width ops,
+/// implemented only for the four canonical narrow base tokens
+/// (`ScalarToken`, `X64V3Token`, `NeonToken`, `Wasm128Token`).
+pub trait NarrowCrossWidthOps:
+    crate::simd::backends::ops::F32x8Ops + crate::simd::backends::ops::F32x4Ops
+{
+    fn from_halves_x8(
+        self,
+        lo: <Self as crate::simd::backends::ops::F32x4Ops>::Repr,
+        hi: <Self as crate::simd::backends::ops::F32x4Ops>::Repr,
+    ) -> <Self as crate::simd::backends::ops::F32x8Ops>::Repr;
+
+    fn low_x8(
+        self,
+        wide: <Self as crate::simd::backends::ops::F32x8Ops>::Repr,
+    ) -> <Self as crate::simd::backends::ops::F32x4Ops>::Repr;
+
+    fn high_x8(
+        self,
+        wide: <Self as crate::simd::backends::ops::F32x8Ops>::Repr,
+    ) -> <Self as crate::simd::backends::ops::F32x4Ops>::Repr;
+
+    fn mul_add_lane4_relaxed_x8<const LANE: i32>(
+        self,
+        a: <Self as crate::simd::backends::ops::F32x8Ops>::Repr,
+        v_in: <Self as crate::simd::backends::ops::F32x4Ops>::Repr,
+        acc: <Self as crate::simd::backends::ops::F32x8Ops>::Repr,
+    ) -> <Self as crate::simd::backends::ops::F32x8Ops>::Repr;
+}
+
+impl<T: SimdToken + Sealed + Copy + 'static> F32x8FromHalves for T {
+    #[inline(always)]
     fn from_halves(
+        self,
+        lo: <Self as F32x4Backend>::Repr,
+        hi: <Self as F32x4Backend>::Repr,
+    ) -> <Self as F32x8Backend>::Repr {
+        self.f32x8_from_halves(lo, hi)
+    }
+
+    #[inline(always)]
+    fn low(self, wide: <Self as F32x8Backend>::Repr) -> <Self as F32x4Backend>::Repr {
+        self.f32x8_low(wide)
+    }
+
+    #[inline(always)]
+    fn high(self, wide: <Self as F32x8Backend>::Repr) -> <Self as F32x4Backend>::Repr {
+        self.f32x8_high(wide)
+    }
+
+    #[inline(always)]
+    fn mul_add_lane4_relaxed<const LANE: i32>(
+        self,
+        a: <Self as F32x8Backend>::Repr,
+        v_in: <Self as F32x4Backend>::Repr,
+        acc: <Self as F32x8Backend>::Repr,
+    ) -> <Self as F32x8Backend>::Repr {
+        self.mul_add_lane4_relaxed_x8::<LANE>(a, v_in, acc)
+    }
+}
+
+// X64V3Token (AVX) — canonical x86 narrow implementation, native intrinsics
+#[cfg(target_arch = "x86_64")]
+impl NarrowCrossWidthOps for archmage::X64V3Token {
+    #[archmage::arcane(_self = archmage::X64V3Token)]
+    fn from_halves_x8(
         self,
         lo: core::arch::x86_64::__m128,
         hi: core::arch::x86_64::__m128,
     ) -> core::arch::x86_64::__m256 {
-        // SAFETY: X64V3Token proves AVX is available; both args are valid
-        // initialized __m128 values; intrinsic is pure.
         core::arch::x86_64::_mm256_insertf128_ps(
             core::arch::x86_64::_mm256_castps128_ps256(lo),
             hi,
             1,
         )
     }
-    #[archmage::arcane(suppress_const_test, _self = archmage::X64V3Token)]
-    fn low(self, wide: core::arch::x86_64::__m256) -> core::arch::x86_64::__m128 {
-        // SAFETY: X64V3Token proves AVX. _mm256_castps256_ps128 is a free
-        // truncation (no instruction in well-optimized output).
+    #[archmage::arcane(_self = archmage::X64V3Token)]
+    fn low_x8(self, wide: core::arch::x86_64::__m256) -> core::arch::x86_64::__m128 {
         core::arch::x86_64::_mm256_castps256_ps128(wide)
     }
-    #[archmage::arcane(suppress_const_test, _self = archmage::X64V3Token)]
-    fn high(self, wide: core::arch::x86_64::__m256) -> core::arch::x86_64::__m128 {
-        // SAFETY: X64V3Token proves AVX. _mm256_extractf128_ps with imm=1
-        // returns the high lane; intrinsic is pure.
+    #[archmage::arcane(_self = archmage::X64V3Token)]
+    fn high_x8(self, wide: core::arch::x86_64::__m256) -> core::arch::x86_64::__m128 {
         core::arch::x86_64::_mm256_extractf128_ps(wide, 1)
     }
-}
-
-// X64V4Token / X64V4xToken / Avx512Fp16Token — same Repr as V3 (delegation
-// installed in impls/x86_v4_f32_delegated.rs). Soundness inherited from V3
-// by the V3 ⊊ V4 subset relation (proved in that file's module doc).
-// Each impl downcasts via the guaranteed `.v3()` extractor and forwards.
-#[cfg(all(target_arch = "x86_64", feature = "avx512"))]
-impl F32x8FromHalves for archmage::X64V4Token {
-    #[inline(always)]
-    fn from_halves(
+    #[archmage::arcane(_self = archmage::X64V3Token)]
+    fn mul_add_lane4_relaxed_x8<const LANE: i32>(
         self,
-        lo: core::arch::x86_64::__m128,
-        hi: core::arch::x86_64::__m128,
+        a: core::arch::x86_64::__m256,
+        v_in: core::arch::x86_64::__m128,
+        acc: core::arch::x86_64::__m256,
     ) -> core::arch::x86_64::__m256 {
-        <archmage::X64V3Token as F32x8FromHalves>::from_halves(self.v3(), lo, hi)
-    }
-    #[inline(always)]
-    fn low(self, wide: core::arch::x86_64::__m256) -> core::arch::x86_64::__m128 {
-        <archmage::X64V3Token as F32x8FromHalves>::low(self.v3(), wide)
-    }
-    #[inline(always)]
-    fn high(self, wide: core::arch::x86_64::__m256) -> core::arch::x86_64::__m128 {
-        <archmage::X64V3Token as F32x8FromHalves>::high(self.v3(), wide)
-    }
-}
-#[cfg(all(target_arch = "x86_64", feature = "avx512"))]
-impl F32x8FromHalves for archmage::X64V4xToken {
-    #[inline(always)]
-    fn from_halves(
-        self,
-        lo: core::arch::x86_64::__m128,
-        hi: core::arch::x86_64::__m128,
-    ) -> core::arch::x86_64::__m256 {
-        <archmage::X64V3Token as F32x8FromHalves>::from_halves(self.v3(), lo, hi)
-    }
-    #[inline(always)]
-    fn low(self, wide: core::arch::x86_64::__m256) -> core::arch::x86_64::__m128 {
-        <archmage::X64V3Token as F32x8FromHalves>::low(self.v3(), wide)
-    }
-    #[inline(always)]
-    fn high(self, wide: core::arch::x86_64::__m256) -> core::arch::x86_64::__m128 {
-        <archmage::X64V3Token as F32x8FromHalves>::high(self.v3(), wide)
-    }
-}
-#[cfg(all(target_arch = "x86_64", feature = "avx512"))]
-impl F32x8FromHalves for archmage::Avx512Fp16Token {
-    #[inline(always)]
-    fn from_halves(
-        self,
-        lo: core::arch::x86_64::__m128,
-        hi: core::arch::x86_64::__m128,
-    ) -> core::arch::x86_64::__m256 {
-        <archmage::X64V3Token as F32x8FromHalves>::from_halves(self.v3(), lo, hi)
-    }
-    #[inline(always)]
-    fn low(self, wide: core::arch::x86_64::__m256) -> core::arch::x86_64::__m128 {
-        <archmage::X64V3Token as F32x8FromHalves>::low(self.v3(), wide)
-    }
-    #[inline(always)]
-    fn high(self, wide: core::arch::x86_64::__m256) -> core::arch::x86_64::__m128 {
-        <archmage::X64V3Token as F32x8FromHalves>::high(self.v3(), wide)
+        use core::arch::x86_64::{_mm_permute_ps, _mm256_broadcastss_ps, _mm256_fmadd_ps};
+        const { assert!(LANE >= 0 && LANE < 4, "LANE must be in 0..4") };
+        let splat = match LANE {
+            0 => _mm256_broadcastss_ps(v_in),
+            1 => _mm256_broadcastss_ps(_mm_permute_ps::<0x55>(v_in)),
+            2 => _mm256_broadcastss_ps(_mm_permute_ps::<0xAA>(v_in)),
+            3 => _mm256_broadcastss_ps(_mm_permute_ps::<0xFF>(v_in)),
+            _ => unreachable!(),
+        };
+        _mm256_fmadd_ps(a, splat, acc)
     }
 }
 
-// NeonToken — polyfilled wider Repr. Soundness: array construction; no
-// platform feature beyond what NeonToken already proves (AdvSIMD).
+// NeonToken — polyfilled wider Repr, native vfmaq_laneq_f32
 #[cfg(target_arch = "aarch64")]
-impl F32x8FromHalves for archmage::NeonToken {
+impl NarrowCrossWidthOps for archmage::NeonToken {
     #[inline(always)]
-    fn from_halves(
+    fn from_halves_x8(
         self,
         lo: core::arch::aarch64::float32x4_t,
         hi: core::arch::aarch64::float32x4_t,
@@ -222,22 +240,57 @@ impl F32x8FromHalves for archmage::NeonToken {
         [lo, hi]
     }
     #[inline(always)]
-    fn low(self, wide: [core::arch::aarch64::float32x4_t; 2]) -> core::arch::aarch64::float32x4_t {
+    fn low_x8(
+        self,
+        wide: [core::arch::aarch64::float32x4_t; 2],
+    ) -> core::arch::aarch64::float32x4_t {
         let _ = self;
         wide[0]
     }
     #[inline(always)]
-    fn high(self, wide: [core::arch::aarch64::float32x4_t; 2]) -> core::arch::aarch64::float32x4_t {
+    fn high_x8(
+        self,
+        wide: [core::arch::aarch64::float32x4_t; 2],
+    ) -> core::arch::aarch64::float32x4_t {
         let _ = self;
         wide[1]
     }
+    #[archmage::arcane(_self = archmage::NeonToken)]
+    fn mul_add_lane4_relaxed_x8<const LANE: i32>(
+        self,
+        a: [core::arch::aarch64::float32x4_t; 2],
+        v_in: core::arch::aarch64::float32x4_t,
+        acc: [core::arch::aarch64::float32x4_t; 2],
+    ) -> [core::arch::aarch64::float32x4_t; 2] {
+        use core::arch::aarch64::vfmaq_laneq_f32;
+        const { assert!(LANE >= 0 && LANE < 4, "LANE must be in 0..4") };
+        match LANE {
+            0 => [
+                vfmaq_laneq_f32::<0>(acc[0], a[0], v_in),
+                vfmaq_laneq_f32::<0>(acc[1], a[1], v_in),
+            ],
+            1 => [
+                vfmaq_laneq_f32::<1>(acc[0], a[0], v_in),
+                vfmaq_laneq_f32::<1>(acc[1], a[1], v_in),
+            ],
+            2 => [
+                vfmaq_laneq_f32::<2>(acc[0], a[0], v_in),
+                vfmaq_laneq_f32::<2>(acc[1], a[1], v_in),
+            ],
+            3 => [
+                vfmaq_laneq_f32::<3>(acc[0], a[0], v_in),
+                vfmaq_laneq_f32::<3>(acc[1], a[1], v_in),
+            ],
+            _ => unreachable!(),
+        }
+    }
 }
 
-// Wasm128Token — same shape as NEON: polyfill via `[v128; 2]`.
+// Wasm128Token — polyfill via `[v128; 2]`
 #[cfg(target_arch = "wasm32")]
-impl F32x8FromHalves for archmage::Wasm128Token {
+impl NarrowCrossWidthOps for archmage::Wasm128Token {
     #[inline(always)]
-    fn from_halves(
+    fn from_halves_x8(
         self,
         lo: core::arch::wasm32::v128,
         hi: core::arch::wasm32::v128,
@@ -246,33 +299,93 @@ impl F32x8FromHalves for archmage::Wasm128Token {
         [lo, hi]
     }
     #[inline(always)]
-    fn low(self, wide: [core::arch::wasm32::v128; 2]) -> core::arch::wasm32::v128 {
+    fn low_x8(self, wide: [core::arch::wasm32::v128; 2]) -> core::arch::wasm32::v128 {
         let _ = self;
         wide[0]
     }
     #[inline(always)]
-    fn high(self, wide: [core::arch::wasm32::v128; 2]) -> core::arch::wasm32::v128 {
+    fn high_x8(self, wide: [core::arch::wasm32::v128; 2]) -> core::arch::wasm32::v128 {
         let _ = self;
         wide[1]
     }
+    #[inline(always)]
+    fn mul_add_lane4_relaxed_x8<const LANE: i32>(
+        self,
+        a: [core::arch::wasm32::v128; 2],
+        v_in: core::arch::wasm32::v128,
+        acc: [core::arch::wasm32::v128; 2],
+    ) -> [core::arch::wasm32::v128; 2] {
+        use core::arch::wasm32::i32x4_shuffle;
+        const { assert!(LANE >= 0 && LANE < 4, "LANE must be in 0..4") };
+        let splat = match LANE {
+            0 => i32x4_shuffle::<0, 0, 0, 0>(v_in, v_in),
+            1 => i32x4_shuffle::<1, 1, 1, 1>(v_in, v_in),
+            2 => i32x4_shuffle::<2, 2, 2, 2>(v_in, v_in),
+            3 => i32x4_shuffle::<3, 3, 3, 3>(v_in, v_in),
+            _ => unreachable!(),
+        };
+        [
+            crate::wasm_fma::madd_f32x4(self, a[0], splat, acc[0]),
+            crate::wasm_fma::madd_f32x4(self, a[1], splat, acc[1]),
+        ]
+    }
+}
+
+#[cfg(all(
+    target_arch = "wasm32",
+    target_feature = "simd128",
+    target_feature = "relaxed-simd"
+))]
+#[archmage::arcane]
+pub(crate) fn wasm_fma_mul_add_lane4_relaxed<const LANE: i32>(
+    _token: archmage::Wasm128RelaxedFmaToken,
+    a: [core::arch::wasm32::v128; 2],
+    v_in: core::arch::wasm32::v128,
+    acc: [core::arch::wasm32::v128; 2],
+) -> [core::arch::wasm32::v128; 2] {
+    use core::arch::wasm32::{f32x4_relaxed_madd, i32x4_shuffle};
+    const { assert!(LANE >= 0 && LANE < 4, "LANE must be in 0..4") };
+    let splat = match LANE {
+        0 => i32x4_shuffle::<0, 0, 0, 0>(v_in, v_in),
+        1 => i32x4_shuffle::<1, 1, 1, 1>(v_in, v_in),
+        2 => i32x4_shuffle::<2, 2, 2, 2>(v_in, v_in),
+        3 => i32x4_shuffle::<3, 3, 3, 3>(v_in, v_in),
+        _ => unreachable!(),
+    };
+    [
+        f32x4_relaxed_madd(a[0], splat, acc[0]),
+        f32x4_relaxed_madd(a[1], splat, acc[1]),
+    ]
 }
 
 // ScalarToken — pure array math. Sound on every platform.
-impl F32x8FromHalves for archmage::ScalarToken {
+impl NarrowCrossWidthOps for archmage::ScalarToken {
     #[inline(always)]
-    fn from_halves(self, lo: [f32; 4], hi: [f32; 4]) -> [f32; 8] {
+    fn from_halves_x8(self, lo: [f32; 4], hi: [f32; 4]) -> [f32; 8] {
         let _ = self;
         [lo[0], lo[1], lo[2], lo[3], hi[0], hi[1], hi[2], hi[3]]
     }
     #[inline(always)]
-    fn low(self, wide: [f32; 8]) -> [f32; 4] {
+    fn low_x8(self, wide: [f32; 8]) -> [f32; 4] {
         let _ = self;
         [wide[0], wide[1], wide[2], wide[3]]
     }
     #[inline(always)]
-    fn high(self, wide: [f32; 8]) -> [f32; 4] {
+    fn high_x8(self, wide: [f32; 8]) -> [f32; 4] {
         let _ = self;
         [wide[4], wide[5], wide[6], wide[7]]
+    }
+    #[inline(always)]
+    fn mul_add_lane4_relaxed_x8<const LANE: i32>(
+        self,
+        a: [f32; 8],
+        v_in: [f32; 4],
+        acc: [f32; 8],
+    ) -> [f32; 8] {
+        let _ = self;
+        const { assert!(LANE >= 0 && LANE < 4, "LANE must be in 0..4") };
+        let b = v_in[LANE as usize];
+        core::array::from_fn(|i| a[i] * b + acc[i])
     }
 }
 
@@ -309,6 +422,33 @@ impl<T: F32x8FromHalves> f32x8<T> {
     pub fn split(self) -> (f32x4<T>, f32x4<T>) {
         (self.low(), self.high())
     }
+
+    /// Lane-indexed multiply-add from a 4-lane `f32x4<T>` input group:
+    /// `self * v_in[LANE] + acc` (`LANE` in `0..4`).
+    ///
+    /// Designed for NHWC pointwise (`1x1`), stem, and transposed convolutions that
+    /// load 4 consecutive input channels once into `f32x4<T>` and accumulate into
+    /// 8-lane output weight vectors (`f32x8<T>`). On ARM64 NEON this lowers to two
+    /// `vfmaq_laneq_f32` (`fmla v_acc.4s, v_w.4s, v_in.s[LANE]`) instructions with
+    /// zero `dup` / splat instructions. Fails to compile if `LANE` is outside `0..4`.
+    #[inline(always)]
+    pub fn mul_add_lane4_relaxed<const LANE: i32>(self, v_in: f32x4<T>, acc: Self) -> Self {
+        const {
+            assert!(
+                LANE >= 0 && LANE < 4,
+                "f32x8::mul_add_lane4_relaxed LANE must be in 0..4"
+            )
+        };
+        Self::from_repr_unchecked(
+            self.1,
+            <T as F32x8FromHalves>::mul_add_lane4_relaxed::<LANE>(
+                self.1,
+                self.into_repr(),
+                v_in.into_repr(),
+                acc.into_repr(),
+            ),
+        )
+    }
 }
 
 // ============================================================================
@@ -340,175 +480,77 @@ pub trait F32x16FromHalves:
     fn high(self, wide: <Self as F32x16Backend>::Repr) -> <Self as F32x8Backend>::Repr;
 }
 
-// X64V3Token — f32x16 polyfills to `[__m256; 2]`. Sound: array construction;
-// no AVX-512 needed (the polyfill repr stays in V3 territory).
-#[cfg(all(target_arch = "x86_64", feature = "w512"))]
-impl F32x16FromHalves for archmage::X64V3Token {
-    #[inline(always)]
-    fn from_halves(
-        self,
-        lo: core::arch::x86_64::__m256,
-        hi: core::arch::x86_64::__m256,
-    ) -> [core::arch::x86_64::__m256; 2] {
-        let _ = self;
-        [lo, hi]
-    }
-    #[inline(always)]
-    fn low(self, wide: [core::arch::x86_64::__m256; 2]) -> core::arch::x86_64::__m256 {
-        let _ = self;
-        wide[0]
-    }
-    #[inline(always)]
-    fn high(self, wide: [core::arch::x86_64::__m256; 2]) -> core::arch::x86_64::__m256 {
-        let _ = self;
-        wide[1]
-    }
-}
-
-// X64V4Token — native AVX-512. f32x16<V4>::Repr is `__m512`; f32x8<V4>::Repr
-// is V3-delegated `__m256`.
-//
-// Soundness: V4 token proves AVX-512F + AVX-512DQ + AVX-512VL.
-// `_mm512_insertf32x8` (Intel SDM, VINSERTF32X8 — EVEX.512) requires
-// AVX-512DQ for the variant taking a __m256, which V4 includes.
-// `_mm512_castps256_ps512` is a no-op cast (the upper bits are immediately
-// overwritten by the insert). For low/high: `_mm512_castps512_ps256`
-// truncates; `_mm512_extractf32x8_ps` (AVX-512DQ) returns the high 256-bit
-// lane.
-#[cfg(all(target_arch = "x86_64", feature = "avx512"))]
-impl F32x16FromHalves for archmage::X64V4Token {
-    #[archmage::arcane(suppress_const_test, _self = archmage::X64V4Token)]
-    fn from_halves(
-        self,
-        lo: core::arch::x86_64::__m256,
-        hi: core::arch::x86_64::__m256,
-    ) -> core::arch::x86_64::__m512 {
-        // SAFETY: V4 proves AVX-512F + AVX-512DQ + AVX-512VL.
-        core::arch::x86_64::_mm512_insertf32x8(
-            core::arch::x86_64::_mm512_castps256_ps512(lo),
-            hi,
-            1,
-        )
-    }
-    #[archmage::arcane(suppress_const_test, _self = archmage::X64V4Token)]
-    fn low(self, wide: core::arch::x86_64::__m512) -> core::arch::x86_64::__m256 {
-        // SAFETY: V4 proves AVX-512. _mm512_castps512_ps256 is a free truncation.
-        core::arch::x86_64::_mm512_castps512_ps256(wide)
-    }
-    #[archmage::arcane(suppress_const_test, _self = archmage::X64V4Token)]
-    fn high(self, wide: core::arch::x86_64::__m512) -> core::arch::x86_64::__m256 {
-        // SAFETY: V4 proves AVX-512DQ. _mm512_extractf32x8_ps requires DQ.
-        core::arch::x86_64::_mm512_extractf32x8_ps(wide, 1)
-    }
-}
-
-// X64V4xToken — same as V4 (DQ available, additional extensions don't
-// change f32x16's representation). Forwarded via `.v4()` extractor.
-#[cfg(all(target_arch = "x86_64", feature = "avx512"))]
-impl F32x16FromHalves for archmage::X64V4xToken {
-    #[inline(always)]
-    fn from_halves(
-        self,
-        lo: core::arch::x86_64::__m256,
-        hi: core::arch::x86_64::__m256,
-    ) -> core::arch::x86_64::__m512 {
-        <archmage::X64V4Token as F32x16FromHalves>::from_halves(self.v4(), lo, hi)
-    }
-    #[inline(always)]
-    fn low(self, wide: core::arch::x86_64::__m512) -> core::arch::x86_64::__m256 {
-        <archmage::X64V4Token as F32x16FromHalves>::low(self.v4(), wide)
-    }
-    #[inline(always)]
-    fn high(self, wide: core::arch::x86_64::__m512) -> core::arch::x86_64::__m256 {
-        <archmage::X64V4Token as F32x16FromHalves>::high(self.v4(), wide)
-    }
-}
-// Avx512Fp16Token does NOT implement F32x16Backend on origin/main, so it
-// cannot implement F32x16FromHalves. Users with an Avx512Fp16Token who need
-// f32x16 must extract to X64V4Token first via the standard token-extractor
-// chain. (Avx512Fp16Token does have F32x4 / F32x8 via the delegation in
-// `impls/x86_v4_f32_delegated.rs`, so the W128↔W256 pair above works for it.)
-
-// NeonToken — cascade polyfill. f32x8<NEON> is `[float32x4_t; 2]`,
-// f32x16<NEON> is `[float32x4_t; 4]`. from_halves flattens.
-#[cfg(all(target_arch = "aarch64", feature = "w512"))]
-impl F32x16FromHalves for archmage::NeonToken {
-    #[inline(always)]
-    fn from_halves(
-        self,
-        lo: [core::arch::aarch64::float32x4_t; 2],
-        hi: [core::arch::aarch64::float32x4_t; 2],
-    ) -> [core::arch::aarch64::float32x4_t; 4] {
-        let _ = self;
-        [lo[0], lo[1], hi[0], hi[1]]
-    }
-    #[inline(always)]
-    fn low(
-        self,
-        wide: [core::arch::aarch64::float32x4_t; 4],
-    ) -> [core::arch::aarch64::float32x4_t; 2] {
-        let _ = self;
-        [wide[0], wide[1]]
-    }
-    #[inline(always)]
-    fn high(
-        self,
-        wide: [core::arch::aarch64::float32x4_t; 4],
-    ) -> [core::arch::aarch64::float32x4_t; 2] {
-        let _ = self;
-        [wide[2], wide[3]]
-    }
-}
-
-// Wasm128Token — cascade polyfill, same shape as NEON.
-#[cfg(all(target_arch = "wasm32", feature = "w512"))]
-impl F32x16FromHalves for archmage::Wasm128Token {
-    #[inline(always)]
-    fn from_halves(
-        self,
-        lo: [core::arch::wasm32::v128; 2],
-        hi: [core::arch::wasm32::v128; 2],
-    ) -> [core::arch::wasm32::v128; 4] {
-        let _ = self;
-        [lo[0], lo[1], hi[0], hi[1]]
-    }
-    #[inline(always)]
-    fn low(self, wide: [core::arch::wasm32::v128; 4]) -> [core::arch::wasm32::v128; 2] {
-        let _ = self;
-        [wide[0], wide[1]]
-    }
-    #[inline(always)]
-    fn high(self, wide: [core::arch::wasm32::v128; 4]) -> [core::arch::wasm32::v128; 2] {
-        let _ = self;
-        [wide[2], wide[3]]
-    }
-}
-
-// ScalarToken — pure array math.
 #[cfg(feature = "w512")]
-impl F32x16FromHalves for archmage::ScalarToken {
+impl<T: SimdToken + Sealed + Copy + 'static> F32x16FromHalves for T {
     #[inline(always)]
-    fn from_halves(self, lo: [f32; 8], hi: [f32; 8]) -> [f32; 16] {
-        let _ = self;
-        let mut out = [0.0f32; 16];
-        out[..8].copy_from_slice(&lo);
-        out[8..].copy_from_slice(&hi);
-        out
+    fn from_halves(
+        self,
+        lo: <Self as F32x8Backend>::Repr,
+        hi: <Self as F32x8Backend>::Repr,
+    ) -> <Self as F32x16Backend>::Repr {
+        self.f32x16_from_halves(lo, hi)
     }
     #[inline(always)]
-    fn low(self, wide: [f32; 16]) -> [f32; 8] {
-        let _ = self;
-        let mut out = [0.0f32; 8];
-        out.copy_from_slice(&wide[..8]);
-        out
+    fn low(self, wide: <Self as F32x16Backend>::Repr) -> <Self as F32x8Backend>::Repr {
+        self.f32x16_low(wide)
     }
     #[inline(always)]
-    fn high(self, wide: [f32; 16]) -> [f32; 8] {
-        let _ = self;
-        let mut out = [0.0f32; 8];
-        out.copy_from_slice(&wide[8..]);
-        out
+    fn high(self, wide: <Self as F32x16Backend>::Repr) -> <Self as F32x8Backend>::Repr {
+        self.f32x16_high(wide)
     }
+}
+
+#[cfg(all(target_arch = "x86_64", feature = "avx512", feature = "w512"))]
+#[archmage::arcane]
+pub(crate) fn v4_f32x16_from_halves(
+    _token: archmage::X64V4Token,
+    lo: core::arch::x86_64::__m256,
+    hi: core::arch::x86_64::__m256,
+) -> core::arch::x86_64::__m512 {
+    core::arch::x86_64::_mm512_insertf32x8(core::arch::x86_64::_mm512_castps256_ps512(lo), hi, 1)
+}
+
+#[cfg(all(target_arch = "x86_64", feature = "avx512", feature = "w512"))]
+#[archmage::arcane]
+pub(crate) fn v4_f32x16_low(
+    _token: archmage::X64V4Token,
+    wide: core::arch::x86_64::__m512,
+) -> core::arch::x86_64::__m256 {
+    core::arch::x86_64::_mm512_castps512_ps256(wide)
+}
+
+#[cfg(all(target_arch = "x86_64", feature = "avx512", feature = "w512"))]
+#[archmage::arcane]
+pub(crate) fn v4_f32x16_high(
+    _token: archmage::X64V4Token,
+    wide: core::arch::x86_64::__m512,
+) -> core::arch::x86_64::__m256 {
+    core::arch::x86_64::_mm512_extractf32x8_ps(wide, 1)
+}
+
+#[cfg(feature = "w512")]
+#[inline(always)]
+pub(crate) fn scalar_f32x16_from_halves(lo: [f32; 8], hi: [f32; 8]) -> [f32; 16] {
+    let mut out = [0.0f32; 16];
+    out[..8].copy_from_slice(&lo);
+    out[8..].copy_from_slice(&hi);
+    out
+}
+
+#[cfg(feature = "w512")]
+#[inline(always)]
+pub(crate) fn scalar_f32x16_low(wide: [f32; 16]) -> [f32; 8] {
+    let mut out = [0.0f32; 8];
+    out.copy_from_slice(&wide[..8]);
+    out
+}
+
+#[cfg(feature = "w512")]
+#[inline(always)]
+pub(crate) fn scalar_f32x16_high(wide: [f32; 16]) -> [f32; 8] {
+    let mut out = [0.0f32; 8];
+    out.copy_from_slice(&wide[8..]);
+    out
 }
 
 #[cfg(feature = "w512")]

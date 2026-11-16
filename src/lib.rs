@@ -52,8 +52,8 @@
 //! if let Some(token) = X64V3Token::summon() { assert!(entry(token)); }
 //! ```
 //!
-//! Added in 0.9.29. See
-//! [from_context and token extraction](https://imazen.github.io/archmage/archmage/getting-started/tokens/).
+//! See
+//! [from_context and token extraction](https://lilith.github.io/archmage/archmage/getting-started/tokens/).
 //! Use `.v3()` to extract a V3 token from a stronger proof; `as_x64v3()` instead
 //! checks whether the held token is exactly a V3 token.
 //!
@@ -65,7 +65,7 @@
 //! safe code gets one only once the features are confirmed, normally by
 //! `summon()`. The single `unsafe` block in each `#[arcane]` expansion is generated
 //! by the macro, and the token parameter is what makes it sound. The
-//! [safety model](https://imazen.github.io/archmage/archmage/concepts/safety/)
+//! [safety model](https://lilith.github.io/archmage/archmage/concepts/safety/)
 //! explains the expansion, what it relies on, and how it is checked.
 //!
 //! ## Features
@@ -150,53 +150,78 @@ pub mod __private {
 // Re-exports at crate root for convenience
 // ============================================================================
 
-// Core traits
+// Core types and traits
+pub use tokens::And;
 pub use tokens::CompileTimeGuaranteedError;
 pub use tokens::DisableAllSimdError;
 pub use tokens::IntoConcreteToken;
+pub use tokens::SameArch;
+pub use tokens::SimdLeafToken;
 pub use tokens::SimdToken;
+#[doc(hidden)]
+pub use tokens::caps;
 
 // Global SIMD kill switch
 pub use tokens::dangerously_disable_tokens_except_wasm;
 
-// Width marker traits (deprecated — use concrete tokens or tier traits)
-#[allow(deprecated)]
-pub use tokens::{Has128BitSimd, Has256BitSimd, Has512BitSimd};
-
-// x86 tier marker traits (based on LLVM x86-64 microarchitecture levels)
-pub use tokens::HasX64V2;
-pub use tokens::HasX64V4;
-
-// AArch64 tier marker traits
-pub use tokens::{HasArm64V2, HasArm64V3, HasNeon, HasNeonAes, HasNeonSha3};
+// Capability marker traits
+pub use tokens::{
+    HasAdx, HasArm64V2, HasArm64V3, HasAvx512Bf16, HasAvx512Fp16, HasAvxIfma, HasAvxNeConvert,
+    HasAvxVnni, HasAvxVnniInt8, HasAvxVnniInt16, HasGfni, HasNeon, HasNeonAes, HasNeonBf16,
+    HasNeonCrc, HasNeonDotProd, HasNeonFcma, HasNeonFhm, HasNeonFp16, HasNeonI8mm, HasNeonRdm,
+    HasNeonSha2, HasNeonSha3, HasSha, HasSha512, HasWasm128, HasWasm128Relaxed,
+    HasWasm128RelaxedFma, HasX64Crypto, HasX64V1, HasX64V2, HasX64V3, HasX64V3Crypto,
+    HasX64V3GfniCrypto, HasX64V3Vnni, HasX64V3Vnni2, HasX64V4, HasX64V4x,
+};
 
 // All tokens available on all architectures (summon() returns None on wrong arch)
-#[allow(deprecated)]
 pub use tokens::{
     // ARM tokens
     Arm64,
     Arm64V2Token,
     Arm64V3Token,
-    // x86 tier tokens (aliases still exported for backward compat)
-    Avx2FmaToken,
+    // x86 tier tokens & aliases
+    Avx512Fp16Token,
+    Avx512ModernToken,
+    Avx512Token,
     Desktop64,
     NeonAesToken,
+    NeonBf16Token,
     NeonCrcToken,
+    NeonDotProdToken,
+    NeonFcmaToken,
+    NeonFhmToken,
+    NeonFp16Token,
+    NeonI8mmToken,
+    NeonRdmToken,
+    NeonSha2Token,
     NeonSha3Token,
     NeonToken,
     // Scalar fallback (always available)
     ScalarToken,
-    Sse2Token,
+    Server64,
     // WASM tokens
+    Wasm128RelaxedFmaToken,
     Wasm128RelaxedToken,
     Wasm128Token,
+    X64AdxToken,
+    X64Avx512Bf16Token,
+    X64AvxIfmaToken,
+    X64AvxNeConvertToken,
+    X64AvxVnniInt8Token,
+    X64AvxVnniInt16Token,
+    X64AvxVnniToken,
     X64CryptoToken,
+    X64GfniToken,
+    X64Sha512Token,
+    X64ShaToken,
     X64V1Token,
     X64V2Token,
     X64V3CryptoToken,
     X64V3GfniCryptoToken,
     X64V3Token,
+    X64V3Vnni2Token,
+    X64V3VnniToken,
+    X64V4Token,
+    X64V4xToken,
 };
-
-// AVX-512 tokens (always available; summon() returns None on unsupported CPUs)
-pub use tokens::{Avx512Fp16Token, Avx512Token, Server64, X64V4Token, X64V4xToken};

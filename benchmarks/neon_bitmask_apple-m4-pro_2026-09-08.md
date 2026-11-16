@@ -2,8 +2,8 @@
 
 Host: Apple M4 Pro (aarch64), macOS 26.5.2, rustc 1.98.0, `--release`, no
 `-Ctarget-cpu` override.
-Harnesses: `~/tmp/bmbench` (isolated, raw `int32x4_t`/`uint8x16_t` in a `Vec`)
-and `~/tmp/boolbench` (through the public `magetypes::simd::generic` types,
+Harnesses: `<scratch>/bmbench` (isolated, raw `int32x4_t`/`uint8x16_t` in a `Vec`)
+and `<scratch>/boolbench` (through the public `magetypes::simd::generic` types,
 built against `main` and against the change).
 
 `bitmask` packs one sign bit per lane into an integer. NEON has no `movemask`,

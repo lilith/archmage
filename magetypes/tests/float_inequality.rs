@@ -1,6 +1,6 @@
 //! Float not-equal matches Rust `!=`, including quiet/signalling NaNs.
 #![forbid(unsafe_code)]
-use archmage::{ScalarToken, SimdToken};
+use archmage::{ScalarToken, SimdLeafToken, SimdToken};
 use std::hint::black_box;
 
 const F32_BITS: &[u32] = &[
@@ -37,7 +37,7 @@ const F64_BITS: &[u64] = &[
 ];
 macro_rules! check {
     ($fn:ident, $v:ident, $bound:ident, $n:literal, $float:ident, $uint:ident, $bits:ident) => {
-        fn $fn<T: magetypes::simd::backends::$bound>(t: T) {
+        fn $fn<T: magetypes::simd::backends::$bound + SimdLeafToken>(t: T) {
             for offset in 0..$bits.len() {
                 let a: [$float; $n] =
                     core::array::from_fn(|i| $float::from_bits($bits[(offset + i) % $bits.len()]));

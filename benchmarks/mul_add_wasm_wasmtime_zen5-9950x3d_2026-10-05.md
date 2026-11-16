@@ -61,8 +61,8 @@ edition = "2024"
 publish = false
 
 [dependencies]
-archmage = { path = "/home/lilith/work/archmage" }
-magetypes = { path = "/home/lilith/work/archmage/magetypes" }
+archmage = { path = "<workspace>" }
+magetypes = { path = "<workspace>/magetypes" }
 
 [profile.release]
 codegen-units = 1
@@ -255,8 +255,8 @@ edition = "2024"
 publish = false
 
 [dependencies]
-archmage = { path = "/home/lilith/work/archmage" }
-magetypes = { path = "/home/lilith/work/archmage/magetypes" }
+archmage = { path = "<workspace>" }
+magetypes = { path = "<workspace>/magetypes" }
 
 [profile.release]
 codegen-units = 1

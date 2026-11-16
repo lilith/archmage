@@ -1,0 +1,5 @@
+error: #[arcane] cannot be used on a `const fn` (`#[target_feature]` functions cannot be const-evaluated)
+ --> tests/compile_fail/const_fn_arcane.rs:2:1
+  |
+2 | const fn illegal(_t: archmage::X64V3Token) {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

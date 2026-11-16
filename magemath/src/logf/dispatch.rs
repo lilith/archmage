@@ -1,7 +1,7 @@
 //! One-time operation selection. The chosen proof is reused for the whole
 //! polynomial, never per operation.
 use super::{LogfError, LogfExecution, graph};
-use archmage::{ScalarToken, SimdToken};
+use archmage::ScalarToken;
 
 #[derive(Clone, Copy, Debug)]
 pub(super) enum Plan {
@@ -13,42 +13,31 @@ pub(super) enum Plan {
     V4x(archmage::X64V4xToken),
     #[cfg(target_arch = "aarch64")]
     Neon(archmage::NeonToken),
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
     Wasm(archmage::Wasm128Token),
     Software,
 }
 
 #[inline(always)]
-fn select_impl<T: SimdToken>(token: T, execution: LogfExecution) -> Plan {
+fn select_impl<T: magetypes::simd::MagetypesToken>(token: T, execution: LogfExecution) -> Plan {
     let _ = token;
     #[cfg(any(
         target_arch = "x86_64",
         target_arch = "aarch64",
-        target_arch = "wasm32"
+        all(target_arch = "wasm32", target_feature = "simd128"),
     ))]
-    let any: &dyn core::any::Any = &token;
-    #[cfg(target_arch = "x86_64")]
-    {
-        if let Some(t) = any.downcast_ref::<archmage::X64V3Token>() {
-            return Plan::V3(*t);
-        }
-        #[cfg(feature = "avx512")]
-        {
-            if let Some(t) = any.downcast_ref::<archmage::X64V4Token>() {
-                return Plan::V4(*t);
-            }
-            if let Some(t) = any.downcast_ref::<archmage::X64V4xToken>() {
-                return Plan::V4x(*t);
-            }
-        }
-    }
-    #[cfg(target_arch = "aarch64")]
-    if let Some(t) = any.downcast_ref::<archmage::NeonToken>() {
-        return Plan::Neon(*t);
-    }
-    #[cfg(target_arch = "wasm32")]
-    if let Some(t) = any.downcast_ref::<archmage::Wasm128Token>() {
-        return Plan::Wasm(*t);
+    match crate::token_canon::canonicalize(token) {
+        #[cfg(target_arch = "x86_64")]
+        crate::token_canon::CanonicalToken::V3(t) => return Plan::V3(t),
+        #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
+        crate::token_canon::CanonicalToken::V4(t) => return Plan::V4(t),
+        #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
+        crate::token_canon::CanonicalToken::V4x(t) => return Plan::V4x(t),
+        #[cfg(target_arch = "aarch64")]
+        crate::token_canon::CanonicalToken::Neon(t) => return Plan::Neon(t),
+        #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+        crate::token_canon::CanonicalToken::Wasm { token: t, .. } => return Plan::Wasm(t),
+        crate::token_canon::CanonicalToken::Scalar => {}
     }
     if execution == LogfExecution::Caller {
         return Plan::Software;
@@ -63,7 +52,10 @@ fn upgrade(token: Token) -> Plan {
 }
 
 #[inline(always)]
-pub(super) fn select<T: SimdToken>(token: T, execution: LogfExecution) -> Plan {
+pub(super) fn select<T: magetypes::simd::MagetypesToken>(
+    token: T,
+    execution: LogfExecution,
+) -> Plan {
     select_impl(token, execution)
 }
 
@@ -83,7 +75,7 @@ macro_rules! run_const {
                 Plan::V4x(t) => graph::$v4x::<OPTIONS>(t, input),
                 #[cfg(target_arch = "aarch64")]
                 Plan::Neon(t) => graph::$neon::<OPTIONS>(t, input),
-                #[cfg(target_arch = "wasm32")]
+                #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
                 Plan::Wasm(t) => graph::$wasm::<OPTIONS>(t, input),
                 Plan::Software => graph::$scalar::<OPTIONS>(ScalarToken, input),
             }

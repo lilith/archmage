@@ -1,5 +1,5 @@
 use super::{PowfError, PowfExecution, PowfOptions, graph};
-use archmage::{ScalarToken, SimdToken};
+use archmage::ScalarToken;
 
 #[derive(Clone, Copy, Debug)]
 pub(super) enum Plan {
@@ -11,7 +11,7 @@ pub(super) enum Plan {
     V4x(archmage::X64V4xToken),
     #[cfg(target_arch = "aarch64")]
     Neon(archmage::NeonToken),
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
     Wasm(archmage::Wasm128Token, bool),
     Software,
     #[cfg(all(feature = "std", not(miri)))]
@@ -19,7 +19,7 @@ pub(super) enum Plan {
 }
 
 #[inline(always)]
-fn select_impl<T: SimdToken, const EXACT: bool, const DOUBLE: bool>(
+fn select_impl<T: magetypes::simd::MagetypesToken, const EXACT: bool, const DOUBLE: bool>(
     token: T,
     execution: PowfExecution,
 ) -> Plan {
@@ -27,39 +27,34 @@ fn select_impl<T: SimdToken, const EXACT: bool, const DOUBLE: bool>(
     #[cfg(any(
         target_arch = "x86_64",
         target_arch = "aarch64",
-        target_arch = "wasm32"
+        all(target_arch = "wasm32", target_feature = "simd128"),
     ))]
-    let any: &dyn core::any::Any = &token;
-    #[cfg(target_arch = "x86_64")]
-    {
-        if let Some(t) = any.downcast_ref::<archmage::X64V3Token>() {
-            return Plan::V3(*t);
+    match crate::token_canon::canonicalize(token) {
+        #[cfg(target_arch = "x86_64")]
+        crate::token_canon::CanonicalToken::V3(t) => return Plan::V3(t),
+        #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
+        crate::token_canon::CanonicalToken::V4(t) => return Plan::V4(t),
+        #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
+        crate::token_canon::CanonicalToken::V4x(t) => return Plan::V4x(t),
+        #[cfg(target_arch = "aarch64")]
+        crate::token_canon::CanonicalToken::Neon(t) => return Plan::Neon(t),
+        #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+        crate::token_canon::CanonicalToken::Wasm {
+            token: t,
+            relaxed_fma,
+        } => {
+            return Plan::Wasm(
+                t,
+                relaxed_fma
+                    || !EXACT
+                    || if DOUBLE {
+                        crate::wasm_fma::powf_f64_fuses()
+                    } else {
+                        crate::wasm_fma::powf_f32_fuses()
+                    },
+            );
         }
-        #[cfg(feature = "avx512")]
-        {
-            if let Some(t) = any.downcast_ref::<archmage::X64V4Token>() {
-                return Plan::V4(*t);
-            }
-            if let Some(t) = any.downcast_ref::<archmage::X64V4xToken>() {
-                return Plan::V4x(*t);
-            }
-        }
-    }
-    #[cfg(target_arch = "aarch64")]
-    if let Some(t) = any.downcast_ref::<archmage::NeonToken>() {
-        return Plan::Neon(*t);
-    }
-    #[cfg(target_arch = "wasm32")]
-    if let Some(t) = any.downcast_ref::<archmage::Wasm128Token>() {
-        return Plan::Wasm(
-            *t,
-            !EXACT
-                || if DOUBLE {
-                    crate::wasm_fma::powf_f64_fuses()
-                } else {
-                    crate::wasm_fma::powf_f32_fuses()
-                },
-        );
+        crate::token_canon::CanonicalToken::Scalar => {}
     }
     if execution == PowfExecution::Caller {
         return Plan::Software;
@@ -89,12 +84,18 @@ fn upgrade(token: Token) -> Plan {
 }
 
 #[inline(always)]
-pub(super) fn select<T: SimdToken>(token: T, execution: PowfExecution) -> Plan {
+pub(super) fn select<T: magetypes::simd::MagetypesToken>(
+    token: T,
+    execution: PowfExecution,
+) -> Plan {
     select_impl::<T, true, false>(token, execution)
 }
 
 #[inline(always)]
-pub(super) fn select_relaxed<T: SimdToken>(token: T, execution: PowfExecution) -> Plan {
+pub(super) fn select_relaxed<T: magetypes::simd::MagetypesToken>(
+    token: T,
+    execution: PowfExecution,
+) -> Plan {
     select_impl::<T, false, false>(token, execution)
 }
 
@@ -120,11 +121,11 @@ macro_rules! run_const {
                 Plan::V4x(t) => graph::$v4x::<{ graph::NATIVE }, OPTIONS>(t, bases, exponent),
                 #[cfg(target_arch = "aarch64")]
                 Plan::Neon(t) => graph::$neon::<{ graph::NATIVE }, OPTIONS>(t, bases, exponent),
-                #[cfg(target_arch = "wasm32")]
+                #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
                 Plan::Wasm(t, true) => {
                     graph::$wasm::<{ graph::NATIVE }, OPTIONS>(t, bases, exponent)
                 }
-                #[cfg(target_arch = "wasm32")]
+                #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
                 Plan::Wasm(t, false) => {
                     graph::$wasm::<{ graph::WASM_SOFTWARE }, OPTIONS>(t, bases, exponent)
                 }
@@ -180,6 +181,9 @@ fn upgrade_highp(token: Token) -> Plan {
     select_impl::<_, true, true>(token, PowfExecution::Caller)
 }
 #[inline(always)]
-pub(super) fn select_highp<T: SimdToken>(token: T, execution: PowfExecution) -> Plan {
+pub(super) fn select_highp<T: magetypes::simd::MagetypesToken>(
+    token: T,
+    execution: PowfExecution,
+) -> Plan {
     select_impl::<T, true, true>(token, execution)
 }

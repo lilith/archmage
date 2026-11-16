@@ -4,14 +4,17 @@ use archmage::{ScalarToken, rite};
 )]
 #[inline]
 fn compute_v3(_t: ScalarToken, data: &[f32; 4]) -> f32 {
+    let _: () = <ScalarToken>::__ARCHMAGE_ASSERT_TIER_D141EACA;
     data.iter().sum()
 }
 #[inline]
 fn compute_scalar(_t: ScalarToken, data: &[f32; 4]) -> f32 {
+    let _: () = <ScalarToken>::__ARCHMAGE_ASSERT_TIER_D141EACA;
     data.iter().sum()
 }
 #[inline]
 fn compute_default(_t: ScalarToken, data: &[f32; 4]) -> f32 {
+    let _: () = <ScalarToken>::__ARCHMAGE_ASSERT_TIER_D141EACA;
     data.iter().sum()
 }
 fn main() {}

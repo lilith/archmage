@@ -9,7 +9,7 @@
 //! debugging), this is a pure survey tool — it reports what's available on a
 //! given machine without comparing or diagnosing.
 
-use archmage::SimdToken;
+use archmage::SimdLeafToken;
 
 fn main() {
     println!("╔══════════════════════════════════════════╗");
@@ -29,11 +29,14 @@ fn main() {
     println!();
 
     println!("  x86 tokens:");
-    report_token::<archmage::X64V1Token>("X64V1Token", "Sse2Token");
+    report_token::<archmage::X64V1Token>("X64V1Token", "");
     report_token::<archmage::X64V2Token>("X64V2Token", "");
     report_token::<archmage::X64CryptoToken>("X64CryptoToken", "");
-    report_token::<archmage::X64V3Token>("X64V3Token", "Avx2FmaToken");
+    report_token::<archmage::X64V3Token>("X64V3Token", "Desktop64");
     report_token::<archmage::X64V3CryptoToken>("X64V3CryptoToken", "");
+    report_token::<archmage::X64V3VnniToken>("X64V3VnniToken", "");
+    report_token::<archmage::X64V3Vnni2Token>("X64V3Vnni2Token", "");
+    report_token::<archmage::X64V3GfniCryptoToken>("X64V3GfniCryptoToken", "");
     report_token::<archmage::X64V4Token>("X64V4Token", "Avx512Token, Server64");
     report_token::<archmage::X64V4xToken>("X64V4xToken", "");
     report_token::<archmage::Avx512Fp16Token>("Avx512Fp16Token", "");
@@ -51,6 +54,7 @@ fn main() {
     println!("  WASM tokens:");
     report_token::<archmage::Wasm128Token>("Wasm128Token", "");
     report_token::<archmage::Wasm128RelaxedToken>("Wasm128RelaxedToken", "");
+    report_token::<archmage::Wasm128RelaxedFmaToken>("Wasm128RelaxedFmaToken", "");
     println!();
 
     println!("  Universal:");
@@ -65,7 +69,9 @@ fn main() {
     survey_aarch64();
 
     #[cfg(target_arch = "wasm32")]
-    println!("  (WASM feature detection is compile-time only)");
+    println!(
+        "  (WASM ISA features are compile-time cfg; Wasm128RelaxedFmaToken probes single-rounding fusion once at runtime)"
+    );
 
     #[cfg(not(any(
         target_arch = "x86_64",
@@ -352,7 +358,7 @@ fn windows_arm_cpu_name() -> Option<String> {
 // Token reporting
 // ═══════════════════════════════════════════════════════════════════════════
 
-fn report_token<T: SimdToken>(name: &str, aliases: &str) {
+fn report_token<T: SimdLeafToken>(name: &str, aliases: &str) {
     let available = T::summon().is_some();
     let icon = if available { "[+]" } else { "[ ]" };
     let display = T::NAME;

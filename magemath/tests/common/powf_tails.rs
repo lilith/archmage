@@ -4,7 +4,7 @@
 #[cfg(any(
     target_arch = "x86_64",
     target_arch = "aarch64",
-    target_arch = "wasm32"
+    all(target_arch = "wasm32", target_feature = "simd128")
 ))]
 use archmage::SimdToken;
 use magemath::powf::{PowfDomain, PowfExecution, PowfOptions, PowfPortability, try_powf_with};
@@ -31,7 +31,7 @@ fn bounded_widths_and_tails(token: Token) {
         assert!(bits == 0 || bits == 0x2880_0000);
         std::println!(
             "powf-tail-token={} relaxed-f32-madd-bits={bits:08x}",
-            <Token as archmage::SimdToken>::NAME
+            <Token as archmage::SimdLeafToken>::NAME
         );
     }
     // Keep each graph in one test frame. The production API intentionally
@@ -159,6 +159,6 @@ fn single_vector_and_all_tail_remainders_match() {
     }
     #[cfg(target_arch = "aarch64")]
     bounded_widths_and_tails_neon(archmage::NeonToken::summon().unwrap());
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
     bounded_widths_and_tails_wasm128(archmage::Wasm128Token::summon().unwrap());
 }

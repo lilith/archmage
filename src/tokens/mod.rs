@@ -1,14 +1,31 @@
 //! SIMD capability tokens
 //!
-//! Tokens are zero-sized proof types that demonstrate a CPU feature is available.
-//! They should be obtained via `summon()` and passed through function calls.
+//! Tokens are zero-sized proof types that demonstrate a CPU feature set is
+//! available. They are obtained via `summon()`, safely composed with `.and(...)`
+//! or [`And::join`], and passed to `#[arcane]` / `#[rite]` functions.
 //!
 //! ## Token Availability
 //!
 //! Use `compiled_with()` to check compile-time availability:
 //! - `Some(true)` — Binary was compiled with these features enabled (use `summon().unwrap()`)
-//! - `Some(false)` — Wrong architecture (this token can never be available)
+//! - `Some(false)` — Wrong architecture or compile-time constraint makes this token unavailable
 //! - `None` — Might be available, call `summon()` to check at runtime
+//!
+//! ## Composing Tokens (`And<Base, Extra>`)
+//!
+//! Orthogonal hardware extensions (such as `X64V3Token` + `X64GfniToken` +
+//! `X64AvxVnniToken`) compose at zero runtime cost via `.and(...)` / [`And`]:
+//!
+//! ```rust,ignore
+//! use archmage::{SimdToken, X64GfniToken, X64V3Token};
+//!
+//! if let Some(token) = X64V3Token::summon().zip(X64GfniToken::summon()).map(|(v3, g)| v3.and(g)) {
+//!     // `token` satisfies both `HasX64V3` and `HasGfni`!
+//! }
+//! ```
+//!
+//! Cross-architecture combinations (`X64` + `Arm`, `X64` + `Scalar`, etc.) are
+//! rejected at compile time via [`SameArch`].
 //!
 //! ## Cross-Architecture Design
 //!
@@ -23,7 +40,7 @@
 //! ```rust,ignore
 //! // Force scalar fallback for benchmarking
 //! X64V3Token::dangerously_disable_token_process_wide(true)?;
-//! // All summon() calls now return None (cascades to V3Crypto, V4, V4x, Fp16)
+//! // All summon() calls now return None (cascades to V3Crypto, V4, V4x, Fp16, Avx512Bf16)
 //! assert!(X64V3Token::summon().is_none());
 //! ```
 //!
@@ -32,130 +49,105 @@
 //! has already elided the runtime checks.
 
 mod sealed {
-    /// Sealed trait preventing external implementations of [`SimdToken`](super::SimdToken).
-    pub trait Sealed {}
+    /// Sealed trait preventing external implementations of [`SimdToken`](super::SimdToken)
+    /// and [`SameArch`](super::SameArch).
+    pub trait Sealed {
+        #[doc(hidden)]
+        type Arch: super::caps::ArchMarker;
+    }
 }
 
-// Sealed is pub(crate) — external crates cannot implement SimdToken.
-// This is a semver break from 0.9.17 (Sealed was accidentally pub), but
-// necessary: the public re-export allowed external SimdToken impls,
-// undermining the entire token safety model.
+// Sealed is pub(crate) — external crates cannot implement SimdToken or capability traits.
 pub(crate) use sealed::Sealed;
 
 // With std, `Vec` comes from the prelude; importing it there is redundant.
 #[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 
-/// Marker trait for SIMD capability tokens.
+/// Supertrait guaranteeing type-level capability union for same-architecture tokens.
+#[doc(hidden)]
+pub trait SameArchCaps<Other: SimdToken>: Sealed {
+    #[doc(hidden)]
+    type __JoinedCaps: Copy + Clone + Send + Sync + 'static;
+}
+
+impl<A, B> SameArchCaps<B> for A
+where
+    A: SimdToken,
+    B: SimdToken,
+    A::__Caps: caps::CapSetOr<B::__Caps>,
+{
+    type __JoinedCaps = <A::__Caps as caps::CapSetOr<B::__Caps>>::Output;
+}
+
+/// Marker trait proving two tokens belong to the same CPU architecture family.
+///
+/// Cross-architecture combinations (e.g., `X64V3Token` with `NeonToken`, or
+/// `X64V3Token` with `ScalarToken`) do not implement `SameArch` and fail at
+/// compile time.
+pub trait SameArch<Other: SimdToken>: SimdToken + SameArchCaps<Other> {}
+
+impl<A, B> SameArch<B> for A
+where
+    A: SimdToken,
+    B: SimdToken + Sealed<Arch = <A as Sealed>::Arch>,
+    A::__Caps: caps::CapSetOr<B::__Caps>,
+{
+}
+
+/// Marker trait for SIMD capability tokens (both concrete leaves and [`And`] conjunctions).
 ///
 /// All tokens implement this trait, enabling generic code over different
-/// SIMD feature levels.
+/// SIMD feature levels and composable conjunction proofs.
 ///
 /// This trait is **sealed** — it cannot be implemented outside of archmage.
-/// Only tokens created by `summon()` or downcasting are valid.
-///
-/// # Token Lifecycle
-///
-/// 1. Optionally check `compiled_with()` to see if runtime check is needed
-/// 2. Call `summon()` at runtime to detect CPU support
-/// 3. Pass the token through to `#[arcane]` functions — don't forge new ones
-///
-/// # Example
-///
-/// ```rust,ignore
-/// use archmage::{X64V3Token, SimdToken};
-///
-/// fn process(data: &[f32]) -> f32 {
-///     if let Some(token) = X64V3Token::summon() {
-///         return process_avx2(token, data);
-///     }
-///     process_scalar(data)
-/// }
-/// ```
-pub trait SimdToken: Sealed + Copy + Clone + Send + Sync + 'static {
-    /// Human-readable name for diagnostics and error messages.
-    const NAME: &'static str;
+/// Only tokens created by `summon()`, `from_context()`, extraction, or
+/// `.and(...)` / [`And::join`] are valid.
+pub trait SimdToken:
+    Sealed
+    + Copy
+    + Clone
+    + core::fmt::Debug
+    + core::fmt::Display
+    + PartialEq
+    + Eq
+    + core::hash::Hash
+    + Send
+    + Sync
+    + 'static
+{
+    /// Type-level capability set encoding every ISA slot proven by this token.
+    #[doc(hidden)]
+    type __Caps: Copy + Clone + Send + Sync + 'static;
 
-    /// Returns the human-readable name for this token.
-    ///
-    /// This is a convenience method that returns [`Self::NAME`].
-    ///
-    /// ```rust
-    /// use archmage::{ScalarToken, SimdToken};
-    /// let token = ScalarToken;
-    /// assert_eq!(token.name(), "Scalar");
-    /// ```
-    #[inline(always)]
-    fn name(&self) -> &'static str {
-        Self::NAME
-    }
+    /// Bitmask of non-target-feature runtime proof contracts (e.g., bit 0 for
+    /// WASM single-rounding FMA fusion on `Wasm128RelaxedFmaToken`).
+    #[doc(hidden)]
+    const __ARCHMAGE_CONTRACT_BITS: u64 = 0;
 
-    /// Comma-delimited target features (e.g., `"sse,sse2,avx2,fma,bmi1,bmi2,f16c,lzcnt"`).
-    ///
-    /// All features are listed, including baseline features like SSE/SSE2 for
-    /// x86 tokens. For WASM, this is `"simd128"`.
-    ///
-    /// Empty for [`ScalarToken`].
-    const TARGET_FEATURES: &'static str;
+    /// Format the human-readable name of this token.
+    fn write_name(f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result;
 
-    /// RUSTFLAGS to enable these features at compile time.
-    ///
-    /// Example: `"-Ctarget-feature=+avx2,+fma,+bmi1,+bmi2,+f16c,+lzcnt"`
-    ///
-    /// Empty for [`ScalarToken`].
-    const ENABLE_TARGET_FEATURES: &'static str;
+    /// Format comma-delimited deduplicated LLVM target features asserted by this token.
+    fn write_target_features(f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result;
 
-    /// RUSTFLAGS to disable these features at compile time.
-    ///
-    /// Example: `"-Ctarget-feature=-avx2,-fma,-bmi1,-bmi2,-f16c,-lzcnt"`
-    ///
-    /// Useful in [`CompileTimeGuaranteedError`] messages to tell users how
-    /// to recompile so that runtime disable works.
-    ///
-    /// Empty for [`ScalarToken`].
-    const DISABLE_TARGET_FEATURES: &'static str;
+    /// Returns `true` if `feature` is part of this token's target feature set.
+    fn has_target_feature(feature: &str) -> bool;
+
+    /// Invoke `f` once for each unique LLVM target feature asserted by this token.
+    fn visit_target_features<F: FnMut(&'static str)>(f: &mut F);
 
     /// Check if this binary was compiled with the required target features enabled.
     ///
     /// Returns:
-    /// - `Some(true)` — Features are compile-time enabled (e.g., `-C target-cpu=haswell`)
-    /// - `Some(false)` — Wrong architecture, token can never be available
+    /// - `Some(true)` — Features are compile-time enabled and runtime contracts are satisfied statically
+    /// - `Some(false)` — Wrong architecture or missing compile-time prerequisite
     /// - `None` — Might be available, call `summon()` to check at runtime
-    ///
-    /// When `compiled_with()` returns `Some(true)`, `summon().unwrap()` is safe and
-    /// the compiler will elide the runtime check entirely.
-    ///
-    /// # Example
-    ///
-    /// ```rust,ignore
-    /// match X64V3Token::compiled_with() {
-    ///     Some(true) => { /* summon().unwrap() is safe, no runtime check */ }
-    ///     Some(false) => { /* use fallback, this arch can't support it */ }
-    ///     None => { /* call summon() to check at runtime */ }
-    /// }
-    /// ```
     fn compiled_with() -> Option<bool>;
 
-    /// Deprecated alias for [`compiled_with()`](Self::compiled_with).
-    #[inline(always)]
-    #[deprecated(since = "0.6.0", note = "Use compiled_with() instead")]
-    fn guaranteed() -> Option<bool> {
-        Self::compiled_with()
-    }
-
-    /// Attempt to create a token with runtime feature detection.
+    /// Attempt to create a token with runtime feature detection (and any required runtime probes).
     ///
-    /// Returns `Some(token)` if the CPU supports this feature, `None` otherwise.
-    ///
-    /// # Example
-    ///
-    /// ```rust,ignore
-    /// if let Some(token) = X64V3Token::summon() {
-    ///     // Use AVX2+FMA operations
-    /// } else {
-    ///     // Fallback path
-    /// }
-    /// ```
+    /// Returns `Some(token)` if the CPU/engine supports every required capability, `None` otherwise.
     fn summon() -> Option<Self>;
 
     /// Attempt to create a token with runtime feature detection.
@@ -165,20 +157,175 @@ pub trait SimdToken: Sealed + Copy + Clone + Send + Sync + 'static {
     fn attempt() -> Option<Self> {
         Self::summon()
     }
+}
 
-    /// Legacy alias for [`summon()`](Self::summon).
-    ///
-    /// **Deprecated:** Use `summon()` instead.
+/// Extension of [`SimdToken`] for atomic leaf tokens with static `&'static str` metadata.
+///
+/// Composite [`And<Base, Extra>`] tokens implement [`SimdToken`] rather than `SimdLeafToken`
+/// so arbitrary trees compose without requiring nightly const string allocation.
+pub trait SimdLeafToken: SimdToken {
+    /// Human-readable name for diagnostics and error messages.
+    const NAME: &'static str;
+
+    /// Comma-delimited LLVM target features asserted by this token.
+    const TARGET_FEATURES: &'static str;
+
+    /// RUSTFLAGS to enable these features at compile time.
+    const ENABLE_TARGET_FEATURES: &'static str;
+
+    /// RUSTFLAGS to disable these features at compile time.
+    const DISABLE_TARGET_FEATURES: &'static str;
+
+    /// Returns the human-readable name for this leaf token.
     #[inline(always)]
-    #[doc(hidden)]
-    fn try_new() -> Option<Self> {
-        Self::summon()
+    fn name(&self) -> &'static str {
+        Self::NAME
     }
 }
 
-// All token types, traits, and aliases are generated from token-registry.toml.
+// All token types, traits, capability sets, and aliases are generated from token-registry.toml.
 mod generated;
 pub use generated::*;
+
+/// Conjunction proof holding both `Base` and `Extra` capability proofs from the same architecture.
+///
+/// Construct via [`token.and(extra)`](X64V3Token::and) or [`And::join`].
+/// Automatically inherits every [`Has*`](HasX64V3) capability marker satisfied by
+/// the union of `Base` and `Extra`'s capabilities, with zero runtime overhead (`#[repr(transparent)]`-like ZST).
+///
+/// `And<Base, Extra>` intentionally has **no** `from_context()` constructor:
+/// each constituent proof must already be obtained legitimately, preserving runtime
+/// probe contracts (such as [`Wasm128RelaxedFmaToken`]).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct And<Base, Extra>
+where
+    Base: SameArch<Extra>,
+    Extra: SimdToken,
+{
+    base: Base,
+    extra: Extra,
+}
+
+impl<Base, Extra> And<Base, Extra>
+where
+    Base: SameArch<Extra>,
+    Extra: SimdToken,
+{
+    /// Combine two same-architecture capability tokens into their conjunction proof.
+    #[inline(always)]
+    pub const fn join(base: Base, extra: Extra) -> Self {
+        Self { base, extra }
+    }
+
+    /// Append another same-architecture capability token to this conjunction.
+    #[inline(always)]
+    pub const fn and<Next: SimdToken>(self, extra: Next) -> And<Self, Next>
+    where
+        Self: SameArch<Next>,
+    {
+        And::join(self, extra)
+    }
+
+    /// Extract the left constituent proof.
+    #[inline(always)]
+    pub const fn base(&self) -> Base {
+        self.base
+    }
+
+    /// Extract the right constituent proof.
+    #[inline(always)]
+    pub const fn extra(&self) -> Extra {
+        self.extra
+    }
+}
+
+impl<Base, Extra> Sealed for And<Base, Extra>
+where
+    Base: SameArch<Extra>,
+    Extra: SimdToken,
+{
+    type Arch = <Base as Sealed>::Arch;
+}
+
+impl<Base, Extra> SimdToken for And<Base, Extra>
+where
+    Base: SameArch<Extra>,
+    Extra: SimdToken,
+{
+    type __Caps = <Base as SameArchCaps<Extra>>::__JoinedCaps;
+
+    const __ARCHMAGE_CONTRACT_BITS: u64 =
+        Base::__ARCHMAGE_CONTRACT_BITS | Extra::__ARCHMAGE_CONTRACT_BITS;
+
+    #[inline(always)]
+    fn write_name(f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        Base::write_name(f)?;
+        f.write_str(" + ")?;
+        Extra::write_name(f)
+    }
+
+    fn write_target_features(f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut first = true;
+        let mut res = Ok(());
+        Self::visit_target_features(&mut |feat| {
+            if res.is_err() {
+                return;
+            }
+            if !first {
+                res = f.write_str(",");
+                if res.is_err() {
+                    return;
+                }
+            }
+            first = false;
+            res = f.write_str(feat);
+        });
+        res
+    }
+
+    #[inline]
+    fn has_target_feature(feature: &str) -> bool {
+        Base::has_target_feature(feature) || Extra::has_target_feature(feature)
+    }
+
+    #[inline]
+    fn visit_target_features<F: FnMut(&'static str)>(f: &mut F) {
+        Base::visit_target_features(f);
+        Extra::visit_target_features(&mut |feat| {
+            if !Base::has_target_feature(feat) {
+                f(feat);
+            }
+        });
+    }
+
+    #[inline]
+    fn compiled_with() -> Option<bool> {
+        match (Base::compiled_with(), Extra::compiled_with()) {
+            (Some(false), _) | (_, Some(false)) => Some(false),
+            (Some(true), Some(true)) => Some(true),
+            _ => None,
+        }
+    }
+
+    #[inline]
+    fn summon() -> Option<Self> {
+        Some(Self {
+            base: Base::summon()?,
+            extra: Extra::summon()?,
+        })
+    }
+}
+
+impl<Base, Extra> core::fmt::Display for And<Base, Extra>
+where
+    Base: SameArch<Extra>,
+    Extra: SimdToken,
+{
+    #[inline(always)]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        <Self as SimdToken>::write_name(f)
+    }
+}
 
 /// Scalar fallback token — always available on all platforms.
 ///
@@ -189,24 +336,42 @@ pub use generated::*;
 /// # Example
 ///
 /// ```rust
-/// use archmage::{ScalarToken, SimdToken};
+/// use archmage::{ScalarToken, SimdToken, SimdLeafToken};
 ///
 /// // Always succeeds
 /// let token = ScalarToken::summon().unwrap();
 ///
 /// // Or use the shorthand
 /// let token = ScalarToken;
+/// assert_eq!(token.name(), "Scalar");
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ScalarToken;
 
-impl Sealed for ScalarToken {}
+impl Sealed for ScalarToken {
+    type Arch = caps::ScalarArch;
+}
 
 impl SimdToken for ScalarToken {
-    const NAME: &'static str = "Scalar";
-    const TARGET_FEATURES: &'static str = "";
-    const ENABLE_TARGET_FEATURES: &'static str = "";
-    const DISABLE_TARGET_FEATURES: &'static str = "";
+    type __Caps = caps::ScalarCaps;
+
+    #[inline(always)]
+    fn write_name(f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(Self::NAME)
+    }
+
+    #[inline(always)]
+    fn write_target_features(_f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        Ok(())
+    }
+
+    #[inline(always)]
+    fn has_target_feature(_feature: &str) -> bool {
+        false
+    }
+
+    #[inline(always)]
+    fn visit_target_features<F: FnMut(&'static str)>(_f: &mut F) {}
 
     /// Always returns `Some(true)` — scalar fallback is always available.
     #[inline(always)]
@@ -221,40 +386,50 @@ impl SimdToken for ScalarToken {
     }
 }
 
+impl SimdLeafToken for ScalarToken {
+    const NAME: &'static str = "Scalar";
+    const TARGET_FEATURES: &'static str = "";
+    const ENABLE_TARGET_FEATURES: &'static str = "";
+    const DISABLE_TARGET_FEATURES: &'static str = "";
+}
+
 impl ScalarToken {
+    /// Human-readable name for diagnostics and error messages.
+    pub const NAME: &'static str = "Scalar";
+
+    /// Comma-delimited target features (empty for scalar).
+    pub const TARGET_FEATURES: &'static str = "";
+
+    /// RUSTFLAGS to enable these features (empty for scalar).
+    pub const ENABLE_TARGET_FEATURES: &'static str = "";
+
+    /// RUSTFLAGS to disable these features (empty for scalar).
+    pub const DISABLE_TARGET_FEATURES: &'static str = "";
+
+    /// Returns `"Scalar"`.
+    #[inline(always)]
+    pub fn name(&self) -> &'static str {
+        Self::NAME
+    }
+
+    /// Append another scalar token (trivially returns `And<ScalarToken, Extra>`).
+    #[inline(always)]
+    pub const fn and<Extra: SimdToken>(self, extra: Extra) -> And<Self, Extra>
+    where
+        Self: SameArch<Extra>,
+    {
+        And::join(self, extra)
+    }
+
     /// Construct a scalar proof from the caller's feature context.
     ///
     /// `ScalarToken` asserts no CPU features, so it carries no
-    /// `#[target_feature]` gate and every context can construct it. The other
-    /// tokens' constructors of this name are safe only inside a matching
-    /// `#[target_feature]` context.
+    /// `#[target_feature]` gate and every context can construct it.
     #[inline(always)]
     pub const fn from_context() -> Self {
         Self
     }
 
-    /// Deprecated alias for [`ScalarToken::from_context`].
-    #[deprecated(
-        since = "0.9.29",
-        note = "Renamed to from_context() — the constructor is checked against the caller's target-feature context"
-    )]
-    #[inline(always)]
-    pub const fn forge_token_dangerously() -> Self {
-        Self
-    }
-}
-
-impl ScalarToken {
-    /// Tier tag for compile-time token identity assertion.
-    ///
-    /// Used by `#[arcane]` to verify that a `ScalarToken` parameter is genuinely
-    /// `archmage::ScalarToken` and not a shadowed or aliased type.
-    /// Must match `expected_tier_tag("ScalarToken")` in the proc-macro registry.
-    #[doc(hidden)]
-    pub const __ARCHMAGE_TIER_TAG: u32 = 0xD141EACA;
-}
-
-impl ScalarToken {
     /// Scalar tokens cannot be disabled (they are always available).
     ///
     /// Always returns `Err(CompileTimeGuaranteedError)` because `ScalarToken`
@@ -278,6 +453,13 @@ impl ScalarToken {
             target_features: Self::TARGET_FEATURES,
             disable_flags: Self::DISABLE_TARGET_FEATURES,
         })
+    }
+}
+
+impl core::fmt::Display for ScalarToken {
+    #[inline(always)]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        <Self as SimdToken>::write_name(f)
     }
 }
 
@@ -351,50 +533,45 @@ impl core::fmt::Display for DisableAllSimdError {
 #[cfg(feature = "std")]
 impl std::error::Error for DisableAllSimdError {}
 
-/// Disable all SIMD tokens process-wide (except WASM, which is always compile-time).
+/// Disable all SIMD tokens process-wide (except WASM, which is always compile-time
+/// except for the runtime-probed [`Wasm128RelaxedFmaToken`]).
 ///
-/// This is a convenience function that calls
-/// [`dangerously_disable_token_process_wide`](X64V2Token::dangerously_disable_token_process_wide)
-/// on each root token for the current architecture. Root tokens cascade to
-/// their descendants, so this disables everything:
-///
-/// - **x86/x86_64:** `X64V2Token` (cascades to Crypto, V3, V3Crypto, V4, V4x, Fp16)
-/// - **AArch64:** `NeonToken` (cascades to NeonAes, NeonSha3, NeonCrc, Arm64V2, Arm64V3)
-///
-/// WASM's `Wasm128Token` is excluded because `simd128` is always a compile-time
-/// decision on `wasm32` — there is no runtime detection to bypass.
+/// Calls `dangerously_disable_token_process_wide(disabled)` on every root
+/// non-baseline token on the current architecture:
+/// - **x86/x86_64:** `X64V2Token` (cascades through V3/V4 hierarchies) plus
+///   the orthogonal extension clumps (`X64GfniToken`, `X64ShaToken`,
+///   `X64AdxToken`, `X64AvxVnniToken`, `X64AvxIfmaToken`,
+///   `X64AvxVnniInt8Token`, `X64AvxVnniInt16Token`, `X64AvxNeConvertToken`,
+///   `X64Sha512Token`).
+/// - **AArch64:** `NeonToken` (cascades to all NEON extension tokens and `Arm64V2`/`Arm64V3`).
 ///
 /// Pass `disabled = false` to re-enable all tokens.
-///
-/// # Errors
-///
-/// Returns [`DisableAllSimdError`] if any token's features are compile-time
-/// enabled (e.g., via `-Ctarget-cpu=native`). Tokens that *can* be disabled
-/// are still disabled; only the failures are collected.
-///
-/// # Example
-///
-/// ```rust,ignore
-/// use archmage::dangerously_disable_tokens_except_wasm;
-///
-/// // Force scalar fallbacks for benchmarking
-/// dangerously_disable_tokens_except_wasm(true)?;
-/// // ... run benchmarks ...
-/// dangerously_disable_tokens_except_wasm(false)?;
-/// ```
 pub fn dangerously_disable_tokens_except_wasm(
     #[allow(unused)] disabled: bool,
 ) -> Result<(), DisableAllSimdError> {
     #[allow(unused_mut)]
     let mut errors = Vec::new();
 
-    // x86_64: disable V2 (cascades to Crypto, V3, V3Crypto, V4, V4x, Fp16)
     #[cfg(target_arch = "x86_64")]
-    if let Err(e) = X64V2Token::dangerously_disable_token_process_wide(disabled) {
-        errors.push(e);
+    {
+        for res in [
+            X64V2Token::dangerously_disable_token_process_wide(disabled),
+            X64GfniToken::dangerously_disable_token_process_wide(disabled),
+            X64ShaToken::dangerously_disable_token_process_wide(disabled),
+            X64AdxToken::dangerously_disable_token_process_wide(disabled),
+            X64AvxVnniToken::dangerously_disable_token_process_wide(disabled),
+            X64AvxIfmaToken::dangerously_disable_token_process_wide(disabled),
+            X64AvxVnniInt8Token::dangerously_disable_token_process_wide(disabled),
+            X64AvxVnniInt16Token::dangerously_disable_token_process_wide(disabled),
+            X64AvxNeConvertToken::dangerously_disable_token_process_wide(disabled),
+            X64Sha512Token::dangerously_disable_token_process_wide(disabled),
+        ] {
+            if let Err(e) = res {
+                errors.push(e);
+            }
+        }
     }
 
-    // AArch64: disable NEON (cascades to NeonAes, NeonSha3, NeonCrc, Arm64V2, Arm64V3)
     #[cfg(target_arch = "aarch64")]
     if let Err(e) = NeonToken::dangerously_disable_token_process_wide(disabled) {
         errors.push(e);
@@ -404,292 +581,5 @@ pub fn dangerously_disable_tokens_except_wasm(
         Ok(())
     } else {
         Err(DisableAllSimdError { errors })
-    }
-}
-
-/// Trait for compile-time dispatch via monomorphization.
-///
-/// Each concrete token implements this trait, returning `Some(self)` for its
-/// own type and `None` for others. The compiler monomorphizes away all the
-/// `None` branches, leaving only the matching path.
-///
-/// **These are identity checks, not hierarchy-aware downcasts.**
-/// `X64V4Token.as_x64v3()` returns `None` — it checks "is this literally
-/// an `X64V3Token`?", not "does this support V3 features?".
-///
-/// For guaranteed hierarchy downcasting (V4 → V3), use the extraction methods
-/// on concrete tokens instead (e.g., `v4_token.v3()`).
-///
-/// # Example
-///
-/// ```rust
-/// use archmage::{IntoConcreteToken, SimdToken, ScalarToken};
-///
-/// fn dispatch<T: IntoConcreteToken>(token: T, data: &[f32]) -> f32 {
-///     // Compiler eliminates non-matching branches
-///     if let Some(_t) = token.as_scalar() {
-///         return data.iter().sum();
-///     }
-///     // ... other paths for x64v3, neon, etc.
-///     0.0
-/// }
-///
-/// let result = dispatch(ScalarToken, &[1.0, 2.0, 3.0]);
-/// assert_eq!(result, 6.0);
-/// ```
-pub trait IntoConcreteToken: SimdToken + Sized {
-    /// Returns `Some(self)` if this is exactly `X64V1Token`, `None` otherwise.
-    ///
-    /// This is an identity check, not a downcast. For guaranteed downcasting
-    /// from a higher token, use extraction methods like `.v1()` instead.
-    #[inline(always)]
-    fn as_x64v1(self) -> Option<X64V1Token> {
-        None
-    }
-
-    /// Try to cast to X64V2Token.
-    #[inline(always)]
-    fn as_x64v2(self) -> Option<X64V2Token> {
-        None
-    }
-
-    /// Try to cast to X64CryptoToken.
-    #[inline(always)]
-    fn as_x64_crypto(self) -> Option<X64CryptoToken> {
-        None
-    }
-
-    /// Try to cast to X64V3Token.
-    #[inline(always)]
-    fn as_x64v3(self) -> Option<X64V3Token> {
-        None
-    }
-
-    /// Try to cast to X64V3CryptoToken.
-    #[inline(always)]
-    fn as_x64v3_crypto(self) -> Option<X64V3CryptoToken> {
-        None
-    }
-
-    /// Try to cast to X64V3GfniCryptoToken.
-    #[inline(always)]
-    fn as_x64v3_gfni_crypto(self) -> Option<X64V3GfniCryptoToken> {
-        None
-    }
-
-    /// Try to cast to X64V4Token.
-    #[inline(always)]
-    fn as_x64v4(self) -> Option<X64V4Token> {
-        None
-    }
-
-    /// Try to cast to X64V4xToken.
-    #[inline(always)]
-    fn as_x64v4x(self) -> Option<X64V4xToken> {
-        None
-    }
-
-    /// Try to cast to Avx512Fp16Token.
-    #[inline(always)]
-    fn as_avx512_fp16(self) -> Option<Avx512Fp16Token> {
-        None
-    }
-
-    /// Try to cast to NeonToken.
-    #[inline(always)]
-    fn as_neon(self) -> Option<NeonToken> {
-        None
-    }
-
-    /// Try to cast to NeonAesToken.
-    #[inline(always)]
-    fn as_neon_aes(self) -> Option<NeonAesToken> {
-        None
-    }
-
-    /// Try to cast to NeonSha3Token.
-    #[inline(always)]
-    fn as_neon_sha3(self) -> Option<NeonSha3Token> {
-        None
-    }
-
-    /// Try to cast to NeonCrcToken.
-    #[inline(always)]
-    fn as_neon_crc(self) -> Option<NeonCrcToken> {
-        None
-    }
-
-    /// Try to cast to Arm64V2Token.
-    #[inline(always)]
-    fn as_arm_v2(self) -> Option<Arm64V2Token> {
-        None
-    }
-
-    /// Try to cast to Arm64V3Token.
-    #[inline(always)]
-    fn as_arm_v3(self) -> Option<Arm64V3Token> {
-        None
-    }
-
-    /// Try to cast to Wasm128Token.
-    #[inline(always)]
-    fn as_wasm128(self) -> Option<Wasm128Token> {
-        None
-    }
-
-    /// Try to cast to Wasm128RelaxedToken.
-    #[inline(always)]
-    fn as_wasm128_relaxed(self) -> Option<Wasm128RelaxedToken> {
-        None
-    }
-
-    /// Try to cast to ScalarToken.
-    #[inline(always)]
-    fn as_scalar(self) -> Option<ScalarToken> {
-        None
-    }
-}
-
-// Implement IntoConcreteToken for ScalarToken
-impl IntoConcreteToken for ScalarToken {
-    #[inline(always)]
-    fn as_scalar(self) -> Option<ScalarToken> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for X64V1Token
-impl IntoConcreteToken for X64V1Token {
-    #[inline(always)]
-    fn as_x64v1(self) -> Option<X64V1Token> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for X64V2Token
-impl IntoConcreteToken for X64V2Token {
-    #[inline(always)]
-    fn as_x64v2(self) -> Option<X64V2Token> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for X64CryptoToken
-impl IntoConcreteToken for X64CryptoToken {
-    #[inline(always)]
-    fn as_x64_crypto(self) -> Option<X64CryptoToken> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for X64V3Token
-impl IntoConcreteToken for X64V3Token {
-    #[inline(always)]
-    fn as_x64v3(self) -> Option<X64V3Token> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for X64V3CryptoToken
-impl IntoConcreteToken for X64V3CryptoToken {
-    #[inline(always)]
-    fn as_x64v3_crypto(self) -> Option<X64V3CryptoToken> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for X64V3GfniCryptoToken
-impl IntoConcreteToken for X64V3GfniCryptoToken {
-    #[inline(always)]
-    fn as_x64v3_gfni_crypto(self) -> Option<X64V3GfniCryptoToken> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for X64V4Token
-impl IntoConcreteToken for X64V4Token {
-    #[inline(always)]
-    fn as_x64v4(self) -> Option<X64V4Token> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for X64V4xToken
-impl IntoConcreteToken for X64V4xToken {
-    #[inline(always)]
-    fn as_x64v4x(self) -> Option<X64V4xToken> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for Avx512Fp16Token
-impl IntoConcreteToken for Avx512Fp16Token {
-    #[inline(always)]
-    fn as_avx512_fp16(self) -> Option<Avx512Fp16Token> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for NeonToken
-impl IntoConcreteToken for NeonToken {
-    #[inline(always)]
-    fn as_neon(self) -> Option<NeonToken> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for NeonAesToken
-impl IntoConcreteToken for NeonAesToken {
-    #[inline(always)]
-    fn as_neon_aes(self) -> Option<NeonAesToken> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for NeonSha3Token
-impl IntoConcreteToken for NeonSha3Token {
-    #[inline(always)]
-    fn as_neon_sha3(self) -> Option<NeonSha3Token> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for NeonCrcToken
-impl IntoConcreteToken for NeonCrcToken {
-    #[inline(always)]
-    fn as_neon_crc(self) -> Option<NeonCrcToken> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for Arm64V2Token
-impl IntoConcreteToken for Arm64V2Token {
-    #[inline(always)]
-    fn as_arm_v2(self) -> Option<Arm64V2Token> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for Arm64V3Token
-impl IntoConcreteToken for Arm64V3Token {
-    #[inline(always)]
-    fn as_arm_v3(self) -> Option<Arm64V3Token> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for Wasm128Token
-impl IntoConcreteToken for Wasm128Token {
-    #[inline(always)]
-    fn as_wasm128(self) -> Option<Wasm128Token> {
-        Some(self)
-    }
-}
-
-// Implement IntoConcreteToken for Wasm128RelaxedToken
-impl IntoConcreteToken for Wasm128RelaxedToken {
-    #[inline(always)]
-    fn as_wasm128_relaxed(self) -> Option<Wasm128RelaxedToken> {
-        Some(self)
     }
 }

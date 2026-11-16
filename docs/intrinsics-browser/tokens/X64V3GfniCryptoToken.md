@@ -3,7 +3,7 @@
 Proof that AVX2 + GFNI + VPCLMULQDQ + VAES are available.
 
 **Architecture:** x86_64 | **Features:** sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, cmpxchg16b, avx, avx2, fma, bmi1, bmi2, f16c, lzcnt, movbe, pclmulqdq, aes, vpclmulqdq, vaes, gfni
-**Total intrinsics:** 6 (6 safe, 0 unsafe, 6 stable, 0 unstable/unknown)
+**Total intrinsics:** 3 (3 safe, 0 unsafe, 3 stable, 0 unstable/unknown)
 
 ## Usage
 
@@ -34,15 +34,12 @@ fn process_chunk(_: X64V3GfniCryptoToken, chunk: &mut [f32; 8]) {
 
 ## All Intrinsics
 
-### Stable, Safe (6 intrinsics)
+### Stable, Safe (3 intrinsics)
 
 | Name | Description | Instruction | Timing (H/Z4) |
 |------|-------------|-------------|---------------|
 | `_mm256_gf2p8affine_epi64_epi8` | Performs an affine transformation on the packed bytes in x. ... | vgf2p8affineqb | — |
 | `_mm256_gf2p8affineinv_epi64_epi8` | Performs an affine transformation on the inverted packed byt... | vgf2p8affineinvqb | — |
 | `_mm256_gf2p8mul_epi8` | Performs a multiplication in GF(2^8) on the packed bytes. Th... | vgf2p8mulb | — |
-| `_mm_gf2p8affine_epi64_epi8` | Performs an affine transformation on the packed bytes in x. ... | gf2p8affineqb | — |
-| `_mm_gf2p8affineinv_epi64_epi8` | Performs an affine transformation on the inverted packed byt... | gf2p8affineinvqb | — |
-| `_mm_gf2p8mul_epi8` | Performs a multiplication in GF(2^8) on the packed bytes. Th... | gf2p8mulb | — |
 
 

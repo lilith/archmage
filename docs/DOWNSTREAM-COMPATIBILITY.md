@@ -22,9 +22,9 @@ Rust 1.99.0, x86_64 Linux, baseline compiler flags, Ryzen 7900X.
 | magetypes | 0.9.30 | pass; concrete-feature check: 2,040 safe methods, 40 feature-bearing, zero failures |
 | magetypes | 0.9.31-beta.2 | pass; concrete-feature check: 2,070 safe methods, 40 feature-bearing, zero failures |
 
-Used cargo-semver-checks 0.51.0 through `xtask/check_semver.py`, retaining the
-existing reviewed Magetypes concrete-impl guard. Proc-macro behavior is not
-covered by semver checking. Resource wrapper: rc=0, 20 s, peak RSS 0.34 GiB.
+Used cargo-semver-checks 0.51.0 with concrete-impl semver verification, retaining the
+existing reviewed Magetypes guard. Proc-macro behavior is not
+covered by semver checking. Check run: rc=0, 20 s, peak RSS 0.34 GiB.
 
 ### Consumer coverage and exclusions
 
@@ -88,25 +88,16 @@ exit codes include the wasm_jpg failures described above.
 
 ### Reproduce and inspect
 
-The runners live in `xtask/release_compat/`; `just release-compat`,
-`just release-compat-recheck`, and `just release-compat-audit` expose them.
-Use an isolated source copy and new output directories on an admitted worker
-under `run-heavy`. `prepare` changes candidate manifest versions and saves the
-registry inventory; `semver` and `copter` retain commands and exit codes.
-`recheck` preserves package lockfiles before fresh resolution; `audit` confirms
-which local crates actually compiled. Live consumer checkouts are never used.
+Use an isolated source copy and fresh output directories.
+Live consumer checkouts are never used.
 
-Full registry responses, package archives, candidate source, commands, logs,
-metadata, raw copter reports, and independent results are retained under
-`/mnt/v/output/archmage/stable-compat-2026-11-07/`, mirrored to the matching
-`/mnt/tower/output/archmage/` directory. These generated artifacts are outside
-Git; the CSV above is the compact committed result.
+The raw logs and copter artifacts are archived outside git; the CSV above is the
+compact committed result.
 
 ## 0.9.30 release check against local checkouts (2026-10-07)
 
-Every local repository under `~/work/zen/` and `~/work/` whose manifests depend
-on archmage, archmage-macros or magetypes (50 repositories; jj lane workspaces,
-`_*`, `retired/` and the archmage workspaces excluded) was snapshotted with
+50 consumer repositories whose manifests depend
+on archmage, archmage-macros or magetypes were snapshotted with
 `git archive HEAD` into an isolated mirror and built with the three crates
 patched to the release tree (`--config patch.crates-io.<crate>.path=...`,
 shared build directory, Rust 1.99.0, `x86_64-unknown-linux-gnu`, dev). The
@@ -161,7 +152,7 @@ branch.
 | `zen/zenjpegai` c7e1ae4 | pass |  |
 | `zen/zenjxl` 4a2c021 | pass |  |
 | `zen/zenjxl-decoder` 940d2c51 | pass |  |
-| `zen/zenmetrics` 594b014bf | fail | workspace member `crates/zenfleet-vastai` is not tracked by git |
+| *(internal metric suite)* | fail | missing untracked private workspace member |
 | `zen/zenpipe` aa21cba | pass |  |
 | `zen/zenpixels` 82cb6e2 | pass |  |
 | `zen/zenpng` cfccd88 | pass |  |
@@ -192,14 +183,12 @@ none attributable to archmage:
 | `zen/rav1d-safe` | (compile) | its test target requires `cargo test --release` |
 | `zen/zenavif` | (compile) | an untracked test vector |
 
-The snapshot list, logs and results are under `~/tmp/downstream-0.9.30/`
-(`snapshots.tsv`, `results-check.tsv`, `results-test.tsv`, `logs/`); the driver
-is `run-phase.sh` there. The signature shapes harvested from the same snapshots
-are compiled by `magetypes/tests/harvest_shapes.rs` (`just harvest-shapes ROOT`).
+The signature shapes harvested from the same snapshots
+are compiled by `magetypes/tests/harvest_shapes.rs`.
 
 ## Constructor migration compatibility (2026-09-27)
 
-Verified 2026-09-27 on `i265`, `x86_64-unknown-linux-gnu`, Rust 1.98.1,
+Verified 2026-09-27 on `x86_64-unknown-linux-gnu`, Rust 1.98.1,
 against archmage workspace commit `4401f724b6c8` (implementation `d53d425d`).
 
 All **20 published zen-prefixed direct consumers** in the registry discovery
@@ -292,9 +281,9 @@ archmage workspace.
 | `zensim-bench` | 0.0.0 | blocked / blocked |
 | `zensim-regress` | 0.4.0 | pass / pass |
 
-`zentone` needs the missing `../zenpixels/zenpixels` sibling; `zensim-bench`
-needs `../zenmetrics/crates/zenstats`. These are snapshot setup blockers, not
-constructor failures. Local zenmetrics had uncommitted changes and was not
+`zentone` needs a missing sibling dependency; `zensim-bench`
+needs a sibling stats crate. These are snapshot setup blockers, not
+constructor failures. One downstream workspace had uncommitted changes and was not
 built. Active markers excluded zenbitmaps, zenflate, zengif, zenquant, zenwebp,
 and zenzop; zenav1-aom had a stale marker with working-copy changes. Their local
 WIP is not covered by the published-package results.
@@ -339,7 +328,7 @@ No cargo-copter fixes were included in the archmage change.
 For a published consumer, use a verified non-yanked version explicitly:
 
 ```sh
-cargo-copter --path /home/lilith/work/archmage/magetypes \
+cargo-copter --path ./magetypes \
   --dependents zenjpeg:0.8.4 zenpixels-convert:0.2.16 \
   --only-check --simple
 ```
@@ -348,15 +337,13 @@ For local workspaces, preserve manifests and pass configuration patches:
 
 ```sh
 cargo check --manifest-path /path/to/snapshot/Cargo.toml \
-  --config 'patch.crates-io.archmage.path="/home/lilith/work/archmage"' \
-  --config 'patch.crates-io.archmage-macros.path="/home/lilith/work/archmage/archmage-macros"' \
-  --config 'patch.crates-io.magetypes.path="/home/lilith/work/archmage/magetypes"'
+  --config 'patch.crates-io.archmage.path="."' \
+  --config 'patch.crates-io.archmage-macros.path="./archmage-macros"' \
+  --config 'patch.crates-io.magetypes.path="./magetypes"'
 ```
 
-Heavy commands ran serially through `run-heavy --mem 16G --jobs 8`, with
-`TMPDIR=/home/lilith/tmp`. Full source snapshots, command argument arrays,
-registry metadata, logs, and reports are retained at
-`/home/lilith/data/archmage/downstream-2026-09-27/` on `i265`.
+Commands ran serially on an Intel Core Ultra 7 265K host (`--mem 16G --jobs 8`);
+full source snapshots and logs were archived outside git.
 The JSON report's `passed_test` summary is not evidence of runtime testing:
 these copter runs explicitly used `--only-check` and contain Fetch/Check commands.
 

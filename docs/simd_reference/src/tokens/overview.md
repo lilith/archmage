@@ -15,17 +15,22 @@ if let Some(token) = X64V3Token::summon() {
 }
 ```
 
-All tokens implement the `SimdToken` trait:
+All tokens (both concrete leaf tokens and `And<Base, Extra>` conjunctions) implement `SimdToken`, and concrete leaf tokens implement `SimdLeafToken`:
 
 ```rust
-pub trait SimdToken: Copy + Clone + Send + Sync + 'static {
-    const NAME: &'static str;
-
+pub trait SimdToken: Copy + Clone + core::fmt::Display + Send + Sync + 'static {
     /// Compile-time check: Some(true) if guaranteed, Some(false) if wrong arch, None if unknown
     fn compiled_with() -> Option<bool>;
 
     /// Runtime detection with atomic caching (~1.3 ns cached, 0 ns when compiled away)
     fn summon() -> Option<Self>;
+
+    /// Runtime detection bypassing compiled_with() short-circuit semantics (alias for summon except testable_dispatch)
+    fn attempt() -> Option<Self>;
+}
+
+pub trait SimdLeafToken: SimdToken {
+    const NAME: &'static str;
 }
 ```
 
@@ -35,7 +40,7 @@ pub trait SimdToken: Copy + Clone + Send + Sync + 'static {
 
 | Token | Aliases | Features | CPUs |
 |-------|---------|----------|------|
-| `X64V1Token` | `Sse2Token` | SSE, SSE2 (the x86-64 baseline) | All x86-64 CPUs |
+| `X64V1Token` | — | SSE, SSE2 (the x86-64 baseline) | All x86-64 CPUs |
 | `X64V2Token` | — | + SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, CMPXCHG16B | Nehalem 2008+, Bulldozer 2011+ |
 | `X64CryptoToken` | — | V2 + PCLMULQDQ, AES | Westmere 2010+, Bulldozer 2011+ |
 | `X64V3Token` | `Desktop64` | + AVX, AVX2, FMA, BMI1, BMI2, F16C, LZCNT, MOVBE | Haswell 2013+, Zen 1 2017+ |
@@ -68,6 +73,7 @@ NEON is baseline on AArch64 — `NeonToken::summon()` always succeeds. Arm64V2/V
 |-------|----------|-------|
 | `Wasm128Token` | SIMD128 | Compile with `-Ctarget-feature=+simd128` |
 | `Wasm128RelaxedToken` | SIMD128, relaxed SIMD | Compile with `-Ctarget-feature=+simd128,+relaxed-simd` |
+| `Wasm128RelaxedFmaToken` | SIMD128, relaxed SIMD + FMA probe | Compile with `-Ctarget-feature=+simd128,+relaxed-simd` + runtime fusion probe (`summon()` only; no `from_context()`) |
 
 ### Universal
 

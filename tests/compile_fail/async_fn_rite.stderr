@@ -1,0 +1,5 @@
+error: #[rite] cannot be used on an `async fn` (`#[target_feature]` is incompatible with async state machines)
+ --> tests/compile_fail/async_fn_rite.rs:2:1
+  |
+2 | async fn illegal(_t: archmage::X64V3Token) {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

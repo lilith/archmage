@@ -1,6 +1,6 @@
 //! # magetypes
 //!
-//! [Guide](https://imazen.github.io/archmage/) · [Intrinsics browser](https://imazen.github.io/archmage/intrinsics/) · [Archmage API](https://docs.rs/archmage/latest/archmage/) · [Magetypes API](https://docs.rs/magetypes/latest/magetypes/)
+//! [Guide](https://lilith.github.io/archmage/) · [Intrinsics browser](https://lilith.github.io/archmage/intrinsics/) · [Archmage API](https://docs.rs/archmage/latest/archmage/) · [Magetypes API](https://docs.rs/magetypes/latest/magetypes/)
 //!
 //! Token-gated SIMD vectors with natural operators. This complete kernel is adapted
 //! from zenfilters; its generated caller establishes the target-feature context.
@@ -32,7 +32,7 @@
 //! ```
 //!
 //! Explicit-token constructors use `_t` spellings. The old token-taking names
-//! are deprecated in 0.9 so callers can migrate before the 0.10 signature change:
+//! are deprecated ahead of a planned future signature change:
 //!
 //! ```compile_fail
 //! #![deny(deprecated)]
@@ -50,10 +50,10 @@
 //! assert_eq!(value.to_array(), [1.0; 8]);
 //! ```
 //!
-//! Use [generic functions and const modes](https://imazen.github.io/archmage/magetypes/dispatch/types-and-dispatch/)
+//! Use [generic functions and const modes](https://lilith.github.io/archmage/magetypes/dispatch/types-and-dispatch/)
 //! for reusable data/algorithm specialization. `define(...)` is optional shorthand.
 //! Logical [`f32x8<T>`](https://docs.rs/magetypes/latest/magetypes/simd/generic/struct.f32x8.html) stays eight lanes; `w512` enables wider shapes and `avx512`
-//! adds native AVX-512 implementations. See the [ISA contracts](https://imazen.github.io/archmage/magetypes/isa-quirks/)
+//! adds native AVX-512 implementations. See the [ISA contracts](https://lilith.github.io/archmage/magetypes/isa-quirks/)
 //! for numerical differences and fixups.
 //!
 //! The pow/exp/log approximation methods now have configurable successors in
@@ -81,7 +81,7 @@
 //! magetypes stacks compile-time proofs on archmage's tokens; its only `unsafe`
 //! is a few one-line blocks in one internal module that load, store, gather and
 //! scatter vector storage, each stating the invariant it relies on. See the
-//! [safety model](https://imazen.github.io/archmage/magetypes/safety/).
+//! [safety model](https://lilith.github.io/archmage/magetypes/safety/).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg))]

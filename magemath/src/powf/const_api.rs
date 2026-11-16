@@ -185,7 +185,7 @@ macro_rules! vector {
                 )
                 .map(|result| magetypes::simd::generic::$float::from_array_t(token, result));
             }
-            #[cfg(target_arch = "wasm32")]
+            #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
             if matches!(caller, dispatch::Plan::Wasm(_, false)) {
                 return graph::$profile::<T, { graph::WASM_SOFTWARE }, OPTIONS>(token, input, n);
             }
@@ -202,7 +202,7 @@ vector!(run8, profile8, run8_const, f32x8, F32x8Convert, 8);
 vector!(run16, profile16, run16_const, f32x16, F32x16Convert, 16);
 
 #[inline(always)]
-fn select<T: archmage::SimdToken, const OPTIONS: u32>(
+fn select<T: magetypes::simd::MagetypesToken, const OPTIONS: u32>(
     token: T,
     execution: PowfExecution,
 ) -> dispatch::Plan {
@@ -226,7 +226,7 @@ fn select<T: archmage::SimdToken, const OPTIONS: u32>(
 // Preserve release specialization and the measured optimized call shape.
 #[cfg_attr(debug_assertions, inline(never))]
 #[cfg_attr(not(debug_assertions), inline(always))]
-fn token_array<T: archmage::SimdToken, const OPTIONS: u32, const N: usize>(
+fn token_array<T: magetypes::simd::MagetypesToken, const OPTIONS: u32, const N: usize>(
     token: T,
     bases: [f32; N],
     n: f32,
@@ -277,7 +277,7 @@ fn token_array<T: archmage::SimdToken, const OPTIONS: u32, const N: usize>(
 }
 #[cfg_attr(debug_assertions, inline(never))]
 #[cfg_attr(not(debug_assertions), inline(always))]
-pub(super) fn runtime<T: archmage::SimdToken, const N: usize>(
+pub(super) fn runtime<T: magetypes::simd::MagetypesToken, const N: usize>(
     token: T,
     bases: [f32; N],
     n: f32,

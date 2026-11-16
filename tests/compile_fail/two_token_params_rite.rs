@@ -1,5 +1,5 @@
-//! #[rite] in token-parameter mode takes its features from one token. With
-//! two, name the tier instead (issue #122).
+//! #[rite] allows multiple same-architecture tokens, but rejects combining
+//! tokens from different architectures (here Scalar and x86_64).
 #![forbid(unsafe_code)]
 use archmage::prelude::*;
 

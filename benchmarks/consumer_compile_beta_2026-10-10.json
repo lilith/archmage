@@ -18,7 +18,7 @@
   "environment": {
     "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
     "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
-    "host": "i265",
+    "host": "core-ultra-265k",
     "incremental": false,
     "rustflags": "",
     "compiler_cache": false,
@@ -58,7 +58,7 @@
     "check": "cargo --config CASE_CONFIG check --frozen --lib -p PACKAGE --timings",
     "release": "cargo --config CASE_CONFIG build --frozen --lib -p PACKAGE --timings --release"
   },
-  "logs": "/home/lilith/output/archmage/attune-beta-consumers-2026-10-10/comparison",
+  "logs": "<archive>/attune-beta-consumers-2026-10-10/comparison",
   "summary": [
     {
       "workload": "magetypes",
@@ -740,7 +740,7 @@
     ]
   ],
   "run_heavy": {
-    "check": "run-heavy: done rc=0 110s | peak-RSS 0.88GiB | min-avail 26741MiB | peak-load 1.80",
-    "release": "run-heavy: done rc=0 225s | peak-RSS 1.19GiB | min-avail 26559MiB | peak-load 2.13"
+    "check": "run summary: rc=0 110s | peak-RSS 0.88GiB | min-avail 26741MiB | peak-load 1.80",
+    "release": "run summary: rc=0 225s | peak-RSS 1.19GiB | min-avail 26559MiB | peak-load 2.13"
   }
 }

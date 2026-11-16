@@ -95,19 +95,54 @@ pub(crate) fn rewrite_incant_in_function(
     let mut i = 0;
 
     while i < tokens.len() {
-        // Check for `fn` keyword — skip the following function body
+        // Check for `fn` keyword — skip the following function item/declaration
         if is_ident(&tokens[i], "fn") {
-            // Emit the `fn` token and everything up to and including the body block
             result.push(tokens[i].clone());
             i += 1;
-            // Skip to the body block (find the next `{...}` group)
+            let mut paren_depth = 0i32;
+            let mut bracket_depth = 0i32;
+            let mut angle_depth = 0i32;
+            let mut saw_params = false;
             while i < tokens.len() {
-                let is_body =
-                    matches!(&tokens[i], TokenTree::Group(g) if g.delimiter() == Delimiter::Brace);
-                result.push(tokens[i].clone());
-                i += 1;
-                if is_body {
-                    break;
+                match &tokens[i] {
+                    TokenTree::Group(g) if g.delimiter() == Delimiter::Parenthesis => {
+                        saw_params = true;
+                        result.push(tokens[i].clone());
+                        i += 1;
+                    }
+                    TokenTree::Group(g)
+                        if g.delimiter() == Delimiter::Brace
+                            && saw_params
+                            && paren_depth == 0
+                            && bracket_depth == 0
+                            && angle_depth == 0 =>
+                    {
+                        result.push(tokens[i].clone());
+                        i += 1;
+                        break;
+                    }
+                    TokenTree::Punct(p) => {
+                        match p.as_char() {
+                            '(' => paren_depth += 1,
+                            ')' => paren_depth -= 1,
+                            '[' => bracket_depth += 1,
+                            ']' => bracket_depth -= 1,
+                            '<' => angle_depth += 1,
+                            '>' if angle_depth > 0 => angle_depth -= 1,
+                            ';' if paren_depth == 0 && bracket_depth == 0 && angle_depth == 0 => {
+                                result.push(tokens[i].clone());
+                                i += 1;
+                                break;
+                            }
+                            _ => {}
+                        }
+                        result.push(tokens[i].clone());
+                        i += 1;
+                    }
+                    _ => {
+                        result.push(tokens[i].clone());
+                        i += 1;
+                    }
                 }
             }
             continue;
@@ -263,15 +298,31 @@ fn rewrite_single_incant(input: &IncantInput, ctx: &CallerContext) -> Option<Tok
             }
         };
 
+        let mut preds = Vec::new();
+        if ctx.target_arch == Some("wasm32") {
+            let caller_feats = crate::common::tier_wasm_features(ctx.tier_suffix);
+            for tf in crate::common::tier_wasm_features(rt.name) {
+                if !caller_feats.contains(tf) {
+                    preds.push(quote! { target_feature = #tf });
+                }
+            }
+        }
         if let Some(feat) = &rt.feature_gate {
-            let allow_attr = if rt.allow_unexpected_cfg {
+            preds.push(quote! { feature = #feat });
+        }
+        if !preds.is_empty() {
+            let allow_attr = if rt.allow_unexpected_cfg && rt.feature_gate.is_some() {
                 quote! { #[allow(unexpected_cfgs)] }
             } else {
                 quote! {}
             };
+            let cfg_attr = match preds.as_slice() {
+                [only] => quote! { #[cfg(#only)] },
+                many => quote! { #[cfg(all(#(#many),*))] },
+            };
             upgrade_arms.push(quote! {
                 #allow_attr
-                #[cfg(feature = #feat)]
+                #cfg_attr
                 { #check }
             });
         } else {
@@ -401,6 +452,8 @@ fn rewrite_tokenless_incant(input: &IncantInput, ctx: &CallerContext) -> Option<
         tier.name == "scalar"
             || tier.name == "default"
             || (tier.target_arch == ctx.target_arch
+                && !crate::generated::tier_to_canonical_token(tier.name)
+                    .is_some_and(crate::generated::token_requires_runtime_probe)
                 && (tier.suffix == ctx.tier_suffix
                     || crate::generated::can_downgrade_tier(ctx.tier_suffix, tier.suffix)))
     });

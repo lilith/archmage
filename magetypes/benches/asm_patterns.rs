@@ -1,9 +1,8 @@
 //! ASM pattern verification for slice→SIMD load patterns.
 //!
 //! Each function is `#[unsafe(no_mangle)]` + `#[arcane]` so `cargo asm` can find it.
-//! Verified by `scripts/verify-asm.sh`.
 //!
-//! Run: cargo asm -p archmage --bench asm_patterns --features "std avx512"
+//! Run: cargo asm -p magetypes --bench asm_patterns --features "std avx512"
 
 // x86-only bench: stub main so the `harness = false` target still links on
 // other architectures (a crate-level `#![cfg]` would leave the bench with no

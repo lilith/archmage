@@ -40,11 +40,12 @@ apply.
 
 Native raw values have two spellings on every native-backend type:
 `from_raw_t(token, raw)` for callers that hold a token, generic code included,
-and `from_raw(raw)`, which takes no token and requires a matching
-target-feature context that Rust checks. The x86 platform-named constructors
-0.9.29 shipped (`from_m128`, `from_m128d`, `from_m128i`, `from_m256`,
-`from_m256d`, `from_m256i`) are deprecated forwarders to `from_raw_t`, removed
-in 0.10; they have no `_t` form, and no other type gets a platform name.
+and `from_raw(raw)`, which takes no token and wraps one inside a matching
+target-feature context that Rust checks. The deprecated x86 platform-named
+constructors (`from_m128`, `from_m128d`, `from_m128i`, `from_m256`,
+`from_m256d`, `from_m256i`) forward to `from_raw_t` and remain deprecated
+ahead of removal in 0.11; they have no `_t` form, and no other type gets a
+platform name.
 
 Ordinary functions and backend-generic helpers can call `_t` methods without
 target-feature annotations:
@@ -74,22 +75,16 @@ definition and dispatch syntax but change no constructor signature: `_t(token,
 tokenless. See [the unified macro guide](ATTUNE.md) for that beta's API and its
 own migration mapping.
 
-## Planned 0.10 boundary
+## Future tokenless-short-name boundary (0.11+)
 
-The proposed magetypes 0.10 design retains `_t(token, ...)` and gives the short
-constructor names to compiler-checked feature-context construction. That change
-is not implemented by this migration release. The new tokenless short names
-will not be deprecated; the explicit-token `_t` methods will remain supported. Consumers can adopt `_t` on 0.9,
-upgrade later, and then simplify calls inside concrete feature contexts as a
-separate step. A generic backend bound alone does not enable target features.
+Magetypes 0.10 retains `_t(token, ...)` constructors alongside the deprecated
+token-taking short names, giving callers another full release cycle before any
+future signature change reserves short constructor names for compiler-checked
+feature contexts. The explicit-token `_t` methods remain supported, and
+generic backend bounds still require an explicit token (`_t`).
 
-The published archmage 0.9 macro contract uses
-`magetypes::simd::generic::TYPE<Token>` for `define(...)`, and tier/backends
-namespaces for `import_magetypes`. Preserving those paths avoids requiring a
-macro syntax migration for the constructor change.
-
-The [complete signature inventory](constructors/README.md) lists every old and
-new constructor, bound, and platform gate for all 40 vector types.
+The macro contract continues to use `magetypes::simd::generic::TYPE<Token>`
+for `define(...)`, and tier/backends namespaces for `import_magetypes`.
 
 ## Maintenance
 
@@ -106,22 +101,10 @@ and the ordinary magetypes→archmage version requirement. Pass `--target` to
 
 ## Compatibility checks
 
-Against the published 0.9.29 API snapshots, the x86-64, AArch64, and WASM
-surfaces retain every existing public line. `cargo-semver-checks` (0.50.0, patch
-comparison against the 0.9.29 packages) reports only
-`type_method_marked_deprecated`, the intended deprecations; no signature was
-removed. The tool cannot check proc-macro crates, so archmage-macros is covered
-by expansion snapshots and downstream compilation fixtures instead.
-
 The migration tests exercise both spellings, baseline-callable function
 pointers, generic token bounds, floating point bit preservation, mutable slice
-views and tails, and existing `define` macro syntax. Default, no-default-feature,
-and AVX-512 configurations pass them; AArch64 tests also pass under QEMU, and
-WASM and i686 test targets compile. The calling-convention matrix runs on x86,
-ARM/QEMU, and WASM/Wasmtime and covers scalar/default signatures, tokenful and
-tokenless composition, nested dispatch, and const generics. These checks cover
-the additive 0.9 change, not the future 0.10 API, and source compatibility, not
-numerical equivalence.
+views and tails, and existing `define` macro syntax across default,
+no-default-feature, AVX-512, AArch64, WASM, and i686 configurations.
 
 ## Downstream compilation after deprecation
 

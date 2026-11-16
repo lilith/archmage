@@ -16,9 +16,9 @@ archmage lets safe Rust call SIMD intrinsics, and a crate that uses it can keep
 
 The rest of this page explains why that is enough, what the guarantee relies
 on, and how it is checked. For an audit, start from
-[SOUNDNESS.md](https://github.com/imazen/archmage/blob/main/docs/SOUNDNESS.md),
+[SOUNDNESS.md](https://github.com/lilith/archmage/blob/main/docs/SOUNDNESS.md),
 which inventories every `unsafe` in archmage and magetypes, and
-[AUDITING.md](https://github.com/imazen/archmage/blob/main/AUDITING.md). The
+[AUDITING.md](https://github.com/lilith/archmage/blob/main/AUDITING.md). The
 [magetypes safety model](@/magetypes/safety.md) covers the vector types.
 
 ## The invariant
@@ -102,7 +102,7 @@ if let Some(token) = X64V3Token::summon() {
 
 expands to a `#[target_feature]` function and a wrapper. This is the committed
 expansion snapshot,
-[`tests/expand/arcane/sibling.expanded.rs`](https://github.com/imazen/archmage/blob/main/tests/expand/arcane/sibling.expanded.rs):
+[`tests/expand/arcane/sibling.expanded.rs`](https://github.com/lilith/archmage/blob/main/tests/expand/arcane/sibling.expanded.rs):
 
 ```text
 #[doc(hidden)]
@@ -153,26 +153,29 @@ memory intrinsics can forbid `unsafe` entirely, as the examples on this page do.
 ## What the guarantee relies on
 
 - **No `unsafe` of your own around tokens.** `unsafe {
-  X64V3Token::from_context() }` in an ordinary function, or the deprecated
-  `forge_token_dangerously()`, makes you the proof.
+  X64V3Token::from_context() }` in an ordinary function makes you the proof.
 - **Detection is trusted.** x86 uses Rust's `std_detect` (CPUID, plus the check
   that the OS saves AVX and AVX-512 state); without the `std` feature, only
   compile-time features count. AArch64 uses `std_detect`, register decoding
   through `winarm-cpufeatures` on Windows, and a fixed Apple Silicon baseline
   on macOS, Mac Catalyst and simulators. A wrong answer from any of them is a
   wrong token.
-- **WASM** has no runtime detection. The engine validates a module's
-  instructions when it loads, so a module that runs has its features.
+- **WASM** validates SIMD128 and Relaxed SIMD instructions at module load time,
+  and `Wasm128RelaxedFmaToken::summon()` additionally runs a one-time cached
+  runtime probe verifying FMA fusion (`from_context()` is omitted on
+  `Wasm128RelaxedFmaToken` and on `And<Base, Extra>`).
 - **`from_context()` skips detection**, so it also ignores tiers disabled for
   testing with `testable_dispatch`. Use `summon()` where dispatch has to follow
   runtime state.
-- **`suppress_const_test`** removes the type check. It exists for code
-  generators that emit real type paths, such as `#[magetypes]`.
+- **Unconditional type and bound authentication.** `#[arcane]`, `#[rite]`, and
+  `#[attune]` always verify concrete tokens, `And<Base, Extra>` conjunctions,
+  and `::archmage::Has*` trait bounds (`suppress_const_test` was removed in
+  0.10.0).
 - **No deliberate evasion of the check.** Accidental collisions fail to
   compile: a local type named `X64V3Token`, or a weaker token imported under
-  that name, lacks the hidden tier constant the wrapper checks. Getting past
+  that name, lacks the hidden hashed tier tag the wrapper checks. Getting past
   the check without `unsafe` means deliberately shadowing archmage's type names
-  and copying its hidden constants onto your own types. What you get is
+  and spoofing its hashed constants onto your own types. What you get is
   undefined behavior in your own functions on CPUs without the features.
   Usually that's a `SIGILL` crash, but not always: on a CPU without LZCNT or
   BMI1, `lzcnt` and `tzcnt` run as older instructions and return wrong values
@@ -180,13 +183,12 @@ memory intrinsics can forbid `unsafe` entirely, as the examples on this page do.
 
 ## How it's checked
 
-- `cargo xtask soundness` checks every intrinsic call in archmage, magetypes and
-  the macro expansion snapshots against the features of its enclosing function
-  or token. Its reference is 16,371 intrinsics (17,312 signatures) extracted from Rust's
-  `stdarch` sources. In 0.9.30 it verifies 5,493 calls in 11 files, scanning
-  274. It fails if the count drops below 4,000, so it cannot pass by seeing
-  nothing.
-- [`tests/soundness/`](https://github.com/imazen/archmage/tree/main/tests/soundness)
+- `cargo xtask soundness` checks every intrinsic call in archmage, magetypes,
+  magemath, and the macro expansion snapshots against the features of its
+  enclosing function or token, using the reference extracted from Rust's
+  `stdarch` sources. It fails if the scanned count drops below its minimum
+  threshold, so it cannot pass by seeing nothing.
+- [`tests/soundness/`](https://github.com/lilith/archmage/tree/main/tests/soundness)
   holds a compile-fail case for each bypass the macros block:
   - shadowed and aliased token and trait names
   - `from_context()` called from a missing, weaker or foreign-architecture

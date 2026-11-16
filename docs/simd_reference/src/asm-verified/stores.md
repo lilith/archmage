@@ -1,6 +1,6 @@
 # Store Patterns (ASM-Verified)
 
-All patterns below are verified by `just verify-asm` to produce the expected instructions.
+The slice/array store patterns below were checked via `cargo asm`.
 
 ## 256-bit float store (`vmovups`)
 
@@ -50,8 +50,8 @@ The compiler typically optimizes this to write directly to the caller's return s
 use magetypes::simd::generic::f32x8;
 
 #[arcane(import_intrinsics)]
-fn store_f32x8(token: X64V3Token, v: f32x8<X64V3Token>, out: &mut [f32; 8]) {
-    v.store(token, out);
+fn store_f32x8(_token: X64V3Token, v: f32x8<X64V3Token>, out: &mut [f32; 8]) {
+    v.store(out);
 }
 ```
 

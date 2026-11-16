@@ -1,8 +1,8 @@
 # Migrating configurable math to Magemath
 
-Magemath owns the configurable f32 pow, exponential and logarithm families.
-It depends on Magetypes vectors and Archmage feature proofs. Magetypes does not
-depend on Magemath and cannot forward back into it.
+Magemath owns the configurable f32 pow, exponential, logarithm and cube-root
+families. It depends on Magetypes vectors and Archmage feature proofs. Magetypes
+does not depend on Magemath and cannot forward back into it.
 Magetypes retains the flat implementations actually published in 0.9.31, with
 deprecation metadata for methods that have replacements. Their arithmetic bodies
 are unchanged. The unpublished configured modules and receiver delegates exist
@@ -25,15 +25,16 @@ builders ending in `.bits()`, specialized through the caller and kernel.
 | `log2_lowp*`, `log2_midp*` | `magemath::logf::try_log2_f32xN_with` |
 | `ln_lowp*`, `ln_midp*` | `magemath::logf::try_ln_f32xN_with` |
 | `log10_lowp*`, `log10_midp*` | `magemath::logf::try_log10_f32xN_with` |
+| `cbrt_lowp*`, `cbrt_midp*` | `magemath::cbrtf::try_cbrt_f32xN_with` |
 
 `N` is 4 or 8, and 16 with `w512`. Each family also has scalar and array entry
-points. The new crate's exp/log precision enum contains MIDP and LOWP, without
+points. The new crate's exp/log/cbrt precision enums contain MIDP and LOWP, without
 predecessor-fit selectors. Unpublished Magetypes module paths and configured
 receiver methods are removed, rather than deprecated or forwarded.
 
-Only these six operation families are deprecated now: 30 legacy suffix names
-on each f32 vector width, while the unpublished configurable APIs are rehomed. Cube root,
-sigmoid and SiLU have no new replacements in this PR and are not deprecated.
+These seven operation families are deprecated (`cbrt_*` since `0.9.32`, the other
+six since `0.9.31`) while the unpublished configurable APIs are rehomed. Sigmoid
+and SiLU have no new replacements yet and remain non-deprecated in Magetypes.
 No published flat method is removed. The unpublished `magetypes::powf`,
 `magetypes::expf`, `magetypes::logf` modules and `try_powf*` receiver methods
 are absent from the Magetypes public API. Removing published flat methods needs
@@ -64,11 +65,17 @@ that admits them.
   budget and can have large relative error near 1. In particular LOWP log1p
   retains the rational log2 bias near zero and can be negative for tiny positive
   arguments. Use MIDP there; no corrected LOWP small-x graph is added here.
+- **Cbrtf:** `Bounded` preserves `±0.0` and normal finite cube roots with
+  `|x| < f32::MAX / 3`, rejecting subnormals, `|x| >= f32::MAX / 3`, infinities
+  and NaN; `Full` rescales subnormals via `2^24` / `2^-8`, scales large normals
+  (`|x| >= 1e36`) via `1/8` and `2`, and propagates `±0.0`, `±inf` and NaN. All
+  presets share the in-register `i32` shift-add Kahan bit-hack seed followed by
+  one (`Lowp`, <= 259 ULP) or two (`Midp`, <= 3.2 ULP) Halley iterations.
 
 All numerical guarantees assume round-to-nearest and gradual underflow. NaN
 payloads/signs and floating exception flags are not portable-result contracts.
 The [powf reference](POWF_REFERENCE.md) and
-[frozen exp/log audit](https://github.com/imazen/archmage/blob/1662daa4d14f/benchmarks/expf_logf_audit/PR148.md)
+[frozen exp/log audit](https://github.com/lilith/archmage/blob/1662daa4d14f/benchmarks/expf_logf_audit/PR148.md)
 distinguish measured samples, proposed bounds and remaining gaps. The narrower
 normal-output exp2 experiment is not promoted into a new public range profile
 by this refactor.
@@ -136,12 +143,8 @@ native expected bits and exact assertion; no error threshold is relaxed.
 
 ## Published implementation boundary
 
-The crates.io 0.9.31 archive records source commit
+The historical crates.io 0.9.31 archive records source commit
 `6bfd83d744e41259ec758054631dcb0928fc4ea1`, matching tag `v0.9.31`.
-`just check-published-math` compares every published flat transcendental body
-on f32x4/x8/x16 with hashes taken from that archive. It ignores whitespace,
-comments and external deprecation metadata while retaining arithmetic tokens.
-It also rejects configured modules or `try_powf*` receiver APIs in Magetypes.
-The frozen hashes live in `xtask/published_math_0_9_31.json`; the check requires
-no network access in CI. This is source-body preservation, not a new assertion
-that different compilers or primitive implementations always produce equal bits.
+The retained flat transcendental bodies on `f32x4`/`f32x8`/`f32x16` keep that
+arithmetic intact without re-exposing the configured modules or `try_powf*`
+receiver APIs in Magetypes.

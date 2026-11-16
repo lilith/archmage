@@ -15,7 +15,6 @@ impl Parse for crate::engine::boundary::BoundaryOptions {
             let ident: Ident = input.parse()?;
             if !parse_shared_option(&ident, input, &mut args.shared)? {
                 match ident.to_string().as_str() {
-                    "suppress_const_test" => args.suppress_const_test = true,
                     "inline_always" => args.inline_always = true,
                     "nested" | "in_trait" => args.nested = true,
                     "in_impl" => args.in_impl = true,
@@ -29,7 +28,7 @@ impl Parse for crate::engine::boundary::BoundaryOptions {
                             format!(
                                 "unknown arcane argument: `{other}`. Supported: `in_impl`, \
                                  `in_trait` (or `nested`), `_self = Type`, `import_intrinsics`, \
-                                 `import_magetypes`, `cfg(feature)`, `suppress_const_test`."
+                                 `import_magetypes`, `cfg(feature)`."
                             ),
                         ));
                     }
@@ -58,6 +57,6 @@ impl Parse for crate::engine::boundary::BoundaryOptions {
     }
 }
 
-pub(crate) fn arcane_impl(input: LightFn, macro_name: &str, args: ArcaneArgs) -> TokenStream {
+pub(crate) fn arcane_impl(input: syn::ItemFn, macro_name: &str, args: ArcaneArgs) -> TokenStream {
     crate::engine::boundary::expand(input, macro_name, args)
 }

@@ -9,7 +9,6 @@
 //! |---------|--------|-------|
 //! | Concrete token (`X64V3Token`) | ✅ | Recommended for most code |
 //! | Feature trait (`impl HasX64V2`) | ✅ | Only enables that trait's features |
-//! | Width trait (`impl Has256BitSimd`) | ⚠️ | Being removed - don't use |
 //! | Generic (`T: SimdToken`) | ❌ | Can't determine features at compile time |
 //! | `_self` for trait impls | ✅ | Token must be 2nd parameter |
 //! | Token passthrough | ✅ | Call other `#[arcane]` fns with same token |
@@ -177,37 +176,11 @@ mod pattern_feature_traits {
 // PATTERN 3: Width Traits (DEPRECATED - Being Removed)
 // =============================================================================
 //
-// Has128BitSimd, Has256BitSimd, Has512BitSimd are being REMOVED because:
-// - They don't map to useful feature sets
-// - Has256BitSimd only enables AVX, not AVX2/FMA
-// - This causes #[arcane] to generate suboptimal code
-//
-// DO NOT USE THESE TRAITS IN NEW CODE.
-//
-// Migration:
-// - impl Has128BitSimd → impl HasX64V2 (x86) or impl HasNeon (ARM)
-// - impl Has256BitSimd → X64V3Token directly
-// - impl Has512BitSimd → impl HasX64V4 or X64V4Token
-
-// Demonstrates the deprecated pattern on purpose.
+// Use concrete tier tokens (`X64V3Token`, `X64V4Token`) or `HasX64V2`/`HasX64V4`/`HasNeon`.
 #[cfg(target_arch = "x86_64")]
-#[allow(deprecated)]
-mod pattern_width_traits_deprecated {
+mod pattern_concrete_avx2_fma {
     use archmage::intrinsics::x86_64::*;
-    use archmage::{Has256BitSimd, SimdToken, X64V3Token, arcane};
-
-    /// ⚠️ DEPRECATED: Using Has256BitSimd
-    /// This only enables AVX (not AVX2/FMA), so FMA intrinsics may not optimize!
-    #[arcane(import_intrinsics)]
-    pub fn add_f32x8_deprecated(token: impl Has256BitSimd, a: &[f32; 8], b: &[f32; 8]) -> [f32; 8] {
-        let va = _mm256_loadu_ps(a);
-        let vb = _mm256_loadu_ps(b);
-        // This works because _mm256_add_ps only needs AVX
-        let result = _mm256_add_ps(va, vb);
-        let mut out = [0.0f32; 8];
-        _mm256_storeu_ps(&mut out, result);
-        out
-    }
+    use archmage::{SimdToken, X64V3Token, arcane};
 
     /// ✅ CORRECT: Use X64V3Token for AVX2+FMA
     #[arcane(import_intrinsics)]
@@ -228,12 +201,13 @@ mod pattern_width_traits_deprecated {
     }
 
     #[test]
-    fn test_deprecated_pattern_still_works_for_now() {
+    fn test_concrete_v3_fma() {
         if let Some(token) = X64V3Token::summon() {
             let a = [1.0f32; 8];
             let b = [2.0f32; 8];
-            let result = add_f32x8_deprecated(token, &a, &b);
-            assert_eq!(result, [3.0f32; 8]);
+            let c = [0.5f32; 8];
+            let result = fma_f32x8_correct(token, &a, &b, &c);
+            assert_eq!(result, [2.5f32; 8]);
         }
     }
 }
@@ -631,7 +605,6 @@ mod pattern_token_extraction {
 // | Desktop64 alias | `fn f(t: Desktop64)` | ✅ | ✅ Yes |
 // | HasX64V2 trait | `fn f(t: impl HasX64V2)` | ✅ | ⚠️ SSE only |
 // | HasX64V4 trait | `fn f(t: impl HasX64V4)` | ✅ | ✅ For AVX-512 |
-// | Has256BitSimd | `fn f(t: impl Has256BitSimd)` | ⚠️ | ❌ Deprecated |
 // | Generic SimdToken | `fn f<T: SimdToken>(t: T)` | ❌ | ❌ Can't work |
 // | _self pattern | `#[arcane(_self = T)]` | ✅ | ✅ For traits |
 // | Token passthrough | Call other #[arcane] fns | ✅ | ✅ Yes |

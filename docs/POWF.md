@@ -197,9 +197,9 @@ binary64 coefficients. Its nine fused nodes retain their ordering; other
 adds and multiplies remain separately rounded. The final conversion rounds
 to binary32. The Arm MIT license ships in `magetypes/LICENSE-ARM`.
 
-`xtask/highp_powf_vectors.py` computes expected graph bits using exact rational
-IEEE rounding and separately frozen C-extracted coefficients. No host pow
-implementation supplies its answers. This checks graph identity; MPFR supplies
+Expected canonical HIGHP graph bits are verified against exact rational IEEE
+rounding and independently extracted C-reference coefficients; no host pow
+implementation supplies its answers. MPFR supplies
 the separate mathematical accuracy comparison. Finite samples do not establish
 a whole-domain error bound, and HIGHP does not promise correct rounding.
 

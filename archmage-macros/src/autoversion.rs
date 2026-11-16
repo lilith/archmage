@@ -4,7 +4,7 @@
 //! dispatcher from a single annotated function.
 
 use proc_macro2::TokenStream;
-use quote::{ToTokens, format_ident, quote, quote_spanned};
+use quote::{format_ident, quote, quote_spanned};
 use syn::{
     Attribute, FnArg, Ident, PatType, Signature, Token, Type,
     parse::{Parse, ParseStream},
@@ -162,7 +162,10 @@ pub(crate) fn find_autoversion_token_param(
 ///
 /// Generates suffixed SIMD variants (like `#[magetypes]`) and a runtime
 /// dispatcher function (like `incant!`) from a single annotated function.
-pub(crate) fn autoversion_impl(mut input_fn: LightFn, args: AutoversionArgs) -> TokenStream {
+pub(crate) fn autoversion_impl(mut input_fn: syn::ItemFn, args: AutoversionArgs) -> TokenStream {
+    if let Err(err) = validate_item_fn(&input_fn, "autoversion") {
+        return err.to_compile_error();
+    }
     // Check for self receiver
     let has_self = input_fn
         .sig
@@ -192,7 +195,7 @@ pub(crate) fn autoversion_impl(mut input_fn: LightFn, args: AutoversionArgs) -> 
     // Each variant would return its own opaque type, and one dispatcher cannot
     // return both. Say so instead of leaving rustc's E0308 on generated code.
     if let syn::ReturnType::Type(_, ty) = &input_fn.sig.output
-        && matches!(**ty, Type::ImplTrait(_))
+        && contains_impl_trait(ty)
     {
         return syn::Error::new_spanned(
             &input_fn.sig.output,
@@ -274,7 +277,7 @@ pub(crate) fn autoversion_impl(mut input_fn: LightFn, args: AutoversionArgs) -> 
     // Generate suffixed variants
     // =========================================================================
     //
-    // AST manipulation only — we clone the parsed LightFn and swap the token
+    // AST manipulation only — we clone the parsed `syn::ItemFn` and swap the token
     // param's type annotation. No serialize/reparse round-trip. The body is
     // never touched unless _self = Type requires a `let _self = self;`
     // preamble on the scalar variant.
@@ -316,16 +319,7 @@ pub(crate) fn autoversion_impl(mut input_fn: LightFn, args: AutoversionArgs) -> 
                     let receiver_param = nested_self_param(receiver, self_ty);
                     variant_fn.sig.inputs[0] = receiver_param;
                 }
-                let self_ident = format_ident!("_self");
-                variant_fn.body = replace_self_value_in_tokens(
-                    replace_self_in_tokens(variant_fn.body.clone(), self_ty),
-                    &self_ident,
-                );
-                variant_fn.sig = syn::parse2(replace_self_in_tokens(
-                    variant_fn.sig.to_token_stream(),
-                    self_ty,
-                ))
-                .expect("replacing Self keeps the signature parseable");
+                replace_self_in_item_fn(&mut variant_fn, self_ty, Some(&format_ident!("_self")));
             }
         } else if (tier.name == "scalar" || tier.name == "default")
             && has_self
@@ -334,8 +328,7 @@ pub(crate) fn autoversion_impl(mut input_fn: LightFn, args: AutoversionArgs) -> 
             // Fallback (scalar/default) with _self = Type: inject `let _self = self;`
             // preamble so body's _self references resolve (non-fallback variants
             // get this from #[arcane(_self = Type)])
-            let original_body = variant_fn.body.clone();
-            variant_fn.body = quote!(let _self = self; #original_body);
+            prepend_to_block(&mut variant_fn.block, quote!(let _self = self;));
         }
 
         // Rewrite incant!() calls in the variant body to direct tier calls.
@@ -355,7 +348,11 @@ pub(crate) fn autoversion_impl(mut input_fn: LightFn, args: AutoversionArgs) -> 
             has_token,
             derive_token: false,
         };
-        variant_fn.body = crate::rewrite::rewrite_incant_in_body(variant_fn.body, &ctx);
+        let rewritten =
+            crate::rewrite::rewrite_incant_in_body(block_inner_tokens(&variant_fn.block), &ctx);
+        if let Err(err) = set_block_inner_tokens(&mut variant_fn.block, rewritten) {
+            return err.to_compile_error();
+        }
 
         let cfg_guard = tier.variant_cfg_guard();
 
@@ -516,15 +513,23 @@ pub(crate) fn autoversion_impl(mut input_fn: LightFn, args: AutoversionArgs) -> 
     // so interpolating it below produces the same tokens syn 2's
     // `Option<Token![unsafe]>` did.
     let unsafety = &input_fn.sig.safety;
+    let abi = &input_fn.sig.abi;
 
     // Use the user's span for the dispatcher so dead_code lint fires on the
     // function the user actually wrote, not on invisible generated variants.
     let user_span = fn_name.span();
 
+    let inner_variants = if args.in_trait {
+        quote! { #(#variants)* }
+    } else {
+        quote! {}
+    };
+
     // autoversion uses `return` instead of `break '__dispatch` — no labeled block
     // needed. This avoids label hygiene issues when #[autoversion] is applied inside
     // macro_rules! (labels from proc macros can't be seen from macro_rules! contexts).
     let full_body = quote! {
+        #inner_variants
         #simdtoken_deprecation_in_body
         // Suppress unused_imports on archs where every dispatch arm is
         // cfg'd out (e.g., 32-bit x86 with [v3, neon, wasm128] tiers).
@@ -539,7 +544,7 @@ pub(crate) fn autoversion_impl(mut input_fn: LightFn, args: AutoversionArgs) -> 
         quote_spanned! { user_span =>
             #cfg
             #(#fn_attrs)*
-            #vis #unsafety fn #fn_name #generics (#dispatcher_inputs_punct) #output #where_clause {
+            #vis #unsafety #abi fn #fn_name #generics (#dispatcher_inputs_punct) #output #where_clause {
                 #body
             }
         }
@@ -548,6 +553,7 @@ pub(crate) fn autoversion_impl(mut input_fn: LightFn, args: AutoversionArgs) -> 
         // cfg(feature): full dispatch when on, scalar-only when off
         let on = dispatcher_fn(quote! { #[cfg(feature = #feat)] }, &full_body);
         let off_body = quote! {
+            #inner_variants
             #simdtoken_deprecation_in_body
             #fallback_call
         };
@@ -558,34 +564,10 @@ pub(crate) fn autoversion_impl(mut input_fn: LightFn, args: AutoversionArgs) -> 
     };
 
     if args.in_trait {
-        // A trait impl cannot take extra items: the variants live inside the
-        // dispatcher's body, where block items are visible throughout.
-        return place_variants_inside(dispatcher, quote! { #(#variants)* });
+        return dispatcher;
     }
     quote! {
         #dispatcher
         #(#variants)*
     }
-}
-
-/// Insert `items` at the start of every function body in `dispatcher` (one
-/// body normally, two under `cfg(feature)`). The bodies are the top-level
-/// brace groups; attribute arguments never use braces here.
-fn place_variants_inside(dispatcher: TokenStream, items: TokenStream) -> TokenStream {
-    let mut out = TokenStream::new();
-    for tt in dispatcher {
-        match tt {
-            proc_macro2::TokenTree::Group(group)
-                if group.delimiter() == proc_macro2::Delimiter::Brace =>
-            {
-                let body = group.stream();
-                let mut new_group =
-                    proc_macro2::Group::new(group.delimiter(), quote! { #items #body });
-                new_group.set_span(group.span());
-                out.extend([proc_macro2::TokenTree::Group(new_group)]);
-            }
-            other => out.extend([other]),
-        }
-    }
-    out
 }

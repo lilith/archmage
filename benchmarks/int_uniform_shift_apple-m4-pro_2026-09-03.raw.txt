@@ -48,7 +48,7 @@
    Compiling ppv-lite86 v0.2.21
    Compiling objc2-io-kit v0.3.2
    Compiling syn v2.0.119
-   Compiling archmage-macros v0.9.28 (/Users/lilith/work/archmage/archmage-macros)
+   Compiling archmage-macros v0.9.28 (<workspace>/archmage-macros)
    Compiling wait-timeout v0.2.1
    Compiling glob v0.3.4
    Compiling fnv v1.0.7
@@ -57,7 +57,7 @@
    Compiling safe_unaligned_simd v0.2.5
    Compiling rusty-fork v0.3.1
    Compiling bit-set v0.8.0
-   Compiling archmage v0.9.28 (/Users/lilith/work/archmage)
+   Compiling archmage v0.9.28 (<workspace>)
    Compiling rand_chacha v0.9.0
    Compiling sysinfo v0.36.1
    Compiling clap v4.6.6
@@ -72,7 +72,7 @@
    Compiling proptest v1.11.0
    Compiling trybuild v1.0.120
    Compiling zenbench v0.1.7
-   Compiling magetypes v0.9.28 (/Users/lilith/work/archmage/magetypes)
+   Compiling magetypes v0.9.28 (<workspace>/magetypes)
    Compiling macrotest v1.2.1
     Finished `bench` profile [optimized] target(s) in 10.32s
      Running benches/int_uniform_shift.rs (target/release/deps/int_uniform_shift-8f509267559cc593)

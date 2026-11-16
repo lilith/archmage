@@ -1,4 +1,4 @@
-# X64V1Token (Sse2Token) — x86-64-v1
+# X64V1Token — x86-64-v1
 
 Proof that SSE + SSE2 are available (x86-64-v1 baseline level).
 

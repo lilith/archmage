@@ -9,9 +9,8 @@
 //! The whole file is `#![forbid(unsafe_code)]`, so it only compiles if the safe
 //! path really is safe. The negative direction — a plain caller, a weaker
 //! context, and function-pointer coercion — is covered by the `forge_*` cases
-//! in `tests/compile_fail/`. The `unsafe` route from a feature-free context is
-//! exercised by `tests/token_downcast.rs`. `forge_token_dangerously()` is a
-//! deprecated alias with the identical gate; the last test here pins that.
+//! in `tests/compile_fail/`. The token-downcast behavior is exercised by
+//! `tests/token_downcast.rs`.
 
 #![forbid(unsafe_code)]
 
@@ -19,7 +18,7 @@ use archmage::{ScalarToken, SimdToken};
 #[cfg(any(
     target_arch = "x86_64",
     target_arch = "aarch64",
-    target_arch = "wasm32"
+    all(target_arch = "wasm32", target_feature = "simd128")
 ))]
 use archmage::{arcane, rite};
 
@@ -68,8 +67,8 @@ mod x86 {
     fn entry(_token: X64V3Token, data: &[f32; 8]) -> f32 {
         let (v1, v2) = forge_weaker_tiers();
         // Consume the weaker tokens so they cannot be optimized to nothing.
-        assert_eq!(<X64V1Token as SimdToken>::NAME, "x86-64-v1");
-        assert_eq!(<X64V2Token as SimdToken>::NAME, "x86-64-v2");
+        assert_eq!(<X64V1Token as archmage::SimdLeafToken>::NAME, "x86-64-v1");
+        assert_eq!(<X64V2Token as archmage::SimdLeafToken>::NAME, "x86-64-v2");
         let _ = (v1, v2);
         sum_via_forged_v3(data)
     }
@@ -239,15 +238,4 @@ mod wasm {
 #[test]
 fn scalar_needs_no_context() {
     assert_eq!(ScalarToken::from_context(), ScalarToken::summon().unwrap());
-}
-
-/// `forge_token_dangerously()` is the deprecated alias: same `#[target_feature]`
-/// gate, same safe-call rules, so it still works from a matching context.
-#[test]
-#[allow(deprecated)]
-fn deprecated_alias_has_the_same_gate() {
-    assert_eq!(
-        ScalarToken::forge_token_dangerously(),
-        ScalarToken::from_context()
-    );
 }

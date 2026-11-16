@@ -28,14 +28,14 @@ fn pass_through<T: IntoConcreteToken>(token: T, x: f32) -> f32 {
             break '__incant inner_scalar(__t, x);
         }
         {
-            fn __incant_token_name<__T: archmage::SimdToken>(_: &__T) -> &'static str {
-                __T::NAME
+            fn __incant_assert_token<__T: archmage::SimdToken>(token: &__T) -> &__T {
+                token
             }
             {
                 ::core::panicking::panic_fmt(
                     format_args!(
                         "incant!(.. with token): the held token `{0}` matches none of [{1}]. `with token` dispatches on the token\'s exact type; add a `default` arm, or dispatch with the token of a listed tier",
-                        __incant_token_name(& __incant_token),
+                        __incant_assert_token(& __incant_token),
                         "v4, v3, neon, wasm128, scalar",
                     ),
                 );

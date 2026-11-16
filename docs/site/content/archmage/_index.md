@@ -70,5 +70,5 @@ vectors such as [`f32x4<T>`](https://docs.rs/magetypes/latest/magetypes/simd/gen
 optimized code and benchmark the complete loop before claiming zero overhead.
 
 [Installation](@/archmage/getting-started/installation.md) ·
-[Intrinsics browser](https://imazen.github.io/archmage/intrinsics/) ·
+[Intrinsics browser](https://lilith.github.io/archmage/intrinsics/) ·
 [API reference](https://docs.rs/magetypes/latest/magetypes/)

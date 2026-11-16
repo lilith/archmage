@@ -1,6 +1,6 @@
 # Load Patterns (ASM-Verified)
 
-All patterns below are verified by `just verify-asm` to produce the expected instructions.
+The slice/array load patterns below were checked via `cargo asm`.
 
 ## 256-bit float load (`vmovups`)
 
@@ -72,11 +72,11 @@ use magetypes::simd::generic::f32x8;
 
 #[arcane(import_intrinsics)]
 fn load_f32x8_from_slice(_t: X64V3Token, data: &[f32]) -> f32x8<X64V3Token> {
-    f32x8::from_slice(_t, data)
+    f32x8::from_slice_t(_t, data)
 }
 ```
 
-**ASM:** Same `vmovups ymm0, [rdi]` — magetypes' `from_slice` compiles down to the same instruction.
+**ASM:** Same `vmovups ymm0, [rdi]` — magetypes' `from_slice_t` compiles down to the same instruction.
 
 ## Key takeaway
 
@@ -87,5 +87,5 @@ All safe load patterns produce the same core instruction. The abstraction cost i
 | `&[f32; 8]` → `_mm256_loadu_ps` | `vmovups` | No |
 | `&[f32]` → `.first_chunk()` → `_mm256_loadu_ps` | `vmovups` | Yes (1 cmp) |
 | `&[f32]` → `.try_into()` → `_mm256_loadu_ps` | `vmovups` | Yes (1 cmp) |
-| `&[f32]` → `f32x8::from_slice` | `vmovups` | Yes (1 cmp) |
-| `&[f32; 8]` → `f32x8::load` | `vmovups` | No |
+| `&[f32]` → `f32x8::from_slice_t` | `vmovups` | Yes (1 cmp) |
+| `&[f32; 8]` → `f32x8::load_t` | `vmovups` | No |

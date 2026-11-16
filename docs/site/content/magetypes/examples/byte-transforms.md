@@ -68,6 +68,6 @@ as in the production helper. Tests cover every length through two chunks and
 a tail, including overflow. This is a reversible byte transform, not color
 space conversion.
 
-The [intrinsics browser](https://imazen.github.io/archmage/intrinsics/) is useful
+The [intrinsics browser](https://lilith.github.io/archmage/intrinsics/) is useful
 when profiling justifies a per-ISA specialization. Keep the generated entry and
 test the specialized output against this source algorithm.

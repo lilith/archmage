@@ -20,7 +20,7 @@ jobs:
           components: rustfmt, clippy, rust-src
 
       - name: Extract intrinsics from current Rust
-        run: python3 xtask/extract_intrinsics.py > docs/intrinsics/complete_intrinsics.csv
+        run: cargo run -p xtask -- intrinsics-refresh
 
       # `xtask generate` reads safe_unaligned_simd's SOURCE out of the cargo
       # registry cache (xtask/src/main.rs, find_safe_simd_path_simple). xtask's

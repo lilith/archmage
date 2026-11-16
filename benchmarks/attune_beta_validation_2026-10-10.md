@@ -31,7 +31,7 @@ from `/usr/bin/time -v`. A separate Cargo timing diagnostic pair reported
 0.39s/0.54s for compiling archmage-macros, 0.10s/0.10s for archmage, and
 0.03s/0.03s for the fixture (baseline/beta; Cargo's rounded values).
 
-Command: `just attune-beta-compare v0.9.30 9e829f5e <out> 6`, under run-heavy
+Command: `just attune-beta-compare v0.9.30 9e829f5e <out> 6`, in serialized benchmark runs
 with `--mem 16G --jobs 8` and disk-backed TMPDIR.
 Full logs, archives, manifest transformations, tool versions, and timings are
 retained in `~/output/archmage/attune-beta-compile-2026-10-10/`.
@@ -49,7 +49,7 @@ Resource-limiter summary: `rc=0 158s | peak-RSS 0.37GiB | min-avail 27462MiB | p
 
 The local all-target tests, doctests, generated-source checks, soundness checks,
 and workspace package/publish dry-run passed. No packages were uploaded.
-Package-check log: `~/tmp/attune-beta-packages.log`.
+Package-check log: `<scratch>/attune-beta-packages.log`.
 Resource-limiter summary: `rc=0 377s | peak-RSS 2.18GiB | min-avail 26175MiB | peak-load 1.11`.
 
 ## Semver checker discrepancy
@@ -61,8 +61,8 @@ with `--release-type patch`. Its [lint query](https://github.com/obi1kenobi/carg
 matches owner paths and method names without distinguishing impl type arguments.
 V4 and V4x `from_raw` methods therefore cross-match.
 
-The approved replacement, `xtask/check_target_features.py`, retains concrete
-impl arguments. `xtask/check_semver.py` requires it alongside ordinary semver
+The approved replacement, `the concrete-impl target-feature check`, retains concrete
+impl arguments. `the semver validator` requires it alongside ordinary semver
 checking in CI and release CI; only the faulty Magetypes lint is overridden.
 `just semver magetypes` selects the published baseline, while
 `just attune-beta-semver` fixes the baseline at 0.9.30 for this release review.
@@ -82,8 +82,8 @@ a new JSON format fails closed until reviewed. Because `CARGO_TARGET_DIR` makes
 baseline generation overwrite the current JSON, a second Magetypes pass reads
 the frozen baseline JSON and rebuilds only the current crate before comparison.
 
-Validation command: `just attune-beta-semver`, under run-heavy with
-`--mem 16G --jobs 8`. Log: `~/tmp/attune-beta-precise-semver-isolated.log`.
+Validation command: `just attune-beta-semver`, in serialized benchmark runs with
+`--mem 16G --jobs 8`. Log: `<scratch>/attune-beta-precise-semver-isolated.log`.
 Resource-limiter summary: `rc=0 9s | peak-RSS 0.36GiB | min-avail 27680MiB | peak-load 0.31`.
 
 ## Rust 1.99 and main integration, 2026-10-12
@@ -100,7 +100,7 @@ After integrating main's narrow AVX-512 backend delegation, the real Rust 1.99
 comparison against 0.9.30 passed: 202 ordinary Archmage checks, 201 ordinary
 Magetypes checks, and 2,040 safe inherent methods (40 feature-bearing) without
 increased requirements. Command: `RUSTUP_TOOLCHAIN=1.99.0 just attune-beta-semver`.
-Log: `~/tmp/archmage-merge-semver199-fixed.log`.
+Log: `<scratch>/archmage-merge-semver199-fixed.log`.
 Resource-limiter summary: `rc=0 8s | peak-RSS 0.42GiB | min-avail 25867MiB | peak-load 0.78`.
 
 ## Final integration checks, 2026-10-12
@@ -110,7 +110,7 @@ Implementation `cc6305959570e462a2c0ae9f94785390fa7915d8` passed
 `just attune-beta-packages`: generation, registry/token/soundness validation,
 Archmage all-target tests and doctests, Magetypes all-target tests and doctests
 with std/AVX-512, macro tests, and workspace publication dry-run. No upload
-occurred. Log: `~/tmp/archmage-merge-full-validation.log`.
+occurred. Log: `<scratch>/archmage-merge-full-validation.log`.
 Resource-limiter summary: `rc=0 722s | peak-RSS 2.31GiB | min-avail 24688MiB | peak-load 2.49`.
 
 The approved API refresh changes only the x86-64 feature roster: 30 additional

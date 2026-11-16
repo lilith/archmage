@@ -12,7 +12,7 @@ description = "Safely invoke your intrinsic power, using the tokens granted to y
 badge = "Rust 1.89+"
 gradient_opacity = 15
 cta_buttons = [
-    { text = "Path of Attunement (beta)", url = "/attunement/", style = "primary" },
+    { text = "Path of Attunement", url = "/attunement/", style = "primary" },
     { text = "Arcane Spellcraft", url = "/archmage/", style = "secondary" },
     { text = "Magetypes", url = "/magetypes/", style = "secondary" },
 ]
@@ -51,8 +51,8 @@ icon = "fa-solid fa-magnifying-glass"
 title = "Quick Start"
 description = "Add archmage to your project and start writing safe SIMD."
 tabs = [
-    { name = "Cargo.toml", command = "[dependencies]\narchmage = \"0.9\"" },
-    { name = "With Magetypes", command = "[dependencies]\narchmage = \"0.9\"\nmagetypes = \"0.9\"" },
+    { name = "Cargo.toml", command = "[dependencies]\narchmage = \"0.10\"" },
+    { name = "With Magetypes", command = "[dependencies]\narchmage = \"0.10\"\nmagetypes = \"0.10\"" },
     { name = "docs.rs", link = "https://docs.rs/archmage" },
 ]
 

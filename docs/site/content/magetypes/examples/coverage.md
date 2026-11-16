@@ -65,14 +65,10 @@ compatibility and performance need their own tests before changing those crates.
 
 ## Version and evidence scope
 
-This site tracks the repository, whose current work is the 0.9.31-beta.2
-prerelease; the latest **stable** release is 0.9.30, and API links point to
-the latest **published** docs.rs version, which may lag the repository. The
-APIs this guide teaches (`from_context()`, the integer abstractions, tokenless
-rite construction) are available in the published 0.9.30 release; do not assume
-them in 0.9.28 or earlier. The beta's unified `#[attune]`, `attuned!`, and
+This site tracks the repository (`0.10.0`). API links point to
+docs.rs, which tracks the latest published crates. The unified `#[attune]`, `attuned!`, and
 `reattune!` macros are documented in the repository's
-[beta guide](https://github.com/imazen/archmage/blob/main/docs/ATTUNE.md).
+[attunement guide](https://github.com/lilith/archmage/blob/main/docs/ATTUNE.md).
 No crate publication is implied by this guide.
 
 The search used local checkouts; pinned walkthroughs name their source revisions.
@@ -81,7 +77,7 @@ zenpixels `e56f626`, zenpng `00d6deb`, aom-rs `028c5e1`, rav1d-safe `e73811f`,
 and mozjpeg-rs `45d36a7`. Local edits can differ from those commits; the adaptation
 notes describe the actual teaching extraction rather than claiming verbatim copies.
 
-All website Rust fences run through `xtask/check_docs.py`, without implicit
+Website Rust fences follow standalone doctest conventions without implicit
 imports or hidden helper implementations. Syntax-only notation uses text fences.
 The numerical regression suite and ISA/codegen tests supplement these examples;
 a passing doctest alone is not a performance proof.

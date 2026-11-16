@@ -4,6 +4,7 @@ use archmage::magetypes;
 )]
 #[inline]
 fn kernel_v3(token: archmage::X64V3Token, data: &[f32; 8]) -> f32 {
+    let _: () = <archmage::X64V3Token>::__ARCHMAGE_ASSERT_TIER_F38B284B;
     #[allow(unused_imports)]
     use archmage::intrinsics::x86_64::*;
     #[allow(non_camel_case_types, dead_code)]

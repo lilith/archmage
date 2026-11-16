@@ -48,7 +48,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// Uses rational polynomial approximation on the mantissa.
     /// Result is undefined for x <= 0.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_log2_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -81,7 +81,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Low-precision base-2 logarithm, no edge case handling.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_log2_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -92,7 +92,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// Low-precision base-2 exponential: relative error at most 0.56% for x up
     /// to 127.99 and 1.23% above, where the input is clamped to 127.99.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::expf::try_exp2_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -121,7 +121,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Low-precision base-2 exponential, no edge case handling.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::expf::try_exp2_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -131,7 +131,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Low-precision natural logarithm.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_ln_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -141,7 +141,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Low-precision natural logarithm, no edge case handling.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_ln_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -151,7 +151,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Low-precision natural exponential.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::expf::try_exp_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -161,7 +161,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Low-precision natural exponential, no edge case handling.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::expf::try_exp_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -171,7 +171,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Low-precision base-10 logarithm.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_log10_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -182,7 +182,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Low-precision base-10 logarithm, no edge case handling.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_log10_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -192,7 +192,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Low-precision power function: `self^n`. Returns 0 for zero input.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::powf::try_powf_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -205,7 +205,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Low-precision power function, no edge case handling.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::powf::try_powf_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -220,7 +220,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// Uses (a-1)/(a+1) transform with odd polynomial evaluation.
     /// Result is undefined for x <= 0.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_log2_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -260,7 +260,7 @@ impl<T: F32x4Convert> f32x4<T> {
     ///
     /// Returns -inf for 0, NaN for negative values, +inf for +inf.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_log2_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -283,7 +283,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// handled: they return about -127 (for 1e-42 the true value is -139.5).
     /// Queued for removal.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_log2_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -297,7 +297,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// Uses round-to-nearest splitting to keep |frac| <= 0.5, giving
     /// ~1000x less polynomial truncation error than floor-based splitting.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::expf::try_exp2_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -337,7 +337,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// Returns 0 for x < -126 (denormal results can't be constructed),
     /// inf for x >= 128.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::expf::try_exp2_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -362,7 +362,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// Same as [`exp2_midp`](Self::exp2_midp), which covers every input:
     /// a subnormal input is just close to zero. Queued for removal.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::expf::try_exp2_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -372,7 +372,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Mid-precision natural logarithm (at most 4.1 ULP).
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_ln_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -382,7 +382,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Mid-precision natural logarithm, no edge case handling.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_ln_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -394,7 +394,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// handled: they return about -88 (for 1e-42 the true value is -96.7).
     /// Queued for removal.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_ln_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -409,7 +409,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// 31.3 ULP for |x| <= 40, 64.1 ULP over [-87, 88.5] and 197.1 ULP above
     /// 88.5, where the product nears 128 (see `exp2_midp`).
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::expf::try_exp_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -419,7 +419,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Mid-precision natural exponential, no edge case handling.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::expf::try_exp_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -430,7 +430,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// Same as [`exp_midp`](Self::exp_midp), which covers every input:
     /// a subnormal input is just close to zero. Queued for removal.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::expf::try_exp_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -470,7 +470,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Mid-precision base-10 logarithm (at most 4.5 ULP).
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_log10_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -481,7 +481,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Mid-precision base-10 logarithm, no edge case handling.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_log10_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -494,7 +494,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// handled: they return about -38.2 (for 1e-42 the true value is -42.0).
     /// Queued for removal.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::logf::try_log10_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -508,7 +508,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// |n * log2(self)|. Measured for n = 2.4: at most 27.8 ULP (mean 3.7) on
     /// [2^-8, 2^8], 64.8 ULP on [2^-20, 2^20] and 144.9 ULP on [2^-50, 2^50].
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::powf::try_powf_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -518,7 +518,7 @@ impl<T: F32x4Convert> f32x4<T> {
 
     /// Mid-precision power function, no edge case handling.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::powf::try_powf_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -530,7 +530,7 @@ impl<T: F32x4Convert> f32x4<T> {
     /// handled: `pow_midp_precise(1e-42, 0.5)` returns about 7.7e-20, not
     /// 1.0e-21. Queued for removal.
     #[deprecated(
-        since = "0.9.32",
+        since = "0.10.0",
         note = "use magemath::powf::try_powf_f32x4_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md"
     )]
     #[inline(always)]
@@ -552,6 +552,10 @@ impl<T: F32x4Convert> f32x4<T> {
     ///
     /// Returns ±0 for ±0 input. Does not handle denormals or infinity — use
     /// `cbrt_midp_precise` for those.
+    #[deprecated(
+        since = "0.10.0",
+        note = "use magemath::cbrtf::try_cbrt_f32x4_with with CbrtfOptions::PORTABLE_LOWP and the caller token; see docs/MAGEMATH-MIGRATION.md"
+    )]
     #[inline(always)]
     pub fn cbrt_lowp(self) -> Self {
         const MAGIC: u32 = 0x2a50_8c2d;
@@ -594,6 +598,10 @@ impl<T: F32x4Convert> f32x4<T> {
     /// overflow an intermediate and return NaN (±inf for a few just above
     /// the limit), and denormals and infinity are not handled: use
     /// `cbrt_midp_precise` for those.
+    #[deprecated(
+        since = "0.10.0",
+        note = "use magemath::cbrtf::try_cbrt_f32x4_with with CbrtfOptions::PORTABLE_MIDP and the caller token; see docs/MAGEMATH-MIGRATION.md"
+    )]
     #[inline(always)]
     pub fn cbrt_midp(self) -> Self {
         const MAGIC: u32 = 0x2a50_8c2d;
@@ -629,6 +637,10 @@ impl<T: F32x4Convert> f32x4<T> {
     /// Wraps `cbrt_midp()`: denormals are scaled up first, magnitudes from
     /// 1e36 up run on x/8 with the result doubled so the Halley step cannot
     /// overflow, and ±0 and ±inf return themselves.
+    #[deprecated(
+        since = "0.10.0",
+        note = "use magemath::cbrtf::try_cbrt_f32x4_with with CbrtfOptions::PORTABLE_MIDP_FULL and the caller token; see docs/MAGEMATH-MIGRATION.md"
+    )]
     #[inline(always)]
     pub fn cbrt_midp_precise(self) -> Self {
         let zero = splat_f32::<T>(self.1, 0.0);

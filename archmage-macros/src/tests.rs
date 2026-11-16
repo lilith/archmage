@@ -70,11 +70,11 @@ fn trait_to_features_includes_tokens_as_bounds() {
         "X64CryptoToken",
         "X64V3Token",
         "Desktop64",
-        "Avx2FmaToken",
         "X64V4Token",
         "Avx512Token",
         "Server64",
         "X64V4xToken",
+        "Avx512ModernToken",
         "Avx512Fp16Token",
         "NeonToken",
         "Arm64",
@@ -149,6 +149,11 @@ fn has_neon_aes_includes_neon() {
 fn no_removed_traits_are_recognized() {
     // These traits were removed in 0.3.0 and should NOT be recognized
     let removed = [
+        "Sse2Token",
+        "Avx2FmaToken",
+        "Has128BitSimd",
+        "Has256BitSimd",
+        "Has512BitSimd",
         "HasSse",
         "HasSse2",
         "HasSse41",
@@ -182,7 +187,9 @@ fn no_nonexistent_tokens_are_recognized() {
         "Sve2Token",
         "Avx512VnniToken",
         "X64V4ModernToken",
-        "NeonFp16Token",
+        "NeonSveToken",
+        "Sse2Token",
+        "Avx2FmaToken",
     ];
 
     for &name in &fake {
@@ -828,5 +835,58 @@ fn suffix_path_qualified() {
         s.contains("process_neon"),
         "Expected process_neon, got: {}",
         s
+    );
+}
+
+#[test]
+fn wasm_self_type_authenticates_token_proof() {
+    let f: ItemFn = syn::parse_str("fn fma(&self, a: f32) -> f32 { let _ = _self; a }").unwrap();
+    let args: crate::arcane::ArcaneArgs = syn::parse_str("_self = Wasm128RelaxedFmaToken").unwrap();
+    let expanded = crate::arcane::arcane_impl(f, "arcane", args).to_string();
+    assert!(
+        expanded.contains("__simd_inner_fma"),
+        "Expected boundary inner fn for _self WASM proof, got: {expanded}"
+    );
+    assert!(
+        expanded.contains("__ARCHMAGE_ASSERT_TIER_"),
+        "Expected tier tag assertion for _self WASM proof, got: {expanded}"
+    );
+    assert!(
+        expanded.contains("_self : & Wasm128RelaxedFmaToken"),
+        "Expected typed _self parameter in inner fn, got: {expanded}"
+    );
+    assert!(
+        !expanded.contains("let _self = self"),
+        "Must not bypass Self type check via `let _self = self`, got: {expanded}"
+    );
+}
+
+#[test]
+fn wasm_self_impl_trait_authenticates_archmage_path() {
+    let f: ItemFn = syn::parse_str("fn simd_op(&self) {}").unwrap();
+    let args: crate::arcane::ArcaneArgs = syn::parse_str("_self = impl HasWasm128").unwrap();
+    let expanded = crate::arcane::arcane_impl(f, "arcane", args).to_string();
+    assert!(
+        expanded.contains(":: archmage :: HasWasm128"),
+        "Expected ::archmage::HasWasm128 trait bound assertion, got: {expanded}"
+    );
+    assert!(
+        expanded.contains("__archmage_assert_tier_trait"),
+        "Expected trait proof assertion helper, got: {expanded}"
+    );
+}
+
+#[test]
+fn scalar_self_type_authenticates_boundary() {
+    let f: ItemFn = syn::parse_str("fn scalar_op(&self) {}").unwrap();
+    let args: crate::arcane::ArcaneArgs = syn::parse_str("_self = ScalarToken").unwrap();
+    let expanded = crate::arcane::arcane_impl(f, "arcane", args).to_string();
+    assert!(
+        expanded.contains("__simd_inner_scalar_op"),
+        "Expected boundary inner fn for _self = ScalarToken, got: {expanded}"
+    );
+    assert!(
+        expanded.contains("_self : & ScalarToken"),
+        "Expected typed _self: &ScalarToken parameter, got: {expanded}"
     );
 }

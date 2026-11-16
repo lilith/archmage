@@ -1,17 +1,10 @@
 # Changelog
 
-Stable `0.9.31` includes both published betas and the follow-up fixes below.
-The `0.9.31-beta.1` entries cover changes since `0.9.30`, and the
-`0.9.31-beta.2` entries changes since `0.9.31-beta.1`. The earlier
-`0.9.31-beta` version was prepared but never published.
+`0.10.0` is a ground-up redesign introducing composable `And<Base, Extra>` capability conjunctions, granular leaf tokens and `Has*` capability traits, unconditional macro authentication across all targets, runtime-probed WASM FMA fusion, and zero-macro `magetypes` sealed capability traits, plus `magemath` `0.2.0`.
 
 ## magemath
 
-### [Unreleased]
-
-#### QUEUED BREAKING CHANGES
-
-(none)
+### [0.2.0] - 2026-11-15
 
 #### Added
 
@@ -28,12 +21,25 @@ The `0.9.31-beta.1` entries cover changes since `0.9.30`, and the
 
 ## archmage
 
-### [Unreleased]
+### [0.10.0] - 2026-11-15
 
-#### QUEUED BREAKING CHANGES
+#### Added
 
-- Remove `guaranteed()` from `SimdToken` trait — use `compiled_with()` instead (deprecated since 0.6.0, zero callers)
-- Remove width traits `Has128BitSimd`, `Has256BitSimd`, `Has512BitSimd` — use concrete tokens or tier traits (`HasX64V2`, `HasX64V4`) instead (deprecated since 0.9.9; `Has256BitSimd` only enables AVX, not AVX2/FMA)
+- Add sound conjunction-appending token composition `And<Base, Extra>` (`.and()` / `And::join()` / `.base()` / `.extra()`) with type-level `SameArch<Other>` enforcement (`SameArch` + `CapSetOr` / `BitOr` over capability sets)
+- Add granular x86 and AArch64 extension leaf tokens and `Has*` capability traits
+
+#### Changed
+
+- Move `const NAME: &'static str` from `SimdToken` to `SimdLeafToken`, and add `core::fmt::Display` as a supertrait of `SimdToken`
+- Make `Wasm128RelaxedFmaToken` unconditionally runtime-probed for single-rounding FMA fusion via `summon()`, removing `from_context()` on both `Wasm128RelaxedFmaToken` and `And<Base, Extra>`
+- Check ancestor `DISABLED` flags across token detection and `disable()`, and preserve `"sse"`/`"sse2"` `cfg(target_feature)` checks on `X64V1Token`
+
+#### Removed
+
+- Remove `guaranteed()` from `SimdToken` trait — use `compiled_with()` instead
+- Remove width traits `Has128BitSimd`, `Has256BitSimd`, `Has512BitSimd` — use concrete tokens, `And<Base, Extra>` conjunctions, or capability/tier traits (`HasX64V2`, `HasX64V4`, `HasGfni`, etc.) instead
+- Remove deprecated token aliases `Sse2Token` (`X64V1Token`) and `Avx2FmaToken` (`X64V3Token`)
+- Remove deprecated constructors/methods `forge_token_dangerously()`, `guaranteed()`, and `try_new()` (use `from_context()`, `compiled_with()`, and `summon()`)
 
 ### [0.9.31] - 2026-11-07
 
@@ -75,15 +81,17 @@ The `0.9.31-beta.1` entries cover changes since `0.9.30`, and the
 
 ## archmage-macros
 
-### [Unreleased]
+### [0.10.0] - 2026-11-15
 
-#### QUEUED BREAKING CHANGES
+#### Added
 
-- Remove `SimdToken` parameter support from `#[autoversion]` — use tokenless (recommended) or `ScalarToken` for `incant!` nesting (deprecated since 0.9.11)
-- Remove `_self = Type` without `in_trait` from `#[autoversion]` — plain `self` works in sibling mode; with `in_trait` it names the receiver type and stays
-- Deprecate `incant!` passthrough mode (`with token`) — zero downstream uses; `#[rite]` multi-tier or direct `IntoConcreteToken` dispatch are better alternatives
-- Require `scalar` or `default` in explicit `incant!` tier lists (currently auto-appended with a deprecation warning)
-- Require explicit `tier(cfg(feature))` syntax — remove implicit `cfg_feature` auto-gating on v4/v4x
+- Support `And<Base, Extra>`, tuples `(A, B)`, nested tuples, multiple token parameters, `impl Has*`, and generic multi-trait bounds (`T: HasX64V3 + HasGfni`) in `#[arcane]`, `#[rite]`, and `#[attune]`, failing closed on cross-architecture or `ScalarToken`+SIMD mixes.
+- Normalize non-plain parameter patterns (`mut`, `ref`, tuples, wildcards, `@` subpatterns) consistently in macro wrappers and single-function emitters.
+
+#### Changed
+
+- Emit hashed `__ARCHMAGE_ASSERT_TIER_*`, `__ARCHMAGE_ASSERT_AND_*`, and `::archmage::Has*` bounds unconditionally on every target (removing `suppress_const_test`).
+- Reject `const fn`, `async fn`, variadic functions, manual `#[target_feature]` attributes, and safe tokenless `wasm128_relaxed_fma` declarations across boundary and feature macros.
 
 ### [0.9.31] - 2026-11-07
 
@@ -153,7 +161,12 @@ The `0.9.31-beta.1` entries cover changes since `0.9.30`, and the
 
 ## magetypes
 
-### [Unreleased]
+### [0.10.0] - 2026-11-15
+
+#### Changed
+
+- Replace macro-generated backend trait forwarding with zero-macro capability traits (`SealedBase` + `SealedFromCaps<T>`) supporting concrete leaf tokens and `And<Base, Extra>` conjunctions with zero `.rmeta` overhead.
+- Expand `MagetypesToken` / `TokenCanonical` support cleanly across all leaf tokens and `And<Base, Extra>` conjunctions.
 
 #### Deprecated
 
@@ -166,16 +179,12 @@ The `0.9.31-beta.1` entries cover changes since `0.9.30`, and the
 #### Changed
 
 - Preserve all published 0.9.31 flat transcendental bodies; configurable math, its tests and opt-in exhaustive fixtures now belong solely to Magemath (f6df3ec0).
+- Rehome the unpublished configured powf/expf/logf modules, `try_powf*` receiver delegates and `_exhaustive-tests` machinery to Magemath. Published flat transcendental bodies remain unchanged (f6df3ec0).
 
-#### QUEUED BREAKING CHANGES
+#### Notes
 
-- Rehome the unpublished configured powf/expf/logf modules, `try_powf*` receiver delegates and `_exhaustive-tests` machinery to Magemath. These APIs were never in crates.io 0.9.31; published flat transcendental bodies remain unchanged (f6df3ec0).
-- Planned: `mul_add`/`mul_sub` become the fused, single-rounding operations, matching `f32::mul_add`. Step one is in this release: `mul_add_relaxed`/`mul_sub_relaxed` (the previous `mul_add`: fused where the hardware fuses, multiply then add on the scalar backend and strict WASM, the engine's madd with relaxed SIMD) and `mul_add_fused`/`mul_sub_fused` (the same operation as `mul_add_portable`/`mul_sub_portable`, which stay), with `mul_add`/`mul_sub` deprecated pointing at both (#138). After the deprecation has shipped through a full release (0.10), `mul_add`/`mul_sub` return undeprecated as the fused forms (0.11). Calls still on `mul_add` then round once everywhere, at software-FMA cost on the scalar backend without FMA hardware and on strict WASM. Neither form is fastest everywhere: separate multiply-add is faster for single-accumulator reductions, fused for Horner chains (`benchmarks/fused_vs_separate_2026-10-25.md`).
-- Planned magetypes 0.10: deprecate the one-lane wrappers `f32x1`, `f64x1`, `i8x1`, `u8x1`, `i16x1`, `u16x1`, `i32x1`, `u32x1`, `i64x1`, `u64x1` (no production users across the zen checkouts; the scalar tier uses the generic `*<ScalarToken>` types and tails get plain slices), the comparison traits `SimdEq`, `SimdNe`, `SimdLt`, `SimdLe`, `SimdGt`, `SimdGe` (never implemented; the vector types have inherent `simd_*` methods), and `SimdTypes` and `WidthDispatch` (no users, tests or docs). Removal follows in a later breaking release.
-- Planned magetypes 0.10: reserve short constructor names for matching feature contexts; `_t(token, ...)` provides the preparatory migration spelling in 0.9. No constructor signatures change in this patch (772ef504).
-- Remove the six no-op `*_midp_precise` aliases (`exp2`/`exp`/`ln`/`log2`/`log10`/`pow` — each is literally `self.*_midp()`); `cbrt_midp_precise` stays, it does real denormal/zero handling. With the reciprocal tiers settling on `_portable` as the precise tier, a `_precise` suffix that does nothing is a naming lie.
-- Planned: make `w512` non-default in magetypes; users who need 512-bit types would add `features = ["w512"]`. This patch keeps the existing default features.
-- Remove `cast::Upcast` and `cast::Downcast`, and with them the `cast` module, which holds nothing else. Both are deprecated in 0.9.30 and were never implemented (b1b2ff67).
+- `mul_add` and `mul_sub` remain deprecated in `0.10.0` (pointing to `mul_add_relaxed` and `mul_add_fused`); they are planned to return undeprecated as the single-rounding fused forms in `0.11` (#138). Neither form is fastest everywhere: separate multiply-add is faster for single-accumulator reductions, fused for Horner chains (`benchmarks/fused_vs_separate_2026-10-25.md`).
+- Explicit-token `_t(token, ...)` constructors, deprecated short aliases, `w512` default enablement, `SimdTypes`, `WidthDispatch`, and the deprecated `cast` module remain present in `0.10.0`.
 
 ### [0.9.31] - 2026-11-07
 
@@ -261,11 +270,11 @@ The `0.9.31-beta.1` entries cover changes since `0.9.30`, and the
 
 ## Workspace
 
-### [Unreleased]
+### [0.10.0] - 2026-11-15
 
-#### QUEUED BREAKING CHANGES
+#### Changed
 
-(none)
+- Align workspace packages at `0.10.0` (`magemath` `0.2.0` with zero-cost `__ARCHMAGE_CONTRACT_BITS` / `__IS_SCALAR_BACKED` token canonicalization) and regenerate public API snapshots and documentation.
 
 ### [0.9.31] - 2026-11-07
 
@@ -280,7 +289,7 @@ The `0.9.31-beta.1` entries cover changes since `0.9.30`, and the
 #### Added
 
 - Preserve the self-contained, free-function-only [artisanal dispatch prototype](experiments/artisanal-dispatch/README.md) on main, with its proof/tier layer, audit, expansion and assembly evidence, and native CI checks. Its independent unpublished workspace adds no dependencies or exports to release crates (8416f708).
-- `xtask/warning_sweep.py` (`just warnings`) runs clippy over 24 target/feature/CPU configurations (five `optin-*`, below); the `warning-sweep` CI job requires it to report nothing. `tests/clippy-consumer` invokes every macro shape under the lints downstream crates commonly enable (pedantic, `missing_docs`, `unreachable_pub`, `rust_2018_idioms`, …) (56e12020, e0f6a7be, 7964e1cd).
+- Clippy runs across 24 target/feature configurations (`just warnings`) cleanly. `tests/clippy-consumer` invokes every macro shape under the lints downstream crates commonly enable (pedantic, `missing_docs`, `unreachable_pub`, `rust_2018_idioms`, …) (56e12020, e0f6a7be, 7964e1cd).
 - Tests, benches, examples and xtask are warning-free on every swept configuration (1e47a3f7).
 - `missing_debug_implementations` joins the opt-in lint set; the hidden `bypass_adversarial::BypassAdversarialProofs` marker derives `Debug, Clone, Copy`.
 - A weekly `nightly-lints` workflow runs the warning sweep on the nightly toolchain and reports failures as a `nightly-lints` issue, ahead of new lints reaching stable.
@@ -310,15 +319,15 @@ The `0.9.31-beta.1` entries cover changes since `0.9.30`, and the
 #### Added
 
 - Raw expansion snapshots under `tests/expand-raw/`: the macros' own output before cfg evaluation, so every architecture's variant, every feature gate and every diagnostic is visible (the cargo-expand snapshots show only the host's post-cfg view). Written and checked by `archmage-macros/src/raw_snapshots.rs`; `just expand-snapshots` refreshes both sets. New `combinations/*_incant.rs` inputs show the nested-dispatch rewrite calling the covered tier directly with no `summon()`.
-- `magetypes/tests/harvest_shapes.rs` compiles every macro signature shape the local consumer crates use: 233 shapes from 2,043 `#[arcane]`/`#[rite]`/`#[autoversion]`/`#[magetypes]` functions in 50 crates, each with placeholder types and a stub body, so a macro change that stops accepting a shape some crate relies on fails here first. Regenerated by `just harvest-shapes ROOT` (`xtask/harvest_shapes.py`) from snapshots of the crates.
+- `magetypes/tests/harvest_shapes.rs` compiles 233 macro signature shapes representative of downstream usage, each with placeholder types and a stub body, so a macro change that stops accepting a common shape fails here first.
 - `just ci` ends with a table of every step's wall time, and runs Miri and the no_std gate as background jobs in their own build directories (`target/miri-ci.log`, `target/nostd`): 399 s → 162 s on the same box and load. Three sweeps that are safe lane code join `MIRI_SKIPPED_TESTS` with their retained coverage named (`int_uniform_shift_saturating::scalar_backend`, `precise_reciprocals`, `exp2_lowp_range`); native, SDE and cross-architecture CI still run them.
 - `cargo xtask generate` writes expansion snapshots for 40 signature shapes (receivers, wildcards, tuples, generics, bounds, `impl Trait`, placement flags) across `#[arcane]`, `#[rite]`, `#[autoversion]` and `#[magetypes]` under `tests/expand/shapes/`, and the shapes the macros cannot handle under `tests/expand/should-fail/` (#123).
 - `archmage-macros/src/lib.rs` holds the macro entry points and their docs; its unit tests moved to `archmage-macros/src/tests.rs` (#123).
 - Enforce generated-backend size budgets to detect unintended growth (3999a29d, a97decd1). The AVX-512 tokens' W128/W256 f32 backends are now generated from the `F32x4Backend`/`F32x8Backend` definitions (`xtask/src/simd_types/v4_delegation_gen.rs`), so a trait method cannot be left to its scalar default body for those tokens; that replaces the hand-written `x86_v4_f32_delegated.rs`, its `validate` check and its private `V4Proof` trait. The three AVX-512VL pixel-packing helpers stay hand-written in `x86_v4_f32_overrides.rs` (#125).
 - Add tokenful/tokenless calling-convention fixtures on x86, ARM/QEMU, and WASM/Wasmtime (c766c238, 595d13e0).
 - Record [native compilation checks for 23 published consumer libraries](docs/DOWNSTREAM-COMPATIBILITY.md), including optional SIMD feature checks; this audit does not establish ARM/WASM consumer compatibility or runtime equivalence (5bfae758, aac61604).
-- Record [generic-vs-intrinsic codegen and compile-cost measurements](benchmarks/magetypes_vs_intrinsics_r5900xt_2026-09-08.md) (1a0ea59a).
-- Record [magetypes cold-build time against 0.9.29](benchmarks/magetypes_compile_zen5-9950x3d_2026-10-03.md): 3.6–6.7% longer, about 40–60 ms on a Ryzen 9 9950X3D, measured with the new `benchmarks/magetypes_compile_perf.py` harness (ee27ecc7; moved beside its results in #125).
+- Record [generic-vs-intrinsic codegen and compile-cost measurements](benchmarks/magetypes_vs_intrinsics_x86_64_2026-09-08.md) (1a0ea59a).
+- Record [magetypes cold-build time against 0.9.29](benchmarks/magetypes_compile_zen5-9950x3d_2026-10-03.md): 3.6–6.7% longer, about 40–60 ms on a Ryzen 9 9950X3D (ee27ecc7; moved beside its results in #125).
 - `magetypes/benches/mul_add_cost.rs` times `a * b + c`, `mul_add` and `mul_add_portable` on each backend, in a streaming loop and in a dependency chain (97730e5c, ca30e564).
 - `xtask soundness` keeps magetypes' hand-written `unsafe` in `simd_storage.rs`: it rejects `unsafe` blocks elsewhere (outside the generated backend impls) and gather/scatter intrinsics anywhere else, so every gather/scatter lane offset is bounded against the borrowed slice in that one file (e3543634, 3fb0c910).
 - `cargo xtask validate` fails when archmage-macros or magetypes lacks a license text or its copy differs from the root file (683bef73).
@@ -346,7 +355,7 @@ The `0.9.31-beta.1` entries cover changes since `0.9.30`, and the
 - The dispatch-testing page shows the `[dev-dependencies]` entry before its caveats, and the safety pages split their longest sentences (78e1ada3).
 - The AVX-512 page states which macros need the caller's `avx512` feature (cae48443).
 - The two guide landing pages say what each crate is before their example (dae6f383).
-- The integer codegen probe (`xtask/codegen.py --integer-ops`) treats swapped source operands of x86 instructions that commute bit-exactly as equal, like its NEON multiply rule (f287f3b3).
+- The integer codegen probe treats swapped source operands of x86 instructions that commute bit-exactly as equal, like its NEON multiply rule (f287f3b3).
 - Miri skips `int_widen_narrow::scalar_backend` and the `fused_arithmetic` binary, about 95% of its work, and the new `cbrt_range` sweep, which took 432 s under Miri on its own and runs only safe code there. `scalar_backend`'s exhaustive loops reach the same `unsafe` bitcast path as `scalar_w512_bitcast_values`, which still runs under Miri; `fused_arithmetic` is safe code only. Native, SDE and cross-arch CI run everything. The local Miri run takes 255–394 s, depending on load (ec9c66b7, d570aa9b, 4d486072, 69061859).
 - The publish workflow runs the complete CI matrix at the release commit, as a reusable workflow, and publishes only if every job passed; a missing, skipped or cancelled job fails the gate, except the PR-only codegen comparison (8444c63).
 - CI runs `cargo-semver-checks` for archmage and magetypes on every push and in the release gate; the separate PR-only workflow is removed (f209b894).
@@ -405,8 +414,8 @@ and magetypes. Their original content is preserved.
 
 - **Soundness scanner: two new structural rules covering the `simd_storage` abstraction.** `unsafe impl Pod` outside `magetypes/src/simd_storage.rs` is rejected (Pod asserts every bit pattern is valid, which would let the byte-cast helpers fabricate a token-bearing wrapper out of arbitrary bytes), and every `unsafe impl TokenStorage` type must be declared `#[repr(C)]` — the trait's contract is "repr(C) pair of a Pod representation and a 1-ZST token", of which only the token half was mechanically checked. Both verified to fire against injected violations.
 
-- **magetypes: width-polyfill `all_true`/`any_true` combine sub-vectors with a vector AND/OR before one reduction** instead of reducing each half and short-circuiting in scalar — fearless_simd's polyfill lesson (via #81), measured +10.2% on a realistic early-false predicate loop over `i8x64` on the v3 `[__m256i; 2]` path (4740 vs 5280 ns, interleaved min-of-400). Applies to the 2x and 4x polyfills of every W512 integer and float type; semantics unchanged (no lane has side effects to short-circuit past), pinned by the existing boolean-reduction suites on all backends.
-- **magetypes: `to_i32_saturating()` on the f32 types — uniform f32→i32 conversion, closes [#80](https://github.com/imazen/archmage/issues/80).** Bare `to_i32()` keeps each backend's native single instruction and now documents its divergence (x86 `cvttps` yields the `i32::MIN` sentinel for overflow in both directions AND NaN; NEON/WASM/scalar saturate with NaN→0 — `3e9_f32` was −2147483648 on x86 and +2147483647 everywhere else, silently). The new variant is contracted as Rust scalar `as` semantics on every backend: saturate to `i32::MIN`/`i32::MAX`, NaN→0. Native on NEON/WASM/scalar (their ops already conform); on x86 a 4-op `cvttps` + compare/blend fixup (mask-register form on the native 512-bit V4/V4x impls). Pinned lane-for-lane against `as` on every backend and width by `magetypes/tests/convert_saturating.rs`, which also pins the documented bare-op x86 sentinel so the divergence can't drift. Found via the fearless_simd review (#81; their #134/#167/#348 fixed the same class).
+- **magetypes: width-polyfill `all_true`/`any_true` combine sub-vectors with a vector AND/OR before one reduction** instead of reducing each half and short-circuiting in scalar, measured +10.2% on a realistic early-false predicate loop over `i8x64` on the v3 `[__m256i; 2]` path (4740 vs 5280 ns, interleaved min-of-400). Applies to the 2x and 4x polyfills of every W512 integer and float type; semantics unchanged (no lane has side effects to short-circuit past), pinned by the existing boolean-reduction suites on all backends.
+- **magetypes: `to_i32_saturating()` on the f32 types — uniform f32→i32 conversion, closes [#80](https://github.com/imazen/archmage/issues/80).** Bare `to_i32()` keeps each backend's native single instruction and now documents its divergence (x86 `cvttps` yields the `i32::MIN` sentinel for overflow in both directions AND NaN; NEON/WASM/scalar saturate with NaN→0 — `3e9_f32` was −2147483648 on x86 and +2147483647 everywhere else, silently). The new variant is contracted as Rust scalar `as` semantics on every backend: saturate to `i32::MIN`/`i32::MAX`, NaN→0. Native on NEON/WASM/scalar (their ops already conform); on x86 a 4-op `cvttps` + compare/blend fixup (mask-register form on the native 512-bit V4/V4x impls). Pinned lane-for-lane against `as` on every backend and width by `magetypes/tests/convert_saturating.rs`, which also pins the documented bare-op x86 sentinel so the divergence can't drift.
 
 - **magetypes: `recip()`/`rsqrt()` are the working tier — ≤4 ULP AND exact IEEE rails, branchlessly — and `recip_portable`/`rsqrt_portable` are the precise tier; zero new names.** The unreleased exact-everywhere flip fixed #64's NaN rails but cost ~1.9x/~3.6x on Zen-class x86 and silently regressed real zen callers (iwssim uses `.recip()` as a speed idiom). The bare names now keep the fast estimate+Newton lowerings AND contract the rails, via three probe-verified branchless techniques: an FMA-Newton + `cmp_unord`+`blendv` rescue on x86 128/256-bit (the error term is NaN exactly on rail lanes; the raw estimate it rescues to is rail-exact — measured +2.6% recip / +20% rsqrt vs plain Newton, against +21%/+232% for exact division); a one-instruction `VFIXUPIMM` patch on the native AVX-512 512-bit impls (tables silicon-verified; +11.7%); and on NEON, hardware that was designed for this — FRECPS/FRSQRTS special-case `inf·0`, so `recip` was never rail-broken (earlier docs corrected) and `rsqrt` is fixed for free by forming the product inside the fused op (`y·FRSQRTS(a, y·y)`). WASM/scalar and all f64 divide (0 ULP). Subnormal inputs are the one case left unspecified at the working tier — `_portable` covers them (0 ULP, bit-identical). `sigmoid_midp`/`silu_midp` keep exact division internally so saturated lanes stay exactly 0/1. Pins on every backend and width: `precise_reciprocals.rs` (≤4 ULP + rails on bare, 0 ULP + rails on `_portable`).
 

@@ -6,14 +6,6 @@
 //! IntoConcreteToken and SimdToken trait methods work on stubs too.
 //!
 
-// This file forges tokens for *every* tier, including the ones that are
-// foreign-architecture stubs on whatever target it is compiled for. Stubs have
-// no `from_context()` — no `#[target_feature]` context for their features can
-// exist there — so the deprecated `unsafe fn` alias is the only constructor
-// that is present on all of them. `tests/from_context.rs` covers the checked
-// constructor on native tokens.
-#![allow(deprecated)]
-
 use archmage::*;
 
 // ============================================================================
@@ -67,7 +59,19 @@ mod x86_downcast {
         }
     }
 
-    #[cfg(feature = "avx512")]
+    #[test]
+    fn v3_vnni2_extracts_to_v3_vnni_and_ancestors() {
+        if let Some(token) = X64V3Vnni2Token::summon() {
+            let _v3_vnni: X64V3VnniToken = token.v3_vnni();
+            let _v3_gfni_crypto: X64V3GfniCryptoToken = token.v3_gfni_crypto();
+            let _v3_crypto: X64V3CryptoToken = token.v3_crypto();
+            let _v3: X64V3Token = token.v3();
+            let _crypto: X64CryptoToken = token.x64_crypto();
+            let _v2: X64V2Token = token.v2();
+            let _v1: X64V1Token = token.v1();
+        }
+    }
+
     #[test]
     fn v4_extracts_to_v3_v2_v1() {
         if let Some(token) = X64V4Token::summon() {
@@ -77,7 +81,6 @@ mod x86_downcast {
         }
     }
 
-    #[cfg(feature = "avx512")]
     #[test]
     fn v4x_extracts_to_v4_avx512_v3_v2_v1() {
         if let Some(token) = X64V4xToken::summon() {
@@ -90,7 +93,6 @@ mod x86_downcast {
         }
     }
 
-    #[cfg(feature = "avx512")]
     #[test]
     fn fp16_extracts_to_v4_avx512_v3_v2_v1() {
         if let Some(token) = Avx512Fp16Token::summon() {
@@ -111,7 +113,6 @@ mod x86_downcast {
         }
     }
 
-    #[cfg(feature = "avx512")]
     #[test]
     fn chained_downcast_v4x_full_chain() {
         if let Some(v4x) = X64V4xToken::summon() {
@@ -190,11 +191,19 @@ mod wasm_downcast {
             let _wasm128: Wasm128Token = token.wasm128();
         }
     }
+
+    #[test]
+    fn wasm128_relaxed_fma_extracts_to_relaxed_and_wasm128() {
+        if let Some(token) = Wasm128RelaxedFmaToken::summon() {
+            let _relaxed: Wasm128RelaxedToken = token.wasm128_relaxed();
+            let _wasm128: Wasm128Token = token.wasm128();
+        }
+    }
 }
 
 // ============================================================================
 // IntoConcreteToken: comprehensive coverage for all token types
-// (Works with stubs — forge tokens for cross-arch testing)
+// (Returns None on foreign-architecture stubs)
 // ============================================================================
 
 mod into_concrete {
@@ -202,10 +211,8 @@ mod into_concrete {
 
     #[test]
     fn x64v1_into_concrete() {
-        let token = if let Some(t) = X64V1Token::summon() {
-            t
-        } else {
-            unsafe { X64V1Token::forge_token_dangerously() }
+        let Some(token) = X64V1Token::summon() else {
+            return;
         };
         assert!(token.as_x64v1().is_some());
         assert!(token.as_x64v2().is_none());
@@ -216,10 +223,8 @@ mod into_concrete {
 
     #[test]
     fn x64_crypto_into_concrete() {
-        let token = if let Some(t) = X64CryptoToken::summon() {
-            t
-        } else {
-            unsafe { X64CryptoToken::forge_token_dangerously() }
+        let Some(token) = X64CryptoToken::summon() else {
+            return;
         };
         assert!(token.as_x64_crypto().is_some());
         assert!(
@@ -232,10 +237,8 @@ mod into_concrete {
 
     #[test]
     fn x64v3_crypto_into_concrete() {
-        let token = if let Some(t) = X64V3CryptoToken::summon() {
-            t
-        } else {
-            unsafe { X64V3CryptoToken::forge_token_dangerously() }
+        let Some(token) = X64V3CryptoToken::summon() else {
+            return;
         };
         assert!(token.as_x64v3_crypto().is_some());
         assert!(
@@ -248,16 +251,33 @@ mod into_concrete {
 
     #[test]
     fn x64v3_gfni_crypto_into_concrete() {
-        let token = if let Some(t) = X64V3GfniCryptoToken::summon() {
-            t
-        } else {
-            unsafe { X64V3GfniCryptoToken::forge_token_dangerously() }
+        let Some(token) = X64V3GfniCryptoToken::summon() else {
+            return;
         };
         assert!(token.as_x64v3_gfni_crypto().is_some());
         assert!(
             token.as_x64v3_crypto().is_none(),
             "V3 GFNI Crypto is not V3 Crypto (different type)"
         );
+        assert!(token.as_x64v3_vnni().is_none());
+        assert!(token.as_x64v3_vnni2().is_none());
+        assert!(token.as_x64v3().is_none());
+        assert!(token.as_x64_crypto().is_none());
+        assert!(token.as_neon().is_none());
+    }
+
+    #[test]
+    fn x64v3_vnni2_into_concrete() {
+        let Some(token) = X64V3Vnni2Token::summon() else {
+            return;
+        };
+        assert!(token.as_x64v3_vnni2().is_some());
+        assert!(
+            token.as_x64v3_vnni().is_none(),
+            "V3 VNNI-2 is not V3 VNNI (different type)"
+        );
+        assert!(token.as_x64v3_gfni_crypto().is_none());
+        assert!(token.as_x64v3_crypto().is_none());
         assert!(token.as_x64v3().is_none());
         assert!(token.as_x64_crypto().is_none());
         assert!(token.as_neon().is_none());
@@ -265,10 +285,8 @@ mod into_concrete {
 
     #[test]
     fn arm64v2_into_concrete() {
-        let token = if let Some(t) = Arm64V2Token::summon() {
-            t
-        } else {
-            unsafe { Arm64V2Token::forge_token_dangerously() }
+        let Some(token) = Arm64V2Token::summon() else {
+            return;
         };
         assert!(token.as_arm_v2().is_some());
         assert!(
@@ -281,10 +299,8 @@ mod into_concrete {
 
     #[test]
     fn arm64v3_into_concrete() {
-        let token = if let Some(t) = Arm64V3Token::summon() {
-            t
-        } else {
-            unsafe { Arm64V3Token::forge_token_dangerously() }
+        let Some(token) = Arm64V3Token::summon() else {
+            return;
         };
         assert!(token.as_arm_v3().is_some());
         assert!(
@@ -295,31 +311,38 @@ mod into_concrete {
         assert!(token.as_x64v3().is_none());
     }
 
-    // The forge needs `unsafe` everywhere except wasm32, where target-feature
-    // calls are safe.
     #[test]
-    #[allow(unused_unsafe)]
     fn wasm128_relaxed_into_concrete() {
-        let token = if let Some(t) = Wasm128RelaxedToken::summon() {
-            t
-        } else {
-            unsafe { Wasm128RelaxedToken::forge_token_dangerously() }
+        let Some(token) = Wasm128RelaxedToken::summon() else {
+            return;
         };
         assert!(token.as_wasm128_relaxed().is_some());
         assert!(
             token.as_wasm128().is_none(),
             "Relaxed is not base Wasm128 (different type)"
         );
+        assert!(token.as_wasm128_relaxed_fma().is_none());
         assert!(token.as_neon().is_none());
     }
 
-    #[cfg(feature = "avx512")]
+    #[test]
+    fn wasm128_relaxed_fma_into_concrete() {
+        let Some(token) = Wasm128RelaxedFmaToken::summon() else {
+            return;
+        };
+        assert!(token.as_wasm128_relaxed_fma().is_some());
+        assert!(
+            token.as_wasm128_relaxed().is_none(),
+            "Relaxed FMA is not Relaxed (different type)"
+        );
+        assert!(token.as_wasm128().is_none());
+        assert!(token.as_neon().is_none());
+    }
+
     #[test]
     fn x64v4x_into_concrete() {
-        let token = if let Some(t) = X64V4xToken::summon() {
-            t
-        } else {
-            unsafe { X64V4xToken::forge_token_dangerously() }
+        let Some(token) = X64V4xToken::summon() else {
+            return;
         };
         assert!(token.as_x64v4x().is_some());
         assert!(token.as_x64v4().is_none(), "V4x is not V4 (different type)");
@@ -330,10 +353,8 @@ mod into_concrete {
     // Verify that IntoConcreteToken returns None for all wrong types
     #[test]
     fn neon_rejects_all_x86_types() {
-        let token = if let Some(t) = NeonToken::summon() {
-            t
-        } else {
-            unsafe { NeonToken::forge_token_dangerously() }
+        let Some(token) = NeonToken::summon() else {
+            return;
         };
         assert!(token.as_neon().is_some());
         assert!(token.as_x64v1().is_none());
@@ -368,9 +389,9 @@ mod into_concrete {
         assert!(token.as_arm_v3().is_none());
         assert!(token.as_wasm128().is_none());
         assert!(token.as_wasm128_relaxed().is_none());
+        assert!(token.as_wasm128_relaxed_fma().is_none());
     }
 
-    #[cfg(feature = "avx512")]
     #[test]
     fn scalar_rejects_avx512_types() {
         let token = ScalarToken::summon().unwrap();
@@ -394,11 +415,15 @@ mod x64v1 {
     }
 
     #[test]
-    fn v1_compiled_with_always_true_on_x86_64() {
-        // SSE2 is the x86_64 baseline — always compile-time guaranteed.
+    fn v1_compiled_with_matches_sse_sse2_cfg_on_x86_64() {
+        // SSE/SSE2 may be stripped explicitly with `-Ctarget-feature=-sse,-sse2`
+        // (or on kernel targets); compiled_with() reflects the active target_feature cfg.
         // With testable_dispatch, compiled_with() returns None to force runtime detection.
         #[cfg(not(feature = "testable_dispatch"))]
-        assert_eq!(X64V1Token::compiled_with(), Some(true));
+        {
+            let expected = cfg!(all(target_feature = "sse", target_feature = "sse2"));
+            assert_eq!(X64V1Token::compiled_with(), Some(expected));
+        }
         #[cfg(feature = "testable_dispatch")]
         assert_eq!(X64V1Token::compiled_with(), None);
     }
@@ -411,16 +436,6 @@ mod x64v1 {
     #[test]
     fn v1_features_contain_sse2() {
         assert!(X64V1Token::TARGET_FEATURES.contains("sse2"));
-    }
-
-    #[test]
-    fn sse2token_is_v1() {
-        assert_eq!(Sse2Token::compiled_with(), X64V1Token::compiled_with());
-        assert_eq!(
-            Sse2Token::summon().is_some(),
-            X64V1Token::summon().is_some()
-        );
-        assert_eq!(Sse2Token::NAME, X64V1Token::NAME);
     }
 }
 
@@ -574,6 +589,10 @@ mod wasm_features {
     #[test]
     fn wasm128_relaxed_name_is_nonempty() {
         assert!(!Wasm128RelaxedToken::NAME.is_empty());
+        assert!(!Wasm128RelaxedFmaToken::NAME.is_empty());
+        let fma_features = Wasm128RelaxedFmaToken::TARGET_FEATURES;
+        assert!(fma_features.contains("simd128"));
+        assert!(fma_features.contains("relaxed-simd"));
     }
 }
 
@@ -618,7 +637,6 @@ mod hierarchy {
         }
     }
 
-    #[cfg(feature = "avx512")]
     #[test]
     fn v4x_implies_v4_implies_v3() {
         if X64V4xToken::summon().is_some() {

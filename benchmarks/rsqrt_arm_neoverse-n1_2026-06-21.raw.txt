@@ -38,7 +38,7 @@
   ╰─ _      16.8 ±0.2µs  [16.7–16.8]µs   
 [zenbench] calibration: int=0.68ns/iter mem_bw=30.4GiB/s mem_lat=98.0ns
 [zenbench] timer resolution: 40ns, loop overhead: 0.67ns/iter, TSC: 0.025 ticks/ns (invariant)
-[zenbench] results → /tmp/zenbench/zenbench-1782008814-1260c1.txt
+[zenbench] results → <scratch>/zenbench/zenbench-1782008814-1260c1.txt
 ═══════════════════════════════════════════════════════════════
   zenbench  1782008814-1260c1
 ═══════════════════════════════════════════════════════════════

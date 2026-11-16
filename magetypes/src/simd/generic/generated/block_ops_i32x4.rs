@@ -68,36 +68,36 @@ impl<T: I32x4Backend> i32x4<T> {
 // Generated deprecated token-constructor forwarders. Do not edit.
 impl<T: I32x4Backend> i32x4<T> {
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::from_bytes_t`].\n\nUse `from_bytes_t` to keep explicit-token construction when `from_bytes` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::from_bytes_t`].\n\nUse `from_bytes_t` to keep explicit-token construction when `from_bytes` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use from_bytes_t(token, bytes); from_bytes becomes tokenless in magetypes 0.10."
+        note = "Use from_bytes_t(token, bytes); from_bytes becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn from_bytes(token: T, bytes: &[u8; 16]) -> Self {
         Self::from_bytes_t(token, bytes)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::from_bytes_owned_t`].\n\nUse `from_bytes_owned_t` to keep explicit-token construction when `from_bytes_owned` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::from_bytes_owned_t`].\n\nUse `from_bytes_owned_t` to keep explicit-token construction when `from_bytes_owned` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use from_bytes_owned_t(token, bytes); from_bytes_owned becomes tokenless in magetypes 0.10."
+        note = "Use from_bytes_owned_t(token, bytes); from_bytes_owned becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn from_bytes_owned(token: T, bytes: [u8; 16]) -> Self {
         Self::from_bytes_owned_t(token, bytes)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::cast_slice_t`].\n\nUse `cast_slice_t` to keep explicit-token construction when `cast_slice` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::cast_slice_t`].\n\nUse `cast_slice_t` to keep explicit-token construction when `cast_slice` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use cast_slice_t(token, slice); cast_slice becomes tokenless in magetypes 0.10."
+        note = "Use cast_slice_t(token, slice); cast_slice becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn cast_slice(token: T, slice: &[i32]) -> Option<&[Self]> {
         Self::cast_slice_t(token, slice)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::cast_slice_mut_t`].\n\nUse `cast_slice_mut_t` to keep explicit-token construction when `cast_slice_mut` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::cast_slice_mut_t`].\n\nUse `cast_slice_mut_t` to keep explicit-token construction when `cast_slice_mut` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use cast_slice_mut_t(token, slice); cast_slice_mut becomes tokenless in magetypes 0.10."
+        note = "Use cast_slice_mut_t(token, slice); cast_slice_mut becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn cast_slice_mut(token: T, slice: &mut [i32]) -> Option<&mut [Self]> {

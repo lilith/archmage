@@ -6,9 +6,9 @@ This document is the authoritative reference for archmage's token architecture, 
 
 Archmage uses zero-sized **capability tokens** to prove CPU features are available at compile time. A token can only be constructed via:
 
-- `summon()` — runtime feature detection, returns `Option<Self>`
-- `from_context()` — callable safely from a matching or superset target-feature context on the native architecture; otherwise the caller must establish the features.
-- `forge_token_dangerously()` — deprecated compatibility alias; use `from_context()`.
+- `summon()` — runtime feature detection (plus required runtime probes), returns `Option<Self>`
+- `from_context()` — callable safely from a matching or superset target-feature context on the native architecture; otherwise the caller must establish the features. (Intentionally omitted on `And<Base, Extra>` and runtime-probed `Wasm128RelaxedFmaToken`.)
+- `.and()` / `And::join()` — compose two tokens from the same architecture into an `And<Base, Extra>` conjunction proof.
 
 Tokens are `Copy + Clone + Send + Sync + 'static`. They carry no data — the type itself is the proof.
 
@@ -18,25 +18,30 @@ Tokens are `Copy + Clone + Send + Sync + 'static`. They carry no data — the ty
 
 ### 1.2 Current Token Set
 
-#### x86_64 (9 tokens)
+#### x86_64 (12 tier tokens + 9 extension leaves = 21 tokens)
 
 | Token | Aliases | Features | Hardware |
 |-------|---------|----------|----------|
-| `X64V1Token` | `Sse2Token` | sse, sse2 (x86_64 baseline) | All x86_64 CPUs |
+| `X64V1Token` | — | sse, sse2 (x86_64 baseline) | All x86_64 CPUs |
 | `X64V2Token` | — | + sse3, ssse3, sse4.1, sse4.2, popcnt, cmpxchg16b | Nehalem 2008+, Bulldozer 2011+ |
 | `X64CryptoToken` | — | v2 + pclmulqdq, aes | Westmere 2010+, Bulldozer 2011+ |
-| `X64V3Token` | `Desktop64` (`Avx2FmaToken` deprecated) | + avx, avx2, fma, bmi1, bmi2, f16c, lzcnt, movbe | Haswell 2013+, Zen 1 2017+ |
+| `X64V3Token` | `Desktop64` | + avx, avx2, fma, bmi1, bmi2, f16c, lzcnt, movbe | Haswell 2013+, Zen 1 2017+ |
 | `X64V3CryptoToken` | — | v3 + vpclmulqdq, vaes | Zen 3+ 2020, Alder Lake 2021+ |
 | `X64V3GfniCryptoToken` | — | v3 crypto + gfni | Alder/Raptor/Meteor/Arrow/Lunar Lake, Sierra Forest, Zen 4+ |
+| `X64V3VnniToken` | — | v3 gfni crypto + avxvnni, adx, sha | Client/hybrid AVX-VNNI CPUs (Alder Lake+, Zen 5+) |
+| `X64V3Vnni2Token` | — | v3 vnni + avxvnniint8, avxneconvert, avxifma | Arrow Lake+, Zen 5/6+ |
 | `X64V4Token` | `Avx512Token`, `Server64` | v3 + pclmulqdq, aes, avx512f, avx512bw, avx512cd, avx512dq, avx512vl | Skylake-X 2017+, Zen 4 2022+ |
 | `X64V4xToken` | `Avx512ModernToken` | + avx512vpopcntdq, avx512ifma, avx512vbmi, avx512vbmi2, avx512bitalg, avx512vnni, vpclmulqdq, gfni, vaes | Ice Lake 2019+, Zen 4 2022+ |
 | `Avx512Fp16Token` | — | v4 + avx512fp16 | Sapphire Rapids 2023+ |
+| `X64Avx512Bf16Token` | — | v4 + avx512bf16 | Cooper Lake 2020+, Zen 4+ |
 
-Features are cumulative — each token lists ALL features it enables, not just the delta from the previous tier. This eliminates the class of bugs where "minimal" lists diverge from "cumulative" lists. LLVM deduplicates redundant features in `#[target_feature]`.
+Plus 9 single-extension x86 leaf tokens (`X64GfniToken`, `X64ShaToken`, `X64AdxToken`, `X64AvxVnniToken`, `X64AvxIfmaToken`, `X64AvxVnniInt8Token`, `X64AvxVnniInt16Token`, `X64AvxNeConvertToken`, `X64Sha512Token`) composable via `And<Base, Extra>`.
 
-`X64V1Token` / `Sse2Token` represents the x86_64 baseline (SSE + SSE2, always available). `summon()` always returns `Some` on x86_64.
+Features are cumulative on tier tokens — each token lists ALL features it enables, not just the delta from the previous tier. This eliminates the class of bugs where "minimal" lists diverge from "cumulative" lists. LLVM deduplicates redundant features in `#[target_feature]`.
 
-#### AArch64 (6 tokens)
+`X64V1Token` represents the x86_64 baseline (SSE + SSE2). When built without disabling SSE/SSE2, `summon()` always returns `Some` on x86_64.
+
+#### AArch64 (3 compute tiers + 11 extension leaves = 14 tokens)
 
 **Compute tiers** (archmage-defined, not ARM architecture versions):
 
@@ -46,22 +51,18 @@ Features are cumulative — each token lists ALL features it enables, not just t
 | `Arm64V2Token` | + crc, rdm, dotprod, fp16, aes, sha2 | Cortex-A55+, Apple M1+, Graviton 2+ |
 | `Arm64V3Token` | + fhm, fcma, sha3, i8mm, bf16 | Cortex-A510+, Apple M2+, Snapdragon X, Graviton 3+ |
 
-**Crypto leaves** (independent, not part of compute hierarchy):
-
-| Token | Features | Notes |
-|-------|----------|-------|
-| `NeonAesToken` | neon, aes | ARMv8-A with Crypto |
-| `NeonSha3Token` | neon, sha3 | ARMv8.2-A+ |
-| `NeonCrcToken` | neon, crc | ARMv8.1-A+ (most AArch64 CPUs) |
+**Extension leaves** (independent, composable with `And<Base, Extra>`):
+`NeonAesToken`, `NeonSha2Token`, `NeonSha3Token`, `NeonCrcToken`, `NeonRdmToken`, `NeonDotProdToken`, `NeonFp16Token`, `NeonFhmToken`, `NeonFcmaToken`, `NeonI8mmToken`, `NeonBf16Token`.
 
 SVE/SVE2 tokens are prohibited — Rust stable doesn't support SVE intrinsics.
 
-#### WASM (2 tokens)
+#### WASM (3 tokens)
 
 | Token | Features | Notes |
 |-------|----------|-------|
-| `Wasm128Token` | simd128 | Compile-time only (`#[cfg(target_feature = "simd128")]`) |
-| `Wasm128RelaxedToken` | simd128, relaxed-simd | Compile-time only; relaxed operations may differ between engines |
+| `Wasm128Token` | simd128 | Compile-time (`#[cfg(target_feature = "simd128")]`) |
+| `Wasm128RelaxedToken` | simd128, relaxed-simd | Compile-time; relaxed operations may differ between engines |
+| `Wasm128RelaxedFmaToken` | simd128, relaxed-simd | Compile-time features **plus** cached runtime probe confirming FMA fusion (no `from_context()`) |
 
 ### 1.3 Token Hierarchy
 
@@ -87,18 +88,15 @@ Extraction methods are `.v1()`, `.v2()`, `.x64_crypto()`, `.v3()`, `.v3_crypto()
 
 Traits provide generic bounds. Tokens implement the traits matching their capabilities.
 
-**Width traits (DEPRECATED — will be removed):**
-```
-Has512BitSimd → Has256BitSimd → Has128BitSimd
-```
-Width traits are misleading (`Has256BitSimd` enables AVX but NOT AVX2 or FMA). Use concrete tokens or tier traits instead.
+**Capability and tier traits** (width traits `Has128BitSimd`, `Has256BitSimd`, `Has512BitSimd` were removed in 0.10.0):
+Use concrete tokens, `And<Base, Extra>` conjunctions, or capability/tier traits (`HasX64V1`, `HasX64V2`, `HasX64V3`, `HasX64V4`, `HasGfni`, etc.) instead.
 
 **x86 tier traits:**
 ```
-HasX64V4 → HasX64V2
+HasX64V4 → HasX64V3 → HasX64V2 → HasX64V1
 ```
 
-There is no `HasX64V3` trait. For v3 bounds, use `X64V3Token` directly — it's the recommended baseline for high-performance SIMD code.
+Each leaf extension also has its own `Has*` capability trait (e.g., `HasGfni`, `HasSha`, `HasAdx`, `HasAvxVnni`, `HasAvx512Fp16`, `HasAvx512Bf16`) that composes cleanly on `And<Base, Extra>`.
 
 **AArch64 traits:**
 ```
@@ -108,27 +106,31 @@ HasNeonSha3 → HasNeon
 HasArm64V3 → HasNeonSha3
 ```
 
-**Trait implementations by token:**
+**Selected trait implementations by compute tier token** (see `token-registry.toml` for all 38 tokens including leaf extension tokens and `HasWasm128*`):
 
-| Token | HasX64V2 | HasX64V4 | HasNeon | HasNeonAes | HasNeonSha3 | HasArm64V2 | HasArm64V3 |
-|-------|----------|----------|---------|------------|-------------|------------|------------|
-| X64V1Token | | | | | | | |
-| X64V2Token | x | | | | | | |
-| X64CryptoToken | x | | | | | | |
-| X64V3Token | x | | | | | | |
-| X64V3CryptoToken | x | | | | | | |
-| X64V3GfniCryptoToken | x | | | | | | |
-| X64V4Token | x | x | | | | | |
-| X64V4xToken | x | x | | | | | |
-| Avx512Fp16Token | x | x | | | | | |
-| NeonToken | | | x | | | | |
-| Arm64V2Token | | | x | x | | x | |
-| Arm64V3Token | | | x | x | x | x | x |
-| NeonAesToken | | | x | x | | | |
-| NeonSha3Token | | | x | | x | | |
-| NeonCrcToken | | | x | | | | |
-| Wasm128Token | | | | | | | |
-| Wasm128RelaxedToken | | | | | | | |
+| Token | HasX64V2 | HasX64V3 | HasX64V4 | HasNeon | HasNeonAes | HasNeonSha3 | HasArm64V2 | HasArm64V3 |
+|-------|----------|----------|----------|---------|------------|-------------|------------|------------|
+| X64V1Token | | | | | | | | |
+| X64V2Token | x | | | | | | | |
+| X64CryptoToken | x | | | | | | | |
+| X64V3Token | x | x | | | | | | |
+| X64V3CryptoToken | x | x | | | | | | |
+| X64V3GfniCryptoToken | x | x | | | | | | |
+| X64V3VnniToken | x | x | | | | | | |
+| X64V3Vnni2Token | x | x | | | | | | |
+| X64V4Token | x | x | x | | | | | |
+| X64V4xToken | x | x | x | | | | | |
+| Avx512Fp16Token | x | x | x | | | | | |
+| X64Avx512Bf16Token | x | x | x | | | | | |
+| NeonToken | | | | x | | | | |
+| Arm64V2Token | | | | x | x | | x | |
+| Arm64V3Token | | | | x | x | x | x | x |
+| NeonAesToken | | | | x | x | | | |
+| NeonSha3Token | | | | x | | x | | |
+| NeonCrcToken | | | | x | | | | |
+| Wasm128Token | | | | | | | | |
+| Wasm128RelaxedToken | | | | | | | | |
+| Wasm128RelaxedFmaToken | | | | | | | | |
 
 ### 1.5 Cross-Platform Behavior
 

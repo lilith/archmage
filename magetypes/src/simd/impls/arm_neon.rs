@@ -17,18 +17,18 @@ use core::arch::aarch64::*;
 #[cfg(target_arch = "aarch64")]
 use archmage::{NeonToken, arcane};
 
-use crate::simd::backends::*;
+use crate::simd::backends::ops::*;
 
 #[cfg(target_arch = "aarch64")]
-impl F32x4Backend for NeonToken {
+impl F32x4Ops for NeonToken {
     type Repr = float32x4_t;
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: f32) -> float32x4_t {
         vdupq_n_f32(v)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> float32x4_t {
         vdupq_n_f32(0.0)
     }
@@ -53,106 +53,106 @@ impl F32x4Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vaddq_f32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vsubq_f32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vmulq_f32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn div(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vdivq_f32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: float32x4_t) -> float32x4_t {
         vnegq_f32(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vminnmq_f32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vmaxnmq_f32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sqrt(self, a: float32x4_t) -> float32x4_t {
         vsqrtq_f32(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: float32x4_t) -> float32x4_t {
         vabsq_f32(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn floor(self, a: float32x4_t) -> float32x4_t {
         vrndmq_f32(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn ceil(self, a: float32x4_t) -> float32x4_t {
         vrndpq_f32(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn round(self, a: float32x4_t) -> float32x4_t {
         vrndnq_f32(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_add(self, a: float32x4_t, b: float32x4_t, c: float32x4_t) -> float32x4_t {
         vfmaq_f32(c, a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_sub(self, a: float32x4_t, b: float32x4_t, c: float32x4_t) -> float32x4_t {
         vfmaq_f32(vnegq_f32(c), a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_add_portable(self, a: float32x4_t, b: float32x4_t, c: float32x4_t) -> float32x4_t {
         vfmaq_f32(c, a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_sub_portable(self, a: float32x4_t, b: float32x4_t, c: float32x4_t) -> float32x4_t {
         vfmaq_f32(vnegq_f32(c), a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vreinterpretq_f32_u32(vceqq_f32(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vreinterpretq_f32_u32(vmvnq_u32(vceqq_f32(a, b)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vreinterpretq_f32_u32(vcltq_f32(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vreinterpretq_f32_u32(vcleq_f32(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vreinterpretq_f32_u32(vcgtq_f32(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vreinterpretq_f32_u32(vcgeq_f32(a, b))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(self, mask: float32x4_t, if_true: float32x4_t, if_false: float32x4_t) -> float32x4_t {
         vbslq_f32(vreinterpretq_u32_f32(mask), if_true, if_false)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: float32x4_t) -> f32 {
         {
             let pair = vpaddq_f32(a, a);
@@ -161,7 +161,7 @@ impl F32x4Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_min(self, a: float32x4_t) -> f32 {
         {
             let pair = vpminnmq_f32(a, a);
@@ -170,7 +170,7 @@ impl F32x4Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_max(self, a: float32x4_t) -> f32 {
         {
             let pair = vpmaxnmq_f32(a, a);
@@ -214,46 +214,46 @@ impl F32x4Backend for NeonToken {
     //   Neoverse-N1 (Ampere Altra): exact is SLOWER
     //     rcp 1.39x, rsqrt 2.15x
     //     (benchmarks/rsqrt_arm_neoverse-n1_2026-06-21.md)
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rcp_approx(self, a: float32x4_t) -> float32x4_t {
         let y = vrecpeq_f32(a);
         vmulq_f32(vrecpsq_f32(a, y), y)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rsqrt_approx(self, a: float32x4_t) -> float32x4_t {
         let y = vrsqrteq_f32(a);
         vmulq_f32(y, vrsqrtsq_f32(a, vmulq_f32(y, y)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn recip(self, a: float32x4_t) -> float32x4_t {
-        let y = <Self as F32x4Backend>::rcp_approx(_self, a);
+        let y = <Self as F32x4Ops>::rcp_approx(_self, a);
         vmulq_f32(vrecpsq_f32(a, y), y)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rsqrt(self, a: float32x4_t) -> float32x4_t {
-        let y = <Self as F32x4Backend>::rsqrt_approx(_self, a);
+        let y = <Self as F32x4Ops>::rsqrt_approx(_self, a);
         vmulq_f32(y, vrsqrtsq_f32(a, vmulq_f32(y, y)))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: float32x4_t) -> float32x4_t {
         vreinterpretq_f32_u32(vmvnq_u32(vreinterpretq_u32_f32(a)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vreinterpretq_f32_u32(vandq_u32(
             vreinterpretq_u32_f32(a),
             vreinterpretq_u32_f32(b),
         ))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vreinterpretq_f32_u32(vorrq_u32(
             vreinterpretq_u32_f32(a),
             vreinterpretq_u32_f32(b),
         ))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: float32x4_t, b: float32x4_t) -> float32x4_t {
         vreinterpretq_f32_u32(veorq_u32(
             vreinterpretq_u32_f32(a),
@@ -261,7 +261,64 @@ impl F32x4Backend for NeonToken {
         ))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
+    fn broadcast_lane<const N: usize>(self, a: float32x4_t) -> float32x4_t {
+        const { assert!(N < 4, "lane index out of bounds") };
+        match N {
+            0 => vdupq_laneq_f32::<0>(a),
+            1 => vdupq_laneq_f32::<1>(a),
+            2 => vdupq_laneq_f32::<2>(a),
+            3 => vdupq_laneq_f32::<3>(a),
+            _ => unreachable!(),
+        }
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn shift_left_lanes<const N: usize>(self, a: float32x4_t) -> float32x4_t {
+        const { assert!(N <= 4, "shift count out of bounds") };
+        let z = vdupq_n_f32(0.0);
+        match N {
+            0 => a,
+            1 => vextq_f32::<3>(z, a),
+            2 => vextq_f32::<2>(z, a),
+            3 => vextq_f32::<1>(z, a),
+            4 => z,
+            _ => unreachable!(),
+        }
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn shift_right_lanes<const N: usize>(self, a: float32x4_t) -> float32x4_t {
+        const { assert!(N <= 4, "shift count out of bounds") };
+        let z = vdupq_n_f32(0.0);
+        match N {
+            0 => a,
+            1 => vextq_f32::<1>(a, z),
+            2 => vextq_f32::<2>(a, z),
+            3 => vextq_f32::<3>(a, z),
+            4 => z,
+            _ => unreachable!(),
+        }
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn mul_add_lane_relaxed<const LANE: i32>(
+        self,
+        a: float32x4_t,
+        v_in: float32x4_t,
+        acc: float32x4_t,
+    ) -> float32x4_t {
+        const { assert!(LANE >= 0 && LANE < 4, "LANE must be in 0..4") };
+        match LANE {
+            0 => vfmaq_laneq_f32::<0>(acc, a, v_in),
+            1 => vfmaq_laneq_f32::<1>(acc, a, v_in),
+            2 => vfmaq_laneq_f32::<2>(acc, a, v_in),
+            3 => vfmaq_laneq_f32::<3>(acc, a, v_in),
+            _ => unreachable!(),
+        }
+    }
+
+    #[arcane(_self = NeonToken)]
     fn to_u8_bytes(self, a: float32x4_t) -> [u8; 4] {
         let i16s = vqmovn_s32(vcvtnq_s32_f32(a));
         let u8s = vqmovun_s16(vcombine_s16(i16s, i16s));
@@ -269,7 +326,7 @@ impl F32x4Backend for NeonToken {
         [bytes[0], bytes[1], bytes[2], bytes[3]]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn store_rgba_bytes(
         self,
         r: float32x4_t,
@@ -289,21 +346,107 @@ impl F32x4Backend for NeonToken {
         );
         crate::simd_storage::cast(vreinterpretq_u8_u32(pixels))
     }
+
+    #[arcane(_self = NeonToken)]
+    fn deinterleave_3ch_repr(self, rgb: [float32x4_t; 3]) -> [float32x4_t; 3] {
+        let idx_r: uint8x16_t = crate::simd_storage::cast([
+            0u8, 1, 2, 3, 12, 13, 14, 15, 24, 25, 26, 27, 36, 37, 38, 39,
+        ]);
+        let idx_g: uint8x16_t = crate::simd_storage::cast([
+            4u8, 5, 6, 7, 16, 17, 18, 19, 28, 29, 30, 31, 40, 41, 42, 43,
+        ]);
+        let idx_b: uint8x16_t = crate::simd_storage::cast([
+            8u8, 9, 10, 11, 20, 21, 22, 23, 32, 33, 34, 35, 44, 45, 46, 47,
+        ]);
+        let tbl = uint8x16x3_t(
+            vreinterpretq_u8_f32(rgb[0]),
+            vreinterpretq_u8_f32(rgb[1]),
+            vreinterpretq_u8_f32(rgb[2]),
+        );
+        [
+            vreinterpretq_f32_u8(vqtbl3q_u8(tbl, idx_r)),
+            vreinterpretq_f32_u8(vqtbl3q_u8(tbl, idx_g)),
+            vreinterpretq_f32_u8(vqtbl3q_u8(tbl, idx_b)),
+        ]
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn interleave_3ch_repr(self, channels: [float32x4_t; 3]) -> [float32x4_t; 3] {
+        let idx_0: uint8x16_t =
+            crate::simd_storage::cast([0u8, 1, 2, 3, 16, 17, 18, 19, 32, 33, 34, 35, 4, 5, 6, 7]);
+        let idx_1: uint8x16_t = crate::simd_storage::cast([
+            20u8, 21, 22, 23, 36, 37, 38, 39, 8, 9, 10, 11, 24, 25, 26, 27,
+        ]);
+        let idx_2: uint8x16_t = crate::simd_storage::cast([
+            40u8, 41, 42, 43, 12, 13, 14, 15, 28, 29, 30, 31, 44, 45, 46, 47,
+        ]);
+        let tbl = uint8x16x3_t(
+            vreinterpretq_u8_f32(channels[0]),
+            vreinterpretq_u8_f32(channels[1]),
+            vreinterpretq_u8_f32(channels[2]),
+        );
+        [
+            vreinterpretq_f32_u8(vqtbl3q_u8(tbl, idx_0)),
+            vreinterpretq_f32_u8(vqtbl3q_u8(tbl, idx_1)),
+            vreinterpretq_f32_u8(vqtbl3q_u8(tbl, idx_2)),
+        ]
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn load_rgb_bytes(self, rgb: &[u8; 12]) -> (float32x4_t, float32x4_t, float32x4_t) {
+        let lo8: uint8x8_t = crate::simd_storage::copy(rgb.first_chunk::<8>().unwrap());
+        let hi4: u32 = crate::simd_storage::copy(rgb.last_chunk::<4>().unwrap());
+        let raw = vreinterpretq_u8_u32(vsetq_lane_u32::<2>(
+            hi4,
+            vreinterpretq_u32_u8(vcombine_u8(lo8, vdup_n_u8(0))),
+        ));
+        // All 12 channel bytes fit in one 16B tbl: [R0..3, G0..3, B0..3, 0..0].
+        let idx: uint8x16_t =
+            crate::simd_storage::cast([0u8, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11, 255, 255, 255, 255]);
+        let rgb8 = vqtbl1q_u8(raw, idx);
+        let rg16 = vmovl_u8(vget_low_u8(rgb8));
+        let b16 = vmovl_high_u8(rgb8);
+        (
+            vcvtq_f32_u32(vmovl_u16(vget_low_u16(rg16))),
+            vcvtq_f32_u32(vmovl_high_u16(rg16)),
+            vcvtq_f32_u32(vmovl_u16(vget_low_u16(b16))),
+        )
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn store_rgb_bytes(self, r: float32x4_t, g: float32x4_t, b: float32x4_t) -> [u8; 12] {
+        let ri = vqmovn_s32(vcvtnq_s32_f32(r));
+        let gi = vqmovn_s32(vcvtnq_s32_f32(g));
+        let bi = vqmovn_s32(vcvtnq_s32_f32(b));
+        let rg8 = vqmovun_s16(vcombine_s16(ri, gi));
+        let b8 = vqmovun_s16(vcombine_s16(bi, bi));
+        let planes = vcombine_u8(rg8, b8);
+        let idx: uint8x16_t =
+            crate::simd_storage::cast([0u8, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11, 255, 255, 255, 255]);
+        let packed = vqtbl1q_u8(planes, idx);
+        let mut out = [0u8; 12];
+        crate::simd_storage::store(vget_low_u8(packed), out.first_chunk_mut::<8>().unwrap());
+        crate::simd_storage::store(
+            vgetq_lane_u32::<2>(vreinterpretq_u32_u8(packed)),
+            out.last_chunk_mut::<4>().unwrap(),
+        );
+        out
+    }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl F32x8Backend for NeonToken {
+impl F32x8Ops for NeonToken {
     type Repr = [float32x4_t; 2];
 
     // ====== Construction ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: f32) -> [float32x4_t; 2] {
         let v4 = vdupq_n_f32(v);
         [v4, v4]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> [float32x4_t; 2] {
         let z = vdupq_n_f32(0.0);
         [z, z]
@@ -331,69 +474,69 @@ impl F32x8Backend for NeonToken {
 
     // ====== Arithmetic ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vaddq_f32(a[0], b[0]), vaddq_f32(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vsubq_f32(a[0], b[0]), vsubq_f32(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vmulq_f32(a[0], b[0]), vmulq_f32(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn div(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vdivq_f32(a[0], b[0]), vdivq_f32(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vnegq_f32(a[0]), vnegq_f32(a[1])]
     }
 
     // ====== Math ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vminnmq_f32(a[0], b[0]), vminnmq_f32(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vmaxnmq_f32(a[0], b[0]), vmaxnmq_f32(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sqrt(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vsqrtq_f32(a[0]), vsqrtq_f32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vabsq_f32(a[0]), vabsq_f32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn floor(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vrndmq_f32(a[0]), vrndmq_f32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn ceil(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vrndpq_f32(a[0]), vrndpq_f32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn round(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [vrndnq_f32(a[0]), vrndnq_f32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_add(
         self,
         a: [float32x4_t; 2],
@@ -404,7 +547,7 @@ impl F32x8Backend for NeonToken {
         [vfmaq_f32(c[0], a[0], b[0]), vfmaq_f32(c[1], a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_sub(
         self,
         a: [float32x4_t; 2],
@@ -418,7 +561,7 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_add_portable(
         self,
         a: [float32x4_t; 2],
@@ -428,7 +571,7 @@ impl F32x8Backend for NeonToken {
         [vfmaq_f32(c[0], a[0], b[0]), vfmaq_f32(c[1], a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_sub_portable(
         self,
         a: [float32x4_t; 2],
@@ -443,7 +586,7 @@ impl F32x8Backend for NeonToken {
 
     // ====== Comparisons ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [
             vreinterpretq_f32_u32(vceqq_f32(a[0], b[0])),
@@ -451,7 +594,7 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [
             vreinterpretq_f32_u32(vmvnq_u32(vceqq_f32(a[0], b[0]))),
@@ -459,7 +602,7 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [
             vreinterpretq_f32_u32(vcltq_f32(a[0], b[0])),
@@ -467,7 +610,7 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [
             vreinterpretq_f32_u32(vcleq_f32(a[0], b[0])),
@@ -475,7 +618,7 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [
             vreinterpretq_f32_u32(vcgtq_f32(a[0], b[0])),
@@ -483,7 +626,7 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [
             vreinterpretq_f32_u32(vcgeq_f32(a[0], b[0])),
@@ -491,7 +634,7 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(
         self,
         mask: [float32x4_t; 2],
@@ -506,7 +649,7 @@ impl F32x8Backend for NeonToken {
 
     // ====== Reductions ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: [float32x4_t; 2]) -> f32 {
         {
             let m = vaddq_f32(a[0], a[1]);
@@ -516,7 +659,7 @@ impl F32x8Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_min(self, a: [float32x4_t; 2]) -> f32 {
         {
             let m = vminnmq_f32(a[0], a[1]);
@@ -526,7 +669,7 @@ impl F32x8Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_max(self, a: [float32x4_t; 2]) -> f32 {
         {
             let m = vmaxnmq_f32(a[0], a[1]);
@@ -541,29 +684,29 @@ impl F32x8Backend for NeonToken {
     // Delegate to the native f32x4/f64x2 backend so the polyfill inherits
     // its >=12-bit fused `_approx` (raw vrecpe + 1 FRECPS) and exact full
     // methods — one source of truth for the estimate.
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rcp_approx(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
-        core::array::from_fn(|i| <Self as F32x4Backend>::rcp_approx(_self, a[i]))
+        core::array::from_fn(|i| <Self as F32x4Ops>::rcp_approx(_self, a[i]))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rsqrt_approx(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
-        core::array::from_fn(|i| <Self as F32x4Backend>::rsqrt_approx(_self, a[i]))
+        core::array::from_fn(|i| <Self as F32x4Ops>::rsqrt_approx(_self, a[i]))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn recip(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
-        core::array::from_fn(|i| <Self as F32x4Backend>::recip(_self, a[i]))
+        core::array::from_fn(|i| <Self as F32x4Ops>::recip(_self, a[i]))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rsqrt(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
-        core::array::from_fn(|i| <Self as F32x4Backend>::rsqrt(_self, a[i]))
+        core::array::from_fn(|i| <Self as F32x4Ops>::rsqrt(_self, a[i]))
     }
 
     // ====== Bitwise ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [
             vreinterpretq_f32_u32(vmvnq_u32(vreinterpretq_u32_f32(a[0]))),
@@ -571,7 +714,7 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [
             vreinterpretq_f32_u32(vandq_u32(
@@ -585,7 +728,7 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [
             vreinterpretq_f32_u32(vorrq_u32(
@@ -599,7 +742,7 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: [float32x4_t; 2], b: [float32x4_t; 2]) -> [float32x4_t; 2] {
         [
             vreinterpretq_f32_u32(veorq_u32(
@@ -613,7 +756,105 @@ impl F32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
+    fn broadcast_lane<const N: usize>(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
+        const { assert!(N < 8, "lane index out of bounds") };
+        let s = match N {
+            0 => vdupq_laneq_f32::<0>(a[0]),
+            1 => vdupq_laneq_f32::<1>(a[0]),
+            2 => vdupq_laneq_f32::<2>(a[0]),
+            3 => vdupq_laneq_f32::<3>(a[0]),
+            4 => vdupq_laneq_f32::<0>(a[1]),
+            5 => vdupq_laneq_f32::<1>(a[1]),
+            6 => vdupq_laneq_f32::<2>(a[1]),
+            7 => vdupq_laneq_f32::<3>(a[1]),
+            _ => unreachable!(),
+        };
+        [s, s]
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn shift_left_lanes<const N: usize>(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
+        const { assert!(N <= 8, "shift count out of bounds") };
+        let z = vdupq_n_f32(0.0);
+        match N {
+            0 => a,
+            1 => [vextq_f32::<3>(z, a[0]), vextq_f32::<3>(a[0], a[1])],
+            2 => [vextq_f32::<2>(z, a[0]), vextq_f32::<2>(a[0], a[1])],
+            3 => [vextq_f32::<1>(z, a[0]), vextq_f32::<1>(a[0], a[1])],
+            4 => [z, a[0]],
+            5 => [z, vextq_f32::<3>(z, a[0])],
+            6 => [z, vextq_f32::<2>(z, a[0])],
+            7 => [z, vextq_f32::<1>(z, a[0])],
+            8 => [z, z],
+            _ => unreachable!(),
+        }
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn shift_right_lanes<const N: usize>(self, a: [float32x4_t; 2]) -> [float32x4_t; 2] {
+        const { assert!(N <= 8, "shift count out of bounds") };
+        let z = vdupq_n_f32(0.0);
+        match N {
+            0 => a,
+            1 => [vextq_f32::<1>(a[0], a[1]), vextq_f32::<1>(a[1], z)],
+            2 => [vextq_f32::<2>(a[0], a[1]), vextq_f32::<2>(a[1], z)],
+            3 => [vextq_f32::<3>(a[0], a[1]), vextq_f32::<3>(a[1], z)],
+            4 => [a[1], z],
+            5 => [vextq_f32::<1>(a[1], z), z],
+            6 => [vextq_f32::<2>(a[1], z), z],
+            7 => [vextq_f32::<3>(a[1], z), z],
+            8 => [z, z],
+            _ => unreachable!(),
+        }
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn mul_add_lane_relaxed<const LANE: i32>(
+        self,
+        a: [float32x4_t; 2],
+        v_in: [float32x4_t; 2],
+        acc: [float32x4_t; 2],
+    ) -> [float32x4_t; 2] {
+        const { assert!(LANE >= 0 && LANE < 8, "LANE must be in 0..8") };
+        match LANE {
+            0 => [
+                vfmaq_laneq_f32::<0>(acc[0], a[0], v_in[0]),
+                vfmaq_laneq_f32::<0>(acc[1], a[1], v_in[0]),
+            ],
+            1 => [
+                vfmaq_laneq_f32::<1>(acc[0], a[0], v_in[0]),
+                vfmaq_laneq_f32::<1>(acc[1], a[1], v_in[0]),
+            ],
+            2 => [
+                vfmaq_laneq_f32::<2>(acc[0], a[0], v_in[0]),
+                vfmaq_laneq_f32::<2>(acc[1], a[1], v_in[0]),
+            ],
+            3 => [
+                vfmaq_laneq_f32::<3>(acc[0], a[0], v_in[0]),
+                vfmaq_laneq_f32::<3>(acc[1], a[1], v_in[0]),
+            ],
+            4 => [
+                vfmaq_laneq_f32::<0>(acc[0], a[0], v_in[1]),
+                vfmaq_laneq_f32::<0>(acc[1], a[1], v_in[1]),
+            ],
+            5 => [
+                vfmaq_laneq_f32::<1>(acc[0], a[0], v_in[1]),
+                vfmaq_laneq_f32::<1>(acc[1], a[1], v_in[1]),
+            ],
+            6 => [
+                vfmaq_laneq_f32::<2>(acc[0], a[0], v_in[1]),
+                vfmaq_laneq_f32::<2>(acc[1], a[1], v_in[1]),
+            ],
+            7 => [
+                vfmaq_laneq_f32::<3>(acc[0], a[0], v_in[1]),
+                vfmaq_laneq_f32::<3>(acc[1], a[1], v_in[1]),
+            ],
+            _ => unreachable!(),
+        }
+    }
+
+    #[arcane(_self = NeonToken)]
     fn to_u8_bytes(self, a: [float32x4_t; 2]) -> [u8; 8] {
         let i0 = vqmovn_s32(vcvtnq_s32_f32(a[0]));
         let i1 = vqmovn_s32(vcvtnq_s32_f32(a[1]));
@@ -621,7 +862,7 @@ impl F32x8Backend for NeonToken {
         crate::simd_storage::cast(u8s)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn store_rgba_bytes(
         self,
         r: [float32x4_t; 2],
@@ -649,18 +890,159 @@ impl F32x8Backend for NeonToken {
         );
         crate::simd_storage::cast([vreinterpretq_u8_u32(p0), vreinterpretq_u8_u32(p1)])
     }
+
+    #[arcane(_self = NeonToken)]
+    fn deinterleave_3ch_repr(self, rgb: [[float32x4_t; 2]; 3]) -> [[float32x4_t; 2]; 3] {
+        let idx_r: uint8x16_t = crate::simd_storage::cast([
+            0u8, 1, 2, 3, 12, 13, 14, 15, 24, 25, 26, 27, 36, 37, 38, 39,
+        ]);
+        let idx_g: uint8x16_t = crate::simd_storage::cast([
+            4u8, 5, 6, 7, 16, 17, 18, 19, 28, 29, 30, 31, 40, 41, 42, 43,
+        ]);
+        let idx_b: uint8x16_t = crate::simd_storage::cast([
+            8u8, 9, 10, 11, 20, 21, 22, 23, 32, 33, 34, 35, 44, 45, 46, 47,
+        ]);
+        let tbl_lo = uint8x16x3_t(
+            vreinterpretq_u8_f32(rgb[0][0]),
+            vreinterpretq_u8_f32(rgb[0][1]),
+            vreinterpretq_u8_f32(rgb[1][0]),
+        );
+        let tbl_hi = uint8x16x3_t(
+            vreinterpretq_u8_f32(rgb[1][1]),
+            vreinterpretq_u8_f32(rgb[2][0]),
+            vreinterpretq_u8_f32(rgb[2][1]),
+        );
+        [
+            [
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_lo, idx_r)),
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_hi, idx_r)),
+            ],
+            [
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_lo, idx_g)),
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_hi, idx_g)),
+            ],
+            [
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_lo, idx_b)),
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_hi, idx_b)),
+            ],
+        ]
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn interleave_3ch_repr(self, channels: [[float32x4_t; 2]; 3]) -> [[float32x4_t; 2]; 3] {
+        let [r, g, b] = channels;
+        let idx_0: uint8x16_t =
+            crate::simd_storage::cast([0u8, 1, 2, 3, 16, 17, 18, 19, 32, 33, 34, 35, 4, 5, 6, 7]);
+        let idx_1: uint8x16_t = crate::simd_storage::cast([
+            20u8, 21, 22, 23, 36, 37, 38, 39, 8, 9, 10, 11, 24, 25, 26, 27,
+        ]);
+        let idx_2: uint8x16_t = crate::simd_storage::cast([
+            40u8, 41, 42, 43, 12, 13, 14, 15, 28, 29, 30, 31, 44, 45, 46, 47,
+        ]);
+        let tbl_lo = uint8x16x3_t(
+            vreinterpretq_u8_f32(r[0]),
+            vreinterpretq_u8_f32(g[0]),
+            vreinterpretq_u8_f32(b[0]),
+        );
+        let tbl_hi = uint8x16x3_t(
+            vreinterpretq_u8_f32(r[1]),
+            vreinterpretq_u8_f32(g[1]),
+            vreinterpretq_u8_f32(b[1]),
+        );
+        [
+            [
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_lo, idx_0)),
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_lo, idx_1)),
+            ],
+            [
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_lo, idx_2)),
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_hi, idx_0)),
+            ],
+            [
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_hi, idx_1)),
+                vreinterpretq_f32_u8(vqtbl3q_u8(tbl_hi, idx_2)),
+            ],
+        ]
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn load_rgb_bytes(
+        self,
+        rgb: &[u8; 24],
+    ) -> ([float32x4_t; 2], [float32x4_t; 2], [float32x4_t; 2]) {
+        let lo16: uint8x16_t = crate::simd_storage::copy(rgb.first_chunk::<16>().unwrap());
+        let hi8: uint8x8_t = crate::simd_storage::copy(rgb.last_chunk::<8>().unwrap());
+        let tbl = uint8x16x2_t(lo16, vcombine_u8(hi8, vdup_n_u8(0)));
+        let rg_idx: uint8x16_t =
+            crate::simd_storage::cast([0u8, 3, 6, 9, 12, 15, 18, 21, 1, 4, 7, 10, 13, 16, 19, 22]);
+        let b_idx: uint8x16_t = crate::simd_storage::cast([
+            2u8, 5, 8, 11, 14, 17, 20, 23, 255, 255, 255, 255, 255, 255, 255, 255,
+        ]);
+        let rg8 = vqtbl2q_u8(tbl, rg_idx);
+        let b8 = vqtbl2q_u8(tbl, b_idx);
+        let r16 = vmovl_u8(vget_low_u8(rg8));
+        let g16 = vmovl_high_u8(rg8);
+        let b16 = vmovl_u8(vget_low_u8(b8));
+        (
+            [
+                vcvtq_f32_u32(vmovl_u16(vget_low_u16(r16))),
+                vcvtq_f32_u32(vmovl_high_u16(r16)),
+            ],
+            [
+                vcvtq_f32_u32(vmovl_u16(vget_low_u16(g16))),
+                vcvtq_f32_u32(vmovl_high_u16(g16)),
+            ],
+            [
+                vcvtq_f32_u32(vmovl_u16(vget_low_u16(b16))),
+                vcvtq_f32_u32(vmovl_high_u16(b16)),
+            ],
+        )
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn store_rgb_bytes(
+        self,
+        r: [float32x4_t; 2],
+        g: [float32x4_t; 2],
+        b: [float32x4_t; 2],
+    ) -> [u8; 24] {
+        let r8 = vqmovun_s16(vcombine_s16(
+            vqmovn_s32(vcvtnq_s32_f32(r[0])),
+            vqmovn_s32(vcvtnq_s32_f32(r[1])),
+        ));
+        let g8 = vqmovun_s16(vcombine_s16(
+            vqmovn_s32(vcvtnq_s32_f32(g[0])),
+            vqmovn_s32(vcvtnq_s32_f32(g[1])),
+        ));
+        let b8 = vqmovun_s16(vcombine_s16(
+            vqmovn_s32(vcvtnq_s32_f32(b[0])),
+            vqmovn_s32(vcvtnq_s32_f32(b[1])),
+        ));
+        let tbl = uint8x16x2_t(vcombine_u8(r8, g8), vcombine_u8(b8, b8));
+        let idx_lo: uint8x16_t =
+            crate::simd_storage::cast([0u8, 8, 16, 1, 9, 17, 2, 10, 18, 3, 11, 19, 4, 12, 20, 5]);
+        let idx_hi: uint8x16_t = crate::simd_storage::cast([
+            13u8, 21, 6, 14, 22, 7, 15, 23, 255, 255, 255, 255, 255, 255, 255, 255,
+        ]);
+        let lo16 = vqtbl2q_u8(tbl, idx_lo);
+        let hi8 = vqtbl2q_u8(tbl, idx_hi);
+        let mut out = [0u8; 24];
+        crate::simd_storage::store(lo16, out.first_chunk_mut::<16>().unwrap());
+        crate::simd_storage::store(vget_low_u8(hi8), out.last_chunk_mut::<8>().unwrap());
+        out
+    }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl F64x2Backend for NeonToken {
+impl F64x2Ops for NeonToken {
     type Repr = float64x2_t;
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: f64) -> float64x2_t {
         vdupq_n_f64(v)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> float64x2_t {
         vdupq_n_f64(0.0)
     }
@@ -685,106 +1067,106 @@ impl F64x2Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vaddq_f64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vsubq_f64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vmulq_f64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn div(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vdivq_f64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: float64x2_t) -> float64x2_t {
         vnegq_f64(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vminnmq_f64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vmaxnmq_f64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sqrt(self, a: float64x2_t) -> float64x2_t {
         vsqrtq_f64(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: float64x2_t) -> float64x2_t {
         vabsq_f64(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn floor(self, a: float64x2_t) -> float64x2_t {
         vrndmq_f64(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn ceil(self, a: float64x2_t) -> float64x2_t {
         vrndpq_f64(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn round(self, a: float64x2_t) -> float64x2_t {
         vrndnq_f64(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_add(self, a: float64x2_t, b: float64x2_t, c: float64x2_t) -> float64x2_t {
         vfmaq_f64(c, a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_sub(self, a: float64x2_t, b: float64x2_t, c: float64x2_t) -> float64x2_t {
         vfmaq_f64(vnegq_f64(c), a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_add_portable(self, a: float64x2_t, b: float64x2_t, c: float64x2_t) -> float64x2_t {
         vfmaq_f64(c, a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_sub_portable(self, a: float64x2_t, b: float64x2_t, c: float64x2_t) -> float64x2_t {
         vfmaq_f64(vnegq_f64(c), a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vreinterpretq_f64_u64(vceqq_f64(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vreinterpretq_f64_u64(veorq_u64(vceqq_f64(a, b), vdupq_n_u64(u64::MAX)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vreinterpretq_f64_u64(vcltq_f64(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vreinterpretq_f64_u64(vcleq_f64(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vreinterpretq_f64_u64(vcgtq_f64(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vreinterpretq_f64_u64(vcgeq_f64(a, b))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(self, mask: float64x2_t, if_true: float64x2_t, if_false: float64x2_t) -> float64x2_t {
         vbslq_f64(vreinterpretq_u64_f64(mask), if_true, if_false)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: float64x2_t) -> f64 {
         {
             let pair = vpaddq_f64(a, a);
@@ -792,7 +1174,7 @@ impl F64x2Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_min(self, a: float64x2_t) -> f64 {
         {
             let pair = vpminnmq_f64(a, a);
@@ -800,7 +1182,7 @@ impl F64x2Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_max(self, a: float64x2_t) -> f64 {
         {
             let pair = vpmaxnmq_f64(a, a);
@@ -844,44 +1226,44 @@ impl F64x2Backend for NeonToken {
     //   Neoverse / server ARM: NOT MEASURED for f64. The f32 form is
     //     slower there, so treat an f64 regression as plausible until
     //     someone runs `bench_rsqrt_f64` on that class of core.
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rcp_approx(self, a: float64x2_t) -> float64x2_t {
         let y = vrecpeq_f64(a);
         vmulq_f64(vrecpsq_f64(a, y), y)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rsqrt_approx(self, a: float64x2_t) -> float64x2_t {
         let y = vrsqrteq_f64(a);
         vmulq_f64(y, vrsqrtsq_f64(a, vmulq_f64(y, y)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn recip(self, a: float64x2_t) -> float64x2_t {
         vdivq_f64(vdupq_n_f64(1.0), a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rsqrt(self, a: float64x2_t) -> float64x2_t {
         vdivq_f64(vdupq_n_f64(1.0), vsqrtq_f64(a))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: float64x2_t) -> float64x2_t {
         vreinterpretq_f64_u64(veorq_u64(vreinterpretq_u64_f64(a), vdupq_n_u64(u64::MAX)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vreinterpretq_f64_u64(vandq_u64(
             vreinterpretq_u64_f64(a),
             vreinterpretq_u64_f64(b),
         ))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vreinterpretq_f64_u64(vorrq_u64(
             vreinterpretq_u64_f64(a),
             vreinterpretq_u64_f64(b),
         ))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: float64x2_t, b: float64x2_t) -> float64x2_t {
         vreinterpretq_f64_u64(veorq_u64(
             vreinterpretq_u64_f64(a),
@@ -891,18 +1273,18 @@ impl F64x2Backend for NeonToken {
 }
 
 #[cfg(target_arch = "aarch64")]
-impl F64x4Backend for NeonToken {
+impl F64x4Ops for NeonToken {
     type Repr = [float64x2_t; 2];
 
     // ====== Construction ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: f64) -> [float64x2_t; 2] {
         let v4 = vdupq_n_f64(v);
         [v4, v4]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> [float64x2_t; 2] {
         let z = vdupq_n_f64(0.0);
         [z, z]
@@ -930,69 +1312,69 @@ impl F64x4Backend for NeonToken {
 
     // ====== Arithmetic ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vaddq_f64(a[0], b[0]), vaddq_f64(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vsubq_f64(a[0], b[0]), vsubq_f64(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vmulq_f64(a[0], b[0]), vmulq_f64(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn div(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vdivq_f64(a[0], b[0]), vdivq_f64(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vnegq_f64(a[0]), vnegq_f64(a[1])]
     }
 
     // ====== Math ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vminnmq_f64(a[0], b[0]), vminnmq_f64(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vmaxnmq_f64(a[0], b[0]), vmaxnmq_f64(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sqrt(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vsqrtq_f64(a[0]), vsqrtq_f64(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vabsq_f64(a[0]), vabsq_f64(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn floor(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vrndmq_f64(a[0]), vrndmq_f64(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn ceil(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vrndpq_f64(a[0]), vrndpq_f64(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn round(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [vrndnq_f64(a[0]), vrndnq_f64(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_add(
         self,
         a: [float64x2_t; 2],
@@ -1003,7 +1385,7 @@ impl F64x4Backend for NeonToken {
         [vfmaq_f64(c[0], a[0], b[0]), vfmaq_f64(c[1], a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_sub(
         self,
         a: [float64x2_t; 2],
@@ -1017,7 +1399,7 @@ impl F64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_add_portable(
         self,
         a: [float64x2_t; 2],
@@ -1027,7 +1409,7 @@ impl F64x4Backend for NeonToken {
         [vfmaq_f64(c[0], a[0], b[0]), vfmaq_f64(c[1], a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul_sub_portable(
         self,
         a: [float64x2_t; 2],
@@ -1042,7 +1424,7 @@ impl F64x4Backend for NeonToken {
 
     // ====== Comparisons ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [
             vreinterpretq_f64_u64(vceqq_f64(a[0], b[0])),
@@ -1050,7 +1432,7 @@ impl F64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [
             vreinterpretq_f64_u64(veorq_u64(vceqq_f64(a[0], b[0]), vdupq_n_u64(u64::MAX))),
@@ -1058,7 +1440,7 @@ impl F64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [
             vreinterpretq_f64_u64(vcltq_f64(a[0], b[0])),
@@ -1066,7 +1448,7 @@ impl F64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [
             vreinterpretq_f64_u64(vcleq_f64(a[0], b[0])),
@@ -1074,7 +1456,7 @@ impl F64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [
             vreinterpretq_f64_u64(vcgtq_f64(a[0], b[0])),
@@ -1082,7 +1464,7 @@ impl F64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [
             vreinterpretq_f64_u64(vcgeq_f64(a[0], b[0])),
@@ -1090,7 +1472,7 @@ impl F64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(
         self,
         mask: [float64x2_t; 2],
@@ -1105,7 +1487,7 @@ impl F64x4Backend for NeonToken {
 
     // ====== Reductions ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: [float64x2_t; 2]) -> f64 {
         {
             let m = vaddq_f64(a[0], a[1]);
@@ -1114,7 +1496,7 @@ impl F64x4Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_min(self, a: [float64x2_t; 2]) -> f64 {
         {
             let m = vminnmq_f64(a[0], a[1]);
@@ -1123,7 +1505,7 @@ impl F64x4Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_max(self, a: [float64x2_t; 2]) -> f64 {
         {
             let m = vmaxnmq_f64(a[0], a[1]);
@@ -1137,29 +1519,29 @@ impl F64x4Backend for NeonToken {
     // Delegate to the native f32x4/f64x2 backend so the polyfill inherits
     // its >=12-bit fused `_approx` (raw vrecpe + 1 FRECPS) and exact full
     // methods — one source of truth for the estimate.
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rcp_approx(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
-        core::array::from_fn(|i| <Self as F64x2Backend>::rcp_approx(_self, a[i]))
+        core::array::from_fn(|i| <Self as F64x2Ops>::rcp_approx(_self, a[i]))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rsqrt_approx(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
-        core::array::from_fn(|i| <Self as F64x2Backend>::rsqrt_approx(_self, a[i]))
+        core::array::from_fn(|i| <Self as F64x2Ops>::rsqrt_approx(_self, a[i]))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn recip(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
-        core::array::from_fn(|i| <Self as F64x2Backend>::recip(_self, a[i]))
+        core::array::from_fn(|i| <Self as F64x2Ops>::recip(_self, a[i]))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn rsqrt(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
-        core::array::from_fn(|i| <Self as F64x2Backend>::rsqrt(_self, a[i]))
+        core::array::from_fn(|i| <Self as F64x2Ops>::rsqrt(_self, a[i]))
     }
 
     // ====== Bitwise ======
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [
             vreinterpretq_f64_u64(veorq_u64(
@@ -1173,7 +1555,7 @@ impl F64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [
             vreinterpretq_f64_u64(vandq_u64(
@@ -1187,7 +1569,7 @@ impl F64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [
             vreinterpretq_f64_u64(vorrq_u64(
@@ -1201,7 +1583,7 @@ impl F64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: [float64x2_t; 2], b: [float64x2_t; 2]) -> [float64x2_t; 2] {
         [
             vreinterpretq_f64_u64(veorq_u64(
@@ -1217,15 +1599,15 @@ impl F64x4Backend for NeonToken {
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I32x4Backend for NeonToken {
+impl I32x4Ops for NeonToken {
     type Repr = int32x4_t;
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: i32) -> int32x4_t {
         vdupq_n_s32(v)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> int32x4_t {
         vdupq_n_s32(0)
     }
@@ -1250,99 +1632,99 @@ impl I32x4Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vaddq_s32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vsubq_s32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vmulq_s32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: int32x4_t) -> int32x4_t {
         vnegq_s32(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vminq_s32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vmaxq_s32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: int32x4_t) -> int32x4_t {
         vabsq_s32(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vreinterpretq_s32_u32(vceqq_s32(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vreinterpretq_s32_u32(vmvnq_u32(vceqq_s32(a, b)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vreinterpretq_s32_u32(vcltq_s32(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vreinterpretq_s32_u32(vcleq_s32(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vreinterpretq_s32_u32(vcgtq_s32(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vreinterpretq_s32_u32(vcgeq_s32(a, b))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(self, mask: int32x4_t, if_true: int32x4_t, if_false: int32x4_t) -> int32x4_t {
         vbslq_s32(vreinterpretq_u32_s32(mask), if_true, if_false)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: int32x4_t) -> i32 {
         vaddvq_s32(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: int32x4_t) -> int32x4_t {
         vmvnq_s32(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vandq_s32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         vorrq_s32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: int32x4_t, b: int32x4_t) -> int32x4_t {
         veorq_s32(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: int32x4_t) -> int32x4_t {
         vshlq_n_s32::<N>(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_const<const N: i32>(self, a: int32x4_t) -> int32x4_t {
         const { assert!(N >= 0 && N <= 31) };
         vshlq_s32(a, vdupq_n_s32(-N))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: int32x4_t) -> int32x4_t {
         const { assert!(N >= 0 && N <= 31) };
         vreinterpretq_s32_u32(vshlq_u32(vreinterpretq_u32_s32(a), vdupq_n_s32(-N)))
@@ -1354,12 +1736,12 @@ impl I32x4Backend for NeonToken {
     // a signed value, so an unclamped 256 would wrap to a no-op
     // instead of the contracted zero.
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_uniform(self, a: int32x4_t, count: u32) -> int32x4_t {
         vshlq_s32(a, vdupq_n_s32(count.min(32) as i32))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_uniform(self, a: int32x4_t, count: u32) -> int32x4_t {
         vreinterpretq_s32_u32(vshlq_u32(
             vreinterpretq_u32_s32(a),
@@ -1367,13 +1749,13 @@ impl I32x4Backend for NeonToken {
         ))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_uniform(self, a: int32x4_t, count: u32) -> int32x4_t {
         // Clamping to 31 gives the contracted sign fill.
         vshlq_s32(a, vdupq_n_s32(-(count.min(31) as i32)))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: int32x4_t) -> bool {
         // Every lane's sign bit set <=> every lane negative <=> the
         // signed maximum is negative. Measured 28% faster on M4 Pro
@@ -1381,12 +1763,12 @@ impl I32x4Backend for NeonToken {
         vmaxvq_s32(a) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: int32x4_t) -> bool {
         vminvq_s32(a) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: int32x4_t) -> u32 {
         // One sign bit per word -> 4-bit mask. Shift each 0/1 lane
         // into position, then one horizontal add. The shift on the
@@ -1399,28 +1781,28 @@ impl I32x4Backend for NeonToken {
             shift_vec,
         ))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i32_to_i16(self, a: int32x4_t, b: int32x4_t) -> int16x8_t {
         vcombine_s16(vqmovn_s32(a), vqmovn_s32(b))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i32_to_u16(self, a: int32x4_t, b: int32x4_t) -> uint16x8_t {
         vcombine_u16(vqmovun_s32(a), vqmovun_s32(b))
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I32x8Backend for NeonToken {
+impl I32x8Ops for NeonToken {
     type Repr = [int32x4_t; 2];
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: i32) -> [int32x4_t; 2] {
         let v4 = vdupq_n_s32(v);
         [v4, v4]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> [int32x4_t; 2] {
         let z = vdupq_n_s32(0);
         [z, z]
@@ -1446,71 +1828,71 @@ impl I32x8Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vaddq_s32(a[0], b[0]), vaddq_s32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vsubq_s32(a[0], b[0]), vsubq_s32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vmulq_s32(a[0], b[0]), vmulq_s32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vnegq_s32(a[0]), vnegq_s32(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vminq_s32(a[0], b[0]), vminq_s32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vmaxq_s32(a[0], b[0]), vmaxq_s32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vabsq_s32(a[0]), vabsq_s32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [
             vreinterpretq_s32_u32(vceqq_s32(a[0], b[0])),
             vreinterpretq_s32_u32(vceqq_s32(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [
             vreinterpretq_s32_u32(vmvnq_u32(vceqq_s32(a[0], b[0]))),
             vreinterpretq_s32_u32(vmvnq_u32(vceqq_s32(a[1], b[1]))),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [
             vreinterpretq_s32_u32(vcltq_s32(a[0], b[0])),
             vreinterpretq_s32_u32(vcltq_s32(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [
             vreinterpretq_s32_u32(vcleq_s32(a[0], b[0])),
             vreinterpretq_s32_u32(vcleq_s32(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [
             vreinterpretq_s32_u32(vcgtq_s32(a[0], b[0])),
             vreinterpretq_s32_u32(vcgtq_s32(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [
             vreinterpretq_s32_u32(vcgeq_s32(a[0], b[0])),
@@ -1518,7 +1900,7 @@ impl I32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(
         self,
         mask: [int32x4_t; 2],
@@ -1531,7 +1913,7 @@ impl I32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: [int32x4_t; 2]) -> i32 {
         {
             let m = vaddq_s32(a[0], a[1]);
@@ -1539,29 +1921,29 @@ impl I32x8Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vmvnq_s32(a[0]), vmvnq_s32(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vandq_s32(a[0], b[0]), vandq_s32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vorrq_s32(a[0], b[0]), vorrq_s32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [veorq_s32(a[0], b[0]), veorq_s32(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: [int32x4_t; 2]) -> [int32x4_t; 2] {
         [vshlq_n_s32::<N>(a[0]), vshlq_n_s32::<N>(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_const<const N: i32>(self, a: [int32x4_t; 2]) -> [int32x4_t; 2] {
         const { assert!(N >= 0 && N <= 31) };
         [
@@ -1570,7 +1952,7 @@ impl I32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: [int32x4_t; 2]) -> [int32x4_t; 2] {
         const { assert!(N >= 0 && N <= 31) };
         [
@@ -1584,13 +1966,13 @@ impl I32x8Backend for NeonToken {
     // clamp rationale as the 128-bit impl (USHL/SSHL read the low
     // byte of each amount lane).
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_uniform(self, a: [int32x4_t; 2], count: u32) -> [int32x4_t; 2] {
         let c = vdupq_n_s32(count.min(32) as i32);
         [vshlq_s32(a[0], c), vshlq_s32(a[1], c)]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_uniform(self, a: [int32x4_t; 2], count: u32) -> [int32x4_t; 2] {
         let c = vdupq_n_s32(-(count.min(32) as i32));
         [
@@ -1599,23 +1981,23 @@ impl I32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_uniform(self, a: [int32x4_t; 2], count: u32) -> [int32x4_t; 2] {
         let c = vdupq_n_s32(-(count.min(31) as i32));
         [vshlq_s32(a[0], c), vshlq_s32(a[1], c)]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: [int32x4_t; 2]) -> bool {
         vmaxvq_s32(vandq_s32(a[0], a[1])) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: [int32x4_t; 2]) -> bool {
         vminvq_s32(vorrq_s32(a[0], a[1])) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: [int32x4_t; 2]) -> u32 {
         {
             let mut bits = 0u32;
@@ -1632,7 +2014,7 @@ impl I32x8Backend for NeonToken {
             bits
         }
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i32_to_i16(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [int16x8_t; 2] {
         [
             vcombine_s16(vqmovn_s32(a[0]), vqmovn_s32(a[1])),
@@ -1640,7 +2022,7 @@ impl I32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i32_to_u16(self, a: [int32x4_t; 2], b: [int32x4_t; 2]) -> [uint16x8_t; 2] {
         [
             vcombine_u16(vqmovun_s32(a[0]), vqmovun_s32(a[1])),
@@ -1650,15 +2032,15 @@ impl I32x8Backend for NeonToken {
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U32x4Backend for NeonToken {
+impl U32x4Ops for NeonToken {
     type Repr = uint32x4_t;
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: u32) -> uint32x4_t {
         vdupq_n_u32(v)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> uint32x4_t {
         vdupq_n_u32(0)
     }
@@ -1683,85 +2065,85 @@ impl U32x4Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vaddq_u32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vsubq_u32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vmulq_u32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vminq_u32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vmaxq_u32(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vceqq_u32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vmvnq_u32(vceqq_u32(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vcltq_u32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vcleq_u32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vcgtq_u32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vcgeq_u32(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(self, mask: uint32x4_t, if_true: uint32x4_t, if_false: uint32x4_t) -> uint32x4_t {
         vbslq_u32(mask, if_true, if_false)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: uint32x4_t) -> u32 {
         vaddvq_u32(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: uint32x4_t) -> uint32x4_t {
         vmvnq_u32(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vandq_u32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         vorrq_u32(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
         veorq_u32(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: uint32x4_t) -> uint32x4_t {
         vshlq_n_u32::<N>(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: uint32x4_t) -> uint32x4_t {
         const { assert!(N >= 0 && N <= 31) };
         vshlq_u32(a, vdupq_n_s32(-N))
@@ -1773,29 +2155,29 @@ impl U32x4Backend for NeonToken {
     // signed value, so an unclamped 256 would wrap to a no-op instead
     // of the contracted zero.
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_uniform(self, a: uint32x4_t, count: u32) -> uint32x4_t {
         vshlq_u32(a, vdupq_n_s32(count.min(32) as i32))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_uniform(self, a: uint32x4_t, count: u32) -> uint32x4_t {
         vshlq_u32(a, vdupq_n_s32(-(count.min(32) as i32)))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: uint32x4_t) -> bool {
         // Sign-bit contract on the signed reinterpretation. This lane
         // type previously used a third rule (all lanes == u32::MAX).
         vmaxvq_s32(vreinterpretq_s32_u32(a)) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: uint32x4_t) -> bool {
         vminvq_s32(vreinterpretq_s32_u32(a)) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: uint32x4_t) -> u32 {
         // One sign bit per word -> 4-bit mask. Shift each 0/1 lane
         // into position, then one horizontal add. The shift on the
@@ -1808,16 +2190,16 @@ impl U32x4Backend for NeonToken {
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U32x8Backend for NeonToken {
+impl U32x8Ops for NeonToken {
     type Repr = [uint32x4_t; 2];
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: u32) -> [uint32x4_t; 2] {
         let v4 = vdupq_n_u32(v);
         [v4, v4]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> [uint32x4_t; 2] {
         let z = vdupq_n_u32(0);
         [z, z]
@@ -1843,56 +2225,56 @@ impl U32x8Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vaddq_u32(a[0], b[0]), vaddq_u32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vsubq_u32(a[0], b[0]), vsubq_u32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vmulq_u32(a[0], b[0]), vmulq_u32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vminq_u32(a[0], b[0]), vminq_u32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vmaxq_u32(a[0], b[0]), vmaxq_u32(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vceqq_u32(a[0], b[0]), vceqq_u32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [
             vmvnq_u32(vceqq_u32(a[0], b[0])),
             vmvnq_u32(vceqq_u32(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vcltq_u32(a[0], b[0]), vcltq_u32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vcleq_u32(a[0], b[0]), vcleq_u32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vcgtq_u32(a[0], b[0]), vcgtq_u32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vcgeq_u32(a[0], b[0]), vcgeq_u32(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(
         self,
         mask: [uint32x4_t; 2],
@@ -1905,7 +2287,7 @@ impl U32x8Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: [uint32x4_t; 2]) -> u32 {
         {
             let m = vaddq_u32(a[0], a[1]);
@@ -1913,29 +2295,29 @@ impl U32x8Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vmvnq_u32(a[0]), vmvnq_u32(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vandq_u32(a[0], b[0]), vandq_u32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vorrq_u32(a[0], b[0]), vorrq_u32(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: [uint32x4_t; 2], b: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [veorq_u32(a[0], b[0]), veorq_u32(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         [vshlq_n_u32::<N>(a[0]), vshlq_n_u32::<N>(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: [uint32x4_t; 2]) -> [uint32x4_t; 2] {
         const { assert!(N >= 0 && N <= 31) };
         [
@@ -1949,29 +2331,29 @@ impl U32x8Backend for NeonToken {
     // clamp rationale as the 128-bit impl (USHL reads the low byte
     // of each amount lane).
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_uniform(self, a: [uint32x4_t; 2], count: u32) -> [uint32x4_t; 2] {
         let c = vdupq_n_s32(count.min(32) as i32);
         [vshlq_u32(a[0], c), vshlq_u32(a[1], c)]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_uniform(self, a: [uint32x4_t; 2], count: u32) -> [uint32x4_t; 2] {
         let c = vdupq_n_s32(-(count.min(32) as i32));
         [vshlq_u32(a[0], c), vshlq_u32(a[1], c)]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: [uint32x4_t; 2]) -> bool {
         vmaxvq_s32(vreinterpretq_s32_u32(vandq_u32(a[0], a[1]))) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: [uint32x4_t; 2]) -> bool {
         vminvq_s32(vreinterpretq_s32_u32(vorrq_u32(a[0], a[1]))) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: [uint32x4_t; 2]) -> u32 {
         {
             let mut bits = 0u32;
@@ -1991,15 +2373,15 @@ impl U32x8Backend for NeonToken {
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I64x2Backend for NeonToken {
+impl I64x2Ops for NeonToken {
     type Repr = int64x2_t;
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: i64) -> int64x2_t {
         vdupq_n_s64(v)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> int64x2_t {
         vdupq_n_s64(0i64)
     }
@@ -2024,19 +2406,19 @@ impl I64x2Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         vaddq_s64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         vsubq_s64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: int64x2_t) -> int64x2_t {
         vnegq_s64(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         // NEON lacks native i64 min; polyfill via compare+select
         {
@@ -2044,7 +2426,7 @@ impl I64x2Backend for NeonToken {
             vbslq_s64(mask, a, b)
         }
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         // NEON lacks native i64 max; polyfill via compare+select
         {
@@ -2052,79 +2434,79 @@ impl I64x2Backend for NeonToken {
             vbslq_s64(mask, a, b)
         }
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: int64x2_t) -> int64x2_t {
         vabsq_s64(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         vreinterpretq_s64_u64(vceqq_s64(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         let eq = vceqq_s64(a, b);
         // NOT via XOR with all-ones
         vreinterpretq_s64_u64(veorq_u64(eq, vdupq_n_u64(u64::MAX)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         vreinterpretq_s64_u64(vcltq_s64(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         vreinterpretq_s64_u64(vcleq_s64(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         vreinterpretq_s64_u64(vcgtq_s64(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         vreinterpretq_s64_u64(vcgeq_s64(a, b))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(self, mask: int64x2_t, if_true: int64x2_t, if_false: int64x2_t) -> int64x2_t {
         vbslq_s64(vreinterpretq_u64_s64(mask), if_true, if_false)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: int64x2_t) -> i64 {
         let sum = vpaddq_s64(a, a);
         vgetq_lane_s64::<0>(sum)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: int64x2_t) -> int64x2_t {
         let ones = vdupq_n_s64(-1i64);
         veorq_s64(a, ones)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         vandq_s64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         vorrq_s64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: int64x2_t, b: int64x2_t) -> int64x2_t {
         veorq_s64(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: int64x2_t) -> int64x2_t {
         vshlq_n_s64::<N>(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_const<const N: i32>(self, a: int64x2_t) -> int64x2_t {
         const { assert!(N >= 0 && N <= 63) };
         vshlq_s64(a, vdupq_n_s64((-N) as i64))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: int64x2_t) -> int64x2_t {
         const { assert!(N >= 0 && N <= 63) };
         vreinterpretq_s64_u64(vshlq_u64(
@@ -2133,7 +2515,7 @@ impl I64x2Backend for NeonToken {
         ))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: int64x2_t) -> bool {
         // Sign-bit contract. NEON has no 64-bit horizontal reduction,
         // so combine the lanes and test one sign bit.
@@ -2141,13 +2523,13 @@ impl I64x2Backend for NeonToken {
         ((vgetq_lane_u64::<0>(as_u64) & vgetq_lane_u64::<1>(as_u64)) >> 63) != 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: int64x2_t) -> bool {
         let as_u64 = vreinterpretq_u64_s64(a);
         ((vgetq_lane_u64::<0>(as_u64) | vgetq_lane_u64::<1>(as_u64)) >> 63) != 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: int64x2_t) -> u32 {
         let signs = vshrq_n_u64::<63>(vreinterpretq_u64_s64(a));
         ((vgetq_lane_u64::<0>(signs) & 1) | ((vgetq_lane_u64::<1>(signs) & 1) << 1)) as u32
@@ -2155,16 +2537,16 @@ impl I64x2Backend for NeonToken {
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I64x4Backend for NeonToken {
+impl I64x4Ops for NeonToken {
     type Repr = [int64x2_t; 2];
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: i64) -> [int64x2_t; 2] {
         let v2 = vdupq_n_s64(v);
         [v2, v2]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> [int64x2_t; 2] {
         let z = vdupq_n_s64(0i64);
         [z, z]
@@ -2190,19 +2572,19 @@ impl I64x4Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [vaddq_s64(a[0], b[0]), vaddq_s64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [vsubq_s64(a[0], b[0]), vsubq_s64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [vnegq_s64(a[0]), vnegq_s64(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         // NEON lacks native i64 min; polyfill via compare+select per sub-vector
         [
@@ -2210,7 +2592,7 @@ impl I64x4Backend for NeonToken {
             vbslq_s64(vcltq_s64(a[1], b[1]), a[1], b[1]),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         // NEON lacks native i64 max; polyfill via compare+select per sub-vector
         [
@@ -2218,47 +2600,47 @@ impl I64x4Backend for NeonToken {
             vbslq_s64(vcgtq_s64(a[1], b[1]), a[1], b[1]),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [vabsq_s64(a[0]), vabsq_s64(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [
             vreinterpretq_s64_u64(vceqq_s64(a[0], b[0])),
             vreinterpretq_s64_u64(vceqq_s64(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [
             vreinterpretq_s64_u64(veorq_u64(vceqq_s64(a[0], b[0]), vdupq_n_u64(u64::MAX))),
             vreinterpretq_s64_u64(veorq_u64(vceqq_s64(a[1], b[1]), vdupq_n_u64(u64::MAX))),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [
             vreinterpretq_s64_u64(vcltq_s64(a[0], b[0])),
             vreinterpretq_s64_u64(vcltq_s64(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [
             vreinterpretq_s64_u64(vcleq_s64(a[0], b[0])),
             vreinterpretq_s64_u64(vcleq_s64(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [
             vreinterpretq_s64_u64(vcgtq_s64(a[0], b[0])),
             vreinterpretq_s64_u64(vcgtq_s64(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [
             vreinterpretq_s64_u64(vcgeq_s64(a[0], b[0])),
@@ -2266,7 +2648,7 @@ impl I64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(
         self,
         mask: [int64x2_t; 2],
@@ -2279,7 +2661,7 @@ impl I64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: [int64x2_t; 2]) -> i64 {
         {
             let m = vaddq_s64(a[0], a[1]);
@@ -2288,32 +2670,32 @@ impl I64x4Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [
             veorq_s64(a[0], vdupq_n_s64(-1i64)),
             veorq_s64(a[1], vdupq_n_s64(-1i64)),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [vandq_s64(a[0], b[0]), vandq_s64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [vorrq_s64(a[0], b[0]), vorrq_s64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: [int64x2_t; 2], b: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [veorq_s64(a[0], b[0]), veorq_s64(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: [int64x2_t; 2]) -> [int64x2_t; 2] {
         [vshlq_n_s64::<N>(a[0]), vshlq_n_s64::<N>(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_const<const N: i32>(self, a: [int64x2_t; 2]) -> [int64x2_t; 2] {
         const { assert!(N >= 0 && N <= 63) };
         [
@@ -2322,7 +2704,7 @@ impl I64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: [int64x2_t; 2]) -> [int64x2_t; 2] {
         const { assert!(N >= 0 && N <= 63) };
         [
@@ -2337,7 +2719,7 @@ impl I64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: [int64x2_t; 2]) -> bool {
         {
             let f = vreinterpretq_u64_s64(vandq_s64(a[0], a[1]));
@@ -2345,7 +2727,7 @@ impl I64x4Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: [int64x2_t; 2]) -> bool {
         {
             let f = vreinterpretq_u64_s64(vorrq_s64(a[0], a[1]));
@@ -2353,7 +2735,7 @@ impl I64x4Backend for NeonToken {
         }
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: [int64x2_t; 2]) -> u32 {
         {
             let mut bits = 0u32;
@@ -2369,15 +2751,15 @@ impl I64x4Backend for NeonToken {
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I8x16Backend for NeonToken {
+impl I8x16Ops for NeonToken {
     type Repr = int8x16_t;
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: i8) -> int8x16_t {
         vdupq_n_s8(v)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> int8x16_t {
         vdupq_n_s8(0)
     }
@@ -2402,117 +2784,117 @@ impl I8x16Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vaddq_s8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vsubq_s8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: int8x16_t) -> int8x16_t {
         vnegq_s8(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vminq_s8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vmaxq_s8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: int8x16_t) -> int8x16_t {
         vabsq_s8(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vreinterpretq_s8_u8(vceqq_s8(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vreinterpretq_s8_u8(vmvnq_u8(vceqq_s8(a, b)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vreinterpretq_s8_u8(vcltq_s8(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vreinterpretq_s8_u8(vcleq_s8(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vreinterpretq_s8_u8(vcgtq_s8(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vreinterpretq_s8_u8(vcgeq_s8(a, b))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(self, mask: int8x16_t, if_true: int8x16_t, if_false: int8x16_t) -> int8x16_t {
         vbslq_s8(vreinterpretq_u8_s8(mask), if_true, if_false)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: int8x16_t) -> i8 {
         vaddvq_s8(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: int8x16_t) -> int8x16_t {
         vmvnq_s8(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vandq_s8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vorrq_s8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         veorq_s8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: int8x16_t) -> int8x16_t {
         vshlq_n_s8::<N>(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: int8x16_t) -> int8x16_t {
         const { assert!(N >= 0 && N <= 7) };
         vreinterpretq_s8_u8(vshlq_u8(vreinterpretq_u8_s8(a), vdupq_n_s8((-N) as i8)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_const<const N: i32>(self, a: int8x16_t) -> int8x16_t {
         const { assert!(N >= 0 && N <= 7) };
         vshlq_s8(a, vdupq_n_s8((-N) as i8))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_add(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vqaddq_s8(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_sub(self, a: int8x16_t, b: int8x16_t) -> int8x16_t {
         vqsubq_s8(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: int8x16_t) -> bool {
         vmaxvq_s8(a) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: int8x16_t) -> bool {
         vminvq_s8(a) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: int8x16_t) -> u32 {
         {
             let powers: [u8; 16] = [1, 2, 4, 8, 16, 32, 64, 128, 1, 2, 4, 8, 16, 32, 64, 128];
@@ -2524,28 +2906,28 @@ impl I8x16Backend for NeonToken {
             u32::from(vget_lane_u16::<0>(vreinterpret_u16_u8(s)))
         }
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_i8_to_i16(self, a: int8x16_t) -> int16x8_t {
         vmovl_s8(vget_low_s8(a))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_i8_to_i16(self, a: int8x16_t) -> int16x8_t {
         vmovl_high_s8(a)
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I8x32Backend for NeonToken {
+impl I8x32Ops for NeonToken {
     type Repr = [int8x16_t; 2];
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: i8) -> [int8x16_t; 2] {
         let v4 = vdupq_n_s8(v);
         [v4, v4]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> [int8x16_t; 2] {
         let z = vdupq_n_s8(0);
         [z, z]
@@ -2571,67 +2953,67 @@ impl I8x32Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vaddq_s8(a[0], b[0]), vaddq_s8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vsubq_s8(a[0], b[0]), vsubq_s8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vnegq_s8(a[0]), vnegq_s8(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vminq_s8(a[0], b[0]), vminq_s8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vmaxq_s8(a[0], b[0]), vmaxq_s8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vabsq_s8(a[0]), vabsq_s8(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [
             vreinterpretq_s8_u8(vceqq_s8(a[0], b[0])),
             vreinterpretq_s8_u8(vceqq_s8(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [
             vreinterpretq_s8_u8(vmvnq_u8(vceqq_s8(a[0], b[0]))),
             vreinterpretq_s8_u8(vmvnq_u8(vceqq_s8(a[1], b[1]))),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [
             vreinterpretq_s8_u8(vcltq_s8(a[0], b[0])),
             vreinterpretq_s8_u8(vcltq_s8(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [
             vreinterpretq_s8_u8(vcleq_s8(a[0], b[0])),
             vreinterpretq_s8_u8(vcleq_s8(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [
             vreinterpretq_s8_u8(vcgtq_s8(a[0], b[0])),
             vreinterpretq_s8_u8(vcgtq_s8(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [
             vreinterpretq_s8_u8(vcgeq_s8(a[0], b[0])),
@@ -2639,7 +3021,7 @@ impl I8x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(
         self,
         mask: [int8x16_t; 2],
@@ -2652,7 +3034,7 @@ impl I8x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: [int8x16_t; 2]) -> i8 {
         let mut sum = 0i8;
         // Iterate the array rather than indexing by range
@@ -2663,28 +3045,28 @@ impl I8x32Backend for NeonToken {
         sum
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vmvnq_s8(a[0]), vmvnq_s8(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vandq_s8(a[0], b[0]), vandq_s8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vorrq_s8(a[0], b[0]), vorrq_s8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [veorq_s8(a[0], b[0]), veorq_s8(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vshlq_n_s8::<N>(a[0]), vshlq_n_s8::<N>(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: [int8x16_t; 2]) -> [int8x16_t; 2] {
         const { assert!(N >= 0 && N <= 7) };
         [
@@ -2692,7 +3074,7 @@ impl I8x32Backend for NeonToken {
             vreinterpretq_s8_u8(vshlq_u8(vreinterpretq_u8_s8(a[1]), vdupq_n_s8((-N) as i8))),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_const<const N: i32>(self, a: [int8x16_t; 2]) -> [int8x16_t; 2] {
         const { assert!(N >= 0 && N <= 7) };
         [
@@ -2701,58 +3083,58 @@ impl I8x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_add(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vqaddq_s8(a[0], b[0]), vqaddq_s8(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_sub(self, a: [int8x16_t; 2], b: [int8x16_t; 2]) -> [int8x16_t; 2] {
         [vqsubq_s8(a[0], b[0]), vqsubq_s8(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: [int8x16_t; 2]) -> bool {
         vmaxvq_s8(vandq_s8(a[0], a[1])) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: [int8x16_t; 2]) -> bool {
         vminvq_s8(vorrq_s8(a[0], a[1])) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: [int8x16_t; 2]) -> u32 {
         // Delegate to NeonToken native bitmask per sub-vector, combine.
         // Enumerate the array rather than indexing by range
         // (clippy::needless_range_loop).
         let mut result = 0u32;
         for (i, v) in a.into_iter().enumerate() {
-            result |= <NeonToken as I8x16Backend>::bitmask(_self, v) << (i * 16);
+            result |= <NeonToken as I8x16Ops>::bitmask(_self, v) << (i * 16);
         }
         result
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_i8_to_i16(self, a: [int8x16_t; 2]) -> [int16x8_t; 2] {
         [vmovl_s8(vget_low_s8(a[0])), vmovl_high_s8(a[0])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_i8_to_i16(self, a: [int8x16_t; 2]) -> [int16x8_t; 2] {
         [vmovl_s8(vget_low_s8(a[1])), vmovl_high_s8(a[1])]
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U8x16Backend for NeonToken {
+impl U8x16Ops for NeonToken {
     type Repr = uint8x16_t;
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: u8) -> uint8x16_t {
         vdupq_n_u8(v)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> uint8x16_t {
         vdupq_n_u8(0)
     }
@@ -2777,104 +3159,104 @@ impl U8x16Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vaddq_u8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vsubq_u8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vminq_u8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vmaxq_u8(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vceqq_u8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vmvnq_u8(vceqq_u8(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vcltq_u8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vcleq_u8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vcgtq_u8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vcgeq_u8(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(self, mask: uint8x16_t, if_true: uint8x16_t, if_false: uint8x16_t) -> uint8x16_t {
         vbslq_u8(mask, if_true, if_false)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: uint8x16_t) -> u8 {
         vaddvq_u8(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: uint8x16_t) -> uint8x16_t {
         vmvnq_u8(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vandq_u8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vorrq_u8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         veorq_u8(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: uint8x16_t) -> uint8x16_t {
         vshlq_n_u8::<N>(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: uint8x16_t) -> uint8x16_t {
         const { assert!(N >= 0 && N <= 7) };
         vshlq_u8(a, vdupq_n_s8((-N) as i8))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_add(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vqaddq_u8(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_sub(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vqsubq_u8(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: uint8x16_t) -> bool {
         vmaxvq_s8(vreinterpretq_s8_u8(a)) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: uint8x16_t) -> bool {
         vminvq_s8(vreinterpretq_s8_u8(a)) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: uint8x16_t) -> u32 {
         {
             let powers: [u8; 16] = [1, 2, 4, 8, 16, 32, 64, 128, 1, 2, 4, 8, 16, 32, 64, 128];
@@ -2886,48 +3268,48 @@ impl U8x16Backend for NeonToken {
             u32::from(vget_lane_u16::<0>(vreinterpret_u16_u8(s)))
         }
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_u8_to_u16(self, a: uint8x16_t) -> uint16x8_t {
         vmovl_u8(vget_low_u8(a))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_u8_to_u16(self, a: uint8x16_t) -> uint16x8_t {
         vmovl_high_u8(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs_diff(self, a: uint8x16_t, b: uint8x16_t) -> uint8x16_t {
         vabdq_u8(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add_u32(self, a: uint8x16_t) -> u32 {
         vaddlvq_u8(a) as u32
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sum_abs_diff(self, a: uint8x16_t, b: uint8x16_t) -> u32 {
         vaddlvq_u8(vabdq_u8(a, b)) as u32
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn pairwise_widen_add(self, a: uint8x16_t) -> uint16x8_t {
         vpaddlq_u8(a)
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U8x32Backend for NeonToken {
+impl U8x32Ops for NeonToken {
     type Repr = [uint8x16_t; 2];
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: u8) -> [uint8x16_t; 2] {
         let v4 = vdupq_n_u8(v);
         [v4, v4]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> [uint8x16_t; 2] {
         let z = vdupq_n_u8(0);
         [z, z]
@@ -2953,52 +3335,52 @@ impl U8x32Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vaddq_u8(a[0], b[0]), vaddq_u8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vsubq_u8(a[0], b[0]), vsubq_u8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vminq_u8(a[0], b[0]), vminq_u8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vmaxq_u8(a[0], b[0]), vmaxq_u8(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vceqq_u8(a[0], b[0]), vceqq_u8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [
             vmvnq_u8(vceqq_u8(a[0], b[0])),
             vmvnq_u8(vceqq_u8(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vcltq_u8(a[0], b[0]), vcltq_u8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vcleq_u8(a[0], b[0]), vcleq_u8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vcgtq_u8(a[0], b[0]), vcgtq_u8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vcgeq_u8(a[0], b[0]), vcgeq_u8(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(
         self,
         mask: [uint8x16_t; 2],
@@ -3011,7 +3393,7 @@ impl U8x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: [uint8x16_t; 2]) -> u8 {
         let mut sum = 0u8;
         // Iterate the array rather than indexing by range
@@ -3022,28 +3404,28 @@ impl U8x32Backend for NeonToken {
         sum
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vmvnq_u8(a[0]), vmvnq_u8(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vandq_u8(a[0], b[0]), vandq_u8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vorrq_u8(a[0], b[0]), vorrq_u8(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [veorq_u8(a[0], b[0]), veorq_u8(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vshlq_n_u8::<N>(a[0]), vshlq_n_u8::<N>(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         const { assert!(N >= 0 && N <= 7) };
         [
@@ -3052,78 +3434,78 @@ impl U8x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_add(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vqaddq_u8(a[0], b[0]), vqaddq_u8(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_sub(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vqsubq_u8(a[0], b[0]), vqsubq_u8(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: [uint8x16_t; 2]) -> bool {
         vmaxvq_s8(vreinterpretq_s8_u8(vandq_u8(a[0], a[1]))) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: [uint8x16_t; 2]) -> bool {
         vminvq_s8(vreinterpretq_s8_u8(vorrq_u8(a[0], a[1]))) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: [uint8x16_t; 2]) -> u32 {
         // Delegate to NeonToken native bitmask per sub-vector, combine.
         // Enumerate the array rather than indexing by range
         // (clippy::needless_range_loop).
         let mut result = 0u32;
         for (i, v) in a.into_iter().enumerate() {
-            result |= <NeonToken as U8x16Backend>::bitmask(_self, v) << (i * 16);
+            result |= <NeonToken as U8x16Ops>::bitmask(_self, v) << (i * 16);
         }
         result
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_u8_to_u16(self, a: [uint8x16_t; 2]) -> [uint16x8_t; 2] {
         [vmovl_u8(vget_low_u8(a[0])), vmovl_high_u8(a[0])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_u8_to_u16(self, a: [uint8x16_t; 2]) -> [uint16x8_t; 2] {
         [vmovl_u8(vget_low_u8(a[1])), vmovl_high_u8(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs_diff(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> [uint8x16_t; 2] {
         [vabdq_u8(a[0], b[0]), vabdq_u8(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add_u32(self, a: [uint8x16_t; 2]) -> u32 {
         (vaddlvq_u8(a[0]) as u32) + (vaddlvq_u8(a[1]) as u32)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sum_abs_diff(self, a: [uint8x16_t; 2], b: [uint8x16_t; 2]) -> u32 {
         (vaddlvq_u8(vabdq_u8(a[0], b[0])) as u32) + (vaddlvq_u8(vabdq_u8(a[1], b[1])) as u32)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn pairwise_widen_add(self, a: [uint8x16_t; 2]) -> [uint16x8_t; 2] {
         [vpaddlq_u8(a[0]), vpaddlq_u8(a[1])]
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I16x8Backend for NeonToken {
+impl I16x8Ops for NeonToken {
     type Repr = int16x8_t;
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: i16) -> int16x8_t {
         vdupq_n_s16(v)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> int16x8_t {
         vdupq_n_s16(0)
     }
@@ -3148,90 +3530,94 @@ impl I16x8Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vaddq_s16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vsubq_s16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vmulq_s16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
+    fn mul_hrs_q15(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
+        vqrdmulhq_s16(a, b)
+    }
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: int16x8_t) -> int16x8_t {
         vnegq_s16(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vminq_s16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vmaxq_s16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: int16x8_t) -> int16x8_t {
         vabsq_s16(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vreinterpretq_s16_u16(vceqq_s16(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vreinterpretq_s16_u16(vmvnq_u16(vceqq_s16(a, b)))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vreinterpretq_s16_u16(vcltq_s16(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vreinterpretq_s16_u16(vcleq_s16(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vreinterpretq_s16_u16(vcgtq_s16(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vreinterpretq_s16_u16(vcgeq_s16(a, b))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(self, mask: int16x8_t, if_true: int16x8_t, if_false: int16x8_t) -> int16x8_t {
         vbslq_s16(vreinterpretq_u16_s16(mask), if_true, if_false)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: int16x8_t) -> i16 {
         vaddvq_s16(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: int16x8_t) -> int16x8_t {
         vmvnq_s16(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vandq_s16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vorrq_s16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         veorq_s16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: int16x8_t) -> int16x8_t {
         vshlq_n_s16::<N>(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: int16x8_t) -> int16x8_t {
         const { assert!(N >= 0 && N <= 15) };
         vreinterpretq_s16_u16(vshlq_u16(
@@ -3239,50 +3625,50 @@ impl I16x8Backend for NeonToken {
             vdupq_n_s16((-N) as i16),
         ))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_const<const N: i32>(self, a: int16x8_t) -> int16x8_t {
         const { assert!(N >= 0 && N <= 15) };
         vshlq_s16(a, vdupq_n_s16((-N) as i16))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_uniform(self, a: int16x8_t, count: u32) -> int16x8_t {
         vshlq_s16(a, vdupq_n_s16(count.min(16) as i16))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_uniform(self, a: int16x8_t, count: u32) -> int16x8_t {
         vreinterpretq_s16_u16(vshlq_u16(
             vreinterpretq_u16_s16(a),
             vdupq_n_s16(-(count.min(16) as i16)),
         ))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_uniform(self, a: int16x8_t, count: u32) -> int16x8_t {
         // Clamping to lane_bits - 1 gives the contracted sign fill.
         vshlq_s16(a, vdupq_n_s16(-(count.min(15) as i16)))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_add(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vqaddq_s16(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_sub(self, a: int16x8_t, b: int16x8_t) -> int16x8_t {
         vqsubq_s16(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: int16x8_t) -> bool {
         vmaxvq_s16(a) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: int16x8_t) -> bool {
         vminvq_s16(a) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: int16x8_t) -> u32 {
         {
             let powers: [u16; 8] = [1, 2, 4, 8, 16, 32, 64, 128];
@@ -3290,27 +3676,27 @@ impl I16x8Backend for NeonToken {
             u32::from(vaddvq_u16(vandq_u16(vcltzq_s16(a), pow_vec)))
         }
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_i16_to_i32(self, a: int16x8_t) -> int32x4_t {
         vmovl_s16(vget_low_s16(a))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_i16_to_i32(self, a: int16x8_t) -> int32x4_t {
         vmovl_high_s16(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i16_to_i8(self, a: int16x8_t, b: int16x8_t) -> int8x16_t {
         vcombine_s8(vqmovn_s16(a), vqmovn_s16(b))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i16_to_u8(self, a: int16x8_t, b: int16x8_t) -> uint8x16_t {
         vcombine_u8(vqmovun_s16(a), vqmovun_s16(b))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn madd_adjacent(self, a: int16x8_t, b: int16x8_t) -> int32x4_t {
         vpaddq_s32(
             vmull_s16(vget_low_s16(a), vget_low_s16(b)),
@@ -3318,23 +3704,23 @@ impl I16x8Backend for NeonToken {
         )
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs_diff(self, a: int16x8_t, b: int16x8_t) -> uint16x8_t {
         vreinterpretq_u16_s16(vabdq_s16(a, b))
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I16x16Backend for NeonToken {
+impl I16x16Ops for NeonToken {
     type Repr = [int16x8_t; 2];
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: i16) -> [int16x8_t; 2] {
         let v4 = vdupq_n_s16(v);
         [v4, v4]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> [int16x8_t; 2] {
         let z = vdupq_n_s16(0);
         [z, z]
@@ -3360,71 +3746,75 @@ impl I16x16Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vaddq_s16(a[0], b[0]), vaddq_s16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vsubq_s16(a[0], b[0]), vsubq_s16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vmulq_s16(a[0], b[0]), vmulq_s16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
+    fn mul_hrs_q15(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
+        [vqrdmulhq_s16(a[0], b[0]), vqrdmulhq_s16(a[1], b[1])]
+    }
+    #[arcane(_self = NeonToken)]
     fn neg(self, a: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vnegq_s16(a[0]), vnegq_s16(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vminq_s16(a[0], b[0]), vminq_s16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vmaxq_s16(a[0], b[0]), vmaxq_s16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs(self, a: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vabsq_s16(a[0]), vabsq_s16(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [
             vreinterpretq_s16_u16(vceqq_s16(a[0], b[0])),
             vreinterpretq_s16_u16(vceqq_s16(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [
             vreinterpretq_s16_u16(vmvnq_u16(vceqq_s16(a[0], b[0]))),
             vreinterpretq_s16_u16(vmvnq_u16(vceqq_s16(a[1], b[1]))),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [
             vreinterpretq_s16_u16(vcltq_s16(a[0], b[0])),
             vreinterpretq_s16_u16(vcltq_s16(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [
             vreinterpretq_s16_u16(vcleq_s16(a[0], b[0])),
             vreinterpretq_s16_u16(vcleq_s16(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [
             vreinterpretq_s16_u16(vcgtq_s16(a[0], b[0])),
             vreinterpretq_s16_u16(vcgtq_s16(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [
             vreinterpretq_s16_u16(vcgeq_s16(a[0], b[0])),
@@ -3432,7 +3822,7 @@ impl I16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(
         self,
         mask: [int16x8_t; 2],
@@ -3445,7 +3835,7 @@ impl I16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: [int16x8_t; 2]) -> i16 {
         let mut sum = 0i16;
         // Iterate the array rather than indexing by range
@@ -3456,28 +3846,28 @@ impl I16x16Backend for NeonToken {
         sum
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vmvnq_s16(a[0]), vmvnq_s16(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vandq_s16(a[0], b[0]), vandq_s16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vorrq_s16(a[0], b[0]), vorrq_s16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [veorq_s16(a[0], b[0]), veorq_s16(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vshlq_n_s16::<N>(a[0]), vshlq_n_s16::<N>(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: [int16x8_t; 2]) -> [int16x8_t; 2] {
         const { assert!(N >= 0 && N <= 15) };
         [
@@ -3491,7 +3881,7 @@ impl I16x16Backend for NeonToken {
             )),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_const<const N: i32>(self, a: [int16x8_t; 2]) -> [int16x8_t; 2] {
         const { assert!(N >= 0 && N <= 15) };
         [
@@ -3500,7 +3890,7 @@ impl I16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_uniform(self, a: [int16x8_t; 2], count: u32) -> [int16x8_t; 2] {
         [
             vshlq_s16(a[0], vdupq_n_s16(count.min(16) as i16)),
@@ -3508,7 +3898,7 @@ impl I16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_uniform(self, a: [int16x8_t; 2], count: u32) -> [int16x8_t; 2] {
         [
             vreinterpretq_s16_u16(vshlq_u16(
@@ -3521,7 +3911,7 @@ impl I16x16Backend for NeonToken {
             )),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_arithmetic_uniform(self, a: [int16x8_t; 2], count: u32) -> [int16x8_t; 2] {
         [
             vshlq_s16(a[0], vdupq_n_s16(-(count.min(15) as i16))),
@@ -3529,48 +3919,48 @@ impl I16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_add(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vqaddq_s16(a[0], b[0]), vqaddq_s16(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_sub(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int16x8_t; 2] {
         [vqsubq_s16(a[0], b[0]), vqsubq_s16(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: [int16x8_t; 2]) -> bool {
         vmaxvq_s16(vandq_s16(a[0], a[1])) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: [int16x8_t; 2]) -> bool {
         vminvq_s16(vorrq_s16(a[0], a[1])) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: [int16x8_t; 2]) -> u32 {
         // Delegate to NeonToken native bitmask per sub-vector, combine.
         // Enumerate the array rather than indexing by range
         // (clippy::needless_range_loop).
         let mut result = 0u32;
         for (i, v) in a.into_iter().enumerate() {
-            result |= <NeonToken as I16x8Backend>::bitmask(_self, v) << (i * 8);
+            result |= <NeonToken as I16x8Ops>::bitmask(_self, v) << (i * 8);
         }
         result
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_i16_to_i32(self, a: [int16x8_t; 2]) -> [int32x4_t; 2] {
         [vmovl_s16(vget_low_s16(a[0])), vmovl_high_s16(a[0])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_i16_to_i32(self, a: [int16x8_t; 2]) -> [int32x4_t; 2] {
         [vmovl_s16(vget_low_s16(a[1])), vmovl_high_s16(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i16_to_i8(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int8x16_t; 2] {
         [
             vcombine_s8(vqmovn_s16(a[0]), vqmovn_s16(a[1])),
@@ -3578,7 +3968,7 @@ impl I16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i16_to_u8(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [uint8x16_t; 2] {
         [
             vcombine_u8(vqmovun_s16(a[0]), vqmovun_s16(a[1])),
@@ -3586,7 +3976,7 @@ impl I16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn madd_adjacent(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [int32x4_t; 2] {
         [
             vpaddq_s32(
@@ -3600,7 +3990,7 @@ impl I16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs_diff(self, a: [int16x8_t; 2], b: [int16x8_t; 2]) -> [uint16x8_t; 2] {
         [
             vreinterpretq_u16_s16(vabdq_s16(a[0], b[0])),
@@ -3610,15 +4000,15 @@ impl I16x16Backend for NeonToken {
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U16x8Backend for NeonToken {
+impl U16x8Ops for NeonToken {
     type Repr = uint16x8_t;
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: u16) -> uint16x8_t {
         vdupq_n_u16(v)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> uint16x8_t {
         vdupq_n_u16(0)
     }
@@ -3643,117 +4033,117 @@ impl U16x8Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vaddq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vsubq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vmulq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vminq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vmaxq_u16(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vceqq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vmvnq_u16(vceqq_u16(a, b))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vcltq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vcleq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vcgtq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vcgeq_u16(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(self, mask: uint16x8_t, if_true: uint16x8_t, if_false: uint16x8_t) -> uint16x8_t {
         vbslq_u16(mask, if_true, if_false)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: uint16x8_t) -> u16 {
         vaddvq_u16(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: uint16x8_t) -> uint16x8_t {
         vmvnq_u16(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vandq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vorrq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         veorq_u16(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: uint16x8_t) -> uint16x8_t {
         vshlq_n_u16::<N>(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: uint16x8_t) -> uint16x8_t {
         const { assert!(N >= 0 && N <= 15) };
         vshlq_u16(a, vdupq_n_s16((-N) as i16))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_uniform(self, a: uint16x8_t, count: u32) -> uint16x8_t {
         vshlq_u16(a, vdupq_n_s16(count.min(16) as i16))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_uniform(self, a: uint16x8_t, count: u32) -> uint16x8_t {
         vshlq_u16(a, vdupq_n_s16(-(count.min(16) as i16)))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_add(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vqaddq_u16(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_sub(self, a: uint16x8_t, b: uint16x8_t) -> uint16x8_t {
         vqsubq_u16(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: uint16x8_t) -> bool {
         vmaxvq_s16(vreinterpretq_s16_u16(a)) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: uint16x8_t) -> bool {
         vminvq_s16(vreinterpretq_s16_u16(a)) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: uint16x8_t) -> u32 {
         {
             let powers: [u16; 8] = [1, 2, 4, 8, 16, 32, 64, 128];
@@ -3764,33 +4154,33 @@ impl U16x8Backend for NeonToken {
             )))
         }
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_u16_to_u32(self, a: uint16x8_t) -> uint32x4_t {
         vmovl_u16(vget_low_u16(a))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_u16_to_u32(self, a: uint16x8_t) -> uint32x4_t {
         vmovl_high_u16(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn pairwise_widen_add(self, a: uint16x8_t) -> uint32x4_t {
         vpaddlq_u16(a)
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U16x16Backend for NeonToken {
+impl U16x16Ops for NeonToken {
     type Repr = [uint16x8_t; 2];
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: u16) -> [uint16x8_t; 2] {
         let v4 = vdupq_n_u16(v);
         [v4, v4]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> [uint16x8_t; 2] {
         let z = vdupq_n_u16(0);
         [z, z]
@@ -3816,56 +4206,56 @@ impl U16x16Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vaddq_u16(a[0], b[0]), vaddq_u16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vsubq_u16(a[0], b[0]), vsubq_u16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn mul(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vmulq_u16(a[0], b[0]), vmulq_u16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vminq_u16(a[0], b[0]), vminq_u16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vmaxq_u16(a[0], b[0]), vmaxq_u16(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vceqq_u16(a[0], b[0]), vceqq_u16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [
             vmvnq_u16(vceqq_u16(a[0], b[0])),
             vmvnq_u16(vceqq_u16(a[1], b[1])),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vcltq_u16(a[0], b[0]), vcltq_u16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vcleq_u16(a[0], b[0]), vcleq_u16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vcgtq_u16(a[0], b[0]), vcgtq_u16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vcgeq_u16(a[0], b[0]), vcgeq_u16(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(
         self,
         mask: [uint16x8_t; 2],
@@ -3878,7 +4268,7 @@ impl U16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: [uint16x8_t; 2]) -> u16 {
         let mut sum = 0u16;
         // Iterate the array rather than indexing by range
@@ -3889,28 +4279,28 @@ impl U16x16Backend for NeonToken {
         sum
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vmvnq_u16(a[0]), vmvnq_u16(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vandq_u16(a[0], b[0]), vandq_u16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vorrq_u16(a[0], b[0]), vorrq_u16(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [veorq_u16(a[0], b[0]), veorq_u16(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vshlq_n_u16::<N>(a[0]), vshlq_n_u16::<N>(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         const { assert!(N >= 0 && N <= 15) };
         [
@@ -3919,7 +4309,7 @@ impl U16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_uniform(self, a: [uint16x8_t; 2], count: u32) -> [uint16x8_t; 2] {
         [
             vshlq_u16(a[0], vdupq_n_s16(count.min(16) as i16)),
@@ -3927,7 +4317,7 @@ impl U16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_uniform(self, a: [uint16x8_t; 2], count: u32) -> [uint16x8_t; 2] {
         [
             vshlq_u16(a[0], vdupq_n_s16(-(count.min(16) as i16))),
@@ -3935,63 +4325,63 @@ impl U16x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_add(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vqaddq_u16(a[0], b[0]), vqaddq_u16(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn saturating_sub(self, a: [uint16x8_t; 2], b: [uint16x8_t; 2]) -> [uint16x8_t; 2] {
         [vqsubq_u16(a[0], b[0]), vqsubq_u16(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: [uint16x8_t; 2]) -> bool {
         vmaxvq_s16(vreinterpretq_s16_u16(vandq_u16(a[0], a[1]))) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: [uint16x8_t; 2]) -> bool {
         vminvq_s16(vreinterpretq_s16_u16(vorrq_u16(a[0], a[1]))) < 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: [uint16x8_t; 2]) -> u32 {
         // Delegate to NeonToken native bitmask per sub-vector, combine.
         // Enumerate the array rather than indexing by range
         // (clippy::needless_range_loop).
         let mut result = 0u32;
         for (i, v) in a.into_iter().enumerate() {
-            result |= <NeonToken as U16x8Backend>::bitmask(_self, v) << (i * 8);
+            result |= <NeonToken as U16x8Ops>::bitmask(_self, v) << (i * 8);
         }
         result
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_u16_to_u32(self, a: [uint16x8_t; 2]) -> [uint32x4_t; 2] {
         [vmovl_u16(vget_low_u16(a[0])), vmovl_high_u16(a[0])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_u16_to_u32(self, a: [uint16x8_t; 2]) -> [uint32x4_t; 2] {
         [vmovl_u16(vget_low_u16(a[1])), vmovl_high_u16(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn pairwise_widen_add(self, a: [uint16x8_t; 2]) -> [uint32x4_t; 2] {
         [vpaddlq_u16(a[0]), vpaddlq_u16(a[1])]
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U64x2Backend for NeonToken {
+impl U64x2Ops for NeonToken {
     type Repr = uint64x2_t;
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: u64) -> uint64x2_t {
         vdupq_n_u64(v)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> uint64x2_t {
         vdupq_n_u64(0)
     }
@@ -4016,96 +4406,96 @@ impl U64x2Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vaddq_u64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vsubq_u64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vbslq_u64(vcltq_u64(a, b), a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vbslq_u64(vcgtq_u64(a, b), a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vceqq_u64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         veorq_u64(vceqq_u64(a, b), vdupq_n_u64(u64::MAX))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vcltq_u64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vcleq_u64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vcgtq_u64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vcgeq_u64(a, b)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(self, mask: uint64x2_t, if_true: uint64x2_t, if_false: uint64x2_t) -> uint64x2_t {
         vbslq_u64(mask, if_true, if_false)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: uint64x2_t) -> u64 {
         vaddvq_u64(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: uint64x2_t) -> uint64x2_t {
         veorq_u64(a, vdupq_n_u64(u64::MAX))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vandq_u64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         vorrq_u64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
         veorq_u64(a, b)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: uint64x2_t) -> uint64x2_t {
         vshlq_n_u64::<N>(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: uint64x2_t) -> uint64x2_t {
         const { assert!(N >= 0 && N <= 63) };
         vshlq_u64(a, vdupq_n_s64((-N) as i64))
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: uint64x2_t) -> bool {
         // NEON has no 64-bit horizontal reduction; AND the lanes and
         // test the sign bit once.
         ((vgetq_lane_u64::<0>(a) & vgetq_lane_u64::<1>(a)) >> 63) != 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: uint64x2_t) -> bool {
         ((vgetq_lane_u64::<0>(a) | vgetq_lane_u64::<1>(a)) >> 63) != 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: uint64x2_t) -> u32 {
         let shift = vshrq_n_u64::<63>(a);
         let lane0 = vgetq_lane_u64::<0>(shift) as u32;
@@ -4115,16 +4505,16 @@ impl U64x2Backend for NeonToken {
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U64x4Backend for NeonToken {
+impl U64x4Ops for NeonToken {
     type Repr = [uint64x2_t; 2];
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn splat(self, v: u64) -> [uint64x2_t; 2] {
         let v4 = vdupq_n_u64(v);
         [v4, v4]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn zero(self) -> [uint64x2_t; 2] {
         let z = vdupq_n_u64(0);
         [z, z]
@@ -4150,22 +4540,22 @@ impl U64x4Backend for NeonToken {
         crate::simd_storage::cast(repr)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn add(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [vaddq_u64(a[0], b[0]), vaddq_u64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sub(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [vsubq_u64(a[0], b[0]), vsubq_u64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn min(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [
             vbslq_u64(vcltq_u64(a[0], b[0]), a[0], b[0]),
             vbslq_u64(vcltq_u64(a[1], b[1]), a[1], b[1]),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn max(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [
             vbslq_u64(vcgtq_u64(a[0], b[0]), a[0], b[0]),
@@ -4173,35 +4563,35 @@ impl U64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_eq(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [vceqq_u64(a[0], b[0]), vceqq_u64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ne(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [
             veorq_u64(vceqq_u64(a[0], b[0]), vdupq_n_u64(u64::MAX)),
             veorq_u64(vceqq_u64(a[1], b[1]), vdupq_n_u64(u64::MAX)),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_lt(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [vcltq_u64(a[0], b[0]), vcltq_u64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_le(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [vcleq_u64(a[0], b[0]), vcleq_u64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_gt(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [vcgtq_u64(a[0], b[0]), vcgtq_u64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn simd_ge(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [vcgeq_u64(a[0], b[0]), vcgeq_u64(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn blend(
         self,
         mask: [uint64x2_t; 2],
@@ -4214,7 +4604,7 @@ impl U64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add(self, a: [uint64x2_t; 2]) -> u64 {
         let mut sum = 0u64;
         // Iterate the array rather than indexing by range
@@ -4225,31 +4615,31 @@ impl U64x4Backend for NeonToken {
         sum
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn not(self, a: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [
             veorq_u64(a[0], vdupq_n_u64(u64::MAX)),
             veorq_u64(a[1], vdupq_n_u64(u64::MAX)),
         ]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitand(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [vandq_u64(a[0], b[0]), vandq_u64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitor(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [vorrq_u64(a[0], b[0]), vorrq_u64(a[1], b[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitxor(self, a: [uint64x2_t; 2], b: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [veorq_u64(a[0], b[0]), veorq_u64(a[1], b[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shl_const<const N: i32>(self, a: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         [vshlq_n_u64::<N>(a[0]), vshlq_n_u64::<N>(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn shr_logical_const<const N: i32>(self, a: [uint64x2_t; 2]) -> [uint64x2_t; 2] {
         const { assert!(N >= 0 && N <= 63) };
         [
@@ -4258,92 +4648,92 @@ impl U64x4Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn all_true(self, a: [uint64x2_t; 2]) -> bool {
         ((vgetq_lane_u64::<0>(vandq_u64(a[0], a[1])) & vgetq_lane_u64::<1>(vandq_u64(a[0], a[1])))
             >> 63)
             != 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn any_true(self, a: [uint64x2_t; 2]) -> bool {
         ((vgetq_lane_u64::<0>(vorrq_u64(a[0], a[1])) | vgetq_lane_u64::<1>(vorrq_u64(a[0], a[1])))
             >> 63)
             != 0
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitmask(self, a: [uint64x2_t; 2]) -> u32 {
         // Delegate to NeonToken native bitmask per sub-vector, combine.
         // Enumerate the array rather than indexing by range
         // (clippy::needless_range_loop).
         let mut result = 0u32;
         for (i, v) in a.into_iter().enumerate() {
-            result |= <NeonToken as U64x2Backend>::bitmask(_self, v) << (i * 2);
+            result |= <NeonToken as U64x2Ops>::bitmask(_self, v) << (i * 2);
         }
         result
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl F32x4Convert for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl F32x4ConvertOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_f32_to_i32(self, a: float32x4_t) -> int32x4_t {
         vreinterpretq_s32_f32(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_i32_to_f32(self, a: int32x4_t) -> float32x4_t {
         vreinterpretq_f32_s32(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn convert_f32_to_i32(self, a: float32x4_t) -> int32x4_t {
         vcvtq_s32_f32(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn convert_f32_to_i32_round(self, a: float32x4_t) -> int32x4_t {
         vcvtnq_s32_f32(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn convert_i32_to_f32(self, a: int32x4_t) -> float32x4_t {
         vcvtq_f32_s32(a)
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl F32x8Convert for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl F32x8ConvertOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_f32_to_i32(self, a: [float32x4_t; 2]) -> [int32x4_t; 2] {
         [vreinterpretq_s32_f32(a[0]), vreinterpretq_s32_f32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_i32_to_f32(self, a: [int32x4_t; 2]) -> [float32x4_t; 2] {
         [vreinterpretq_f32_s32(a[0]), vreinterpretq_f32_s32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn convert_f32_to_i32(self, a: [float32x4_t; 2]) -> [int32x4_t; 2] {
         [vcvtq_s32_f32(a[0]), vcvtq_s32_f32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn convert_f32_to_i32_round(self, a: [float32x4_t; 2]) -> [int32x4_t; 2] {
         [vcvtnq_s32_f32(a[0]), vcvtnq_s32_f32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn convert_i32_to_f32(self, a: [int32x4_t; 2]) -> [float32x4_t; 2] {
         [vcvtq_f32_s32(a[0]), vcvtq_f32_s32(a[1])]
     }
 }
 
 #[cfg(all(target_arch = "aarch64", feature = "w512"))]
-impl F32x16Convert for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl F32x16ConvertOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_f32_to_i32(self, a: [float32x4_t; 4]) -> [int32x4_t; 4] {
         [
             vreinterpretq_s32_f32(a[0]),
@@ -4353,7 +4743,7 @@ impl F32x16Convert for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_i32_to_f32(self, a: [int32x4_t; 4]) -> [float32x4_t; 4] {
         [
             vreinterpretq_f32_s32(a[0]),
@@ -4363,7 +4753,7 @@ impl F32x16Convert for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn convert_f32_to_i32(self, a: [float32x4_t; 4]) -> [int32x4_t; 4] {
         [
             vcvtq_s32_f32(a[0]),
@@ -4373,7 +4763,7 @@ impl F32x16Convert for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn convert_f32_to_i32_round(self, a: [float32x4_t; 4]) -> [int32x4_t; 4] {
         [
             vcvtnq_s32_f32(a[0]),
@@ -4383,7 +4773,7 @@ impl F32x16Convert for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn convert_i32_to_f32(self, a: [int32x4_t; 4]) -> [float32x4_t; 4] {
         [
             vcvtq_f32_s32(a[0]),
@@ -4395,152 +4785,223 @@ impl F32x16Convert for NeonToken {
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U32x4Bitcast for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl U32x4BitcastOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_u32_to_i32(self, a: uint32x4_t) -> int32x4_t {
         vreinterpretq_s32_u32(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_i32_to_u32(self, a: int32x4_t) -> uint32x4_t {
         vreinterpretq_u32_s32(a)
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U32x8Bitcast for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl U32x8BitcastOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_u32_to_i32(self, a: [uint32x4_t; 2]) -> [int32x4_t; 2] {
         [vreinterpretq_s32_u32(a[0]), vreinterpretq_s32_u32(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_i32_to_u32(self, a: [int32x4_t; 2]) -> [uint32x4_t; 2] {
         [vreinterpretq_u32_s32(a[0]), vreinterpretq_u32_s32(a[1])]
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I64x2Bitcast for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl I64x2BitcastOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_i64_to_f64(self, a: int64x2_t) -> float64x2_t {
         vreinterpretq_f64_s64(a)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_f64_to_i64(self, a: float64x2_t) -> int64x2_t {
         vreinterpretq_s64_f64(a)
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I64x4Bitcast for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl I64x4BitcastOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_i64_to_f64(self, a: [int64x2_t; 2]) -> [float64x2_t; 2] {
         [vreinterpretq_f64_s64(a[0]), vreinterpretq_f64_s64(a[1])]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_f64_to_i64(self, a: [float64x2_t; 2]) -> [int64x2_t; 2] {
         [vreinterpretq_s64_f64(a[0]), vreinterpretq_s64_f64(a[1])]
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I8x16Bitcast for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl F64x2ConvertOps for NeonToken {
+    #[arcane(_self = NeonToken)]
+    fn convert_f64_to_i32_low(self, a: float64x2_t) -> int32x4_t {
+        vcombine_s32(vqmovn_s64(vcvtq_s64_f64(a)), vdup_n_s32(0))
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn convert_f64_to_i32_low_round(self, a: float64x2_t) -> int32x4_t {
+        vcombine_s32(vqmovn_s64(vcvtnq_s64_f64(a)), vdup_n_s32(0))
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn convert_i32_low_to_f64(self, a: int32x4_t) -> float64x2_t {
+        vcvtq_f64_s64(vmovl_s32(vget_low_s32(a)))
+    }
+}
+
+#[cfg(target_arch = "aarch64")]
+impl F64x4ConvertOps for NeonToken {
+    #[arcane(_self = NeonToken)]
+    fn convert_f64_to_i32(self, a: [float64x2_t; 2]) -> int32x4_t {
+        vcombine_s32(
+            vqmovn_s64(vcvtq_s64_f64(a[0])),
+            vqmovn_s64(vcvtq_s64_f64(a[1])),
+        )
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn convert_f64_to_i32_round(self, a: [float64x2_t; 2]) -> int32x4_t {
+        vcombine_s32(
+            vqmovn_s64(vcvtnq_s64_f64(a[0])),
+            vqmovn_s64(vcvtnq_s64_f64(a[1])),
+        )
+    }
+
+    #[arcane(_self = NeonToken)]
+    fn convert_i32_to_f64(self, a: int32x4_t) -> [float64x2_t; 2] {
+        [
+            vcvtq_f64_s64(vmovl_s32(vget_low_s32(a))),
+            vcvtq_f64_s64(vmovl_s32(vget_high_s32(a))),
+        ]
+    }
+}
+
+#[cfg(all(target_arch = "aarch64", feature = "w512"))]
+#[inline(always)]
+pub(crate) fn neon_f64x8_to_i32(token: NeonToken, a: [float64x2_t; 4]) -> [int32x4_t; 2] {
+    [
+        <NeonToken as F64x4ConvertOps>::convert_f64_to_i32(token, [a[0], a[1]]),
+        <NeonToken as F64x4ConvertOps>::convert_f64_to_i32(token, [a[2], a[3]]),
+    ]
+}
+
+#[cfg(all(target_arch = "aarch64", feature = "w512"))]
+#[inline(always)]
+pub(crate) fn neon_f64x8_to_i32_round(token: NeonToken, a: [float64x2_t; 4]) -> [int32x4_t; 2] {
+    [
+        <NeonToken as F64x4ConvertOps>::convert_f64_to_i32_round(token, [a[0], a[1]]),
+        <NeonToken as F64x4ConvertOps>::convert_f64_to_i32_round(token, [a[2], a[3]]),
+    ]
+}
+
+#[cfg(all(target_arch = "aarch64", feature = "w512"))]
+#[inline(always)]
+pub(crate) fn neon_f64x8_from_i32(token: NeonToken, a: [int32x4_t; 2]) -> [float64x2_t; 4] {
+    let lo = <NeonToken as F64x4ConvertOps>::convert_i32_to_f64(token, a[0]);
+    let hi = <NeonToken as F64x4ConvertOps>::convert_i32_to_f64(token, a[1]);
+    [lo[0], lo[1], hi[0], hi[1]]
+}
+
+#[cfg(target_arch = "aarch64")]
+impl I8x16BitcastOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_i8_to_u8(self, a: int8x16_t) -> uint8x16_t {
         vreinterpretq_u8_s8(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_u8_to_i8(self, a: uint8x16_t) -> int8x16_t {
         vreinterpretq_s8_u8(a)
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I8x32Bitcast for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl I8x32BitcastOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_i8_to_u8(self, a: [int8x16_t; 2]) -> [uint8x16_t; 2] {
         [vreinterpretq_u8_s8(a[0]), vreinterpretq_u8_s8(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_u8_to_i8(self, a: [uint8x16_t; 2]) -> [int8x16_t; 2] {
         [vreinterpretq_s8_u8(a[0]), vreinterpretq_s8_u8(a[1])]
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I16x8Bitcast for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl I16x8BitcastOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_i16_to_u16(self, a: int16x8_t) -> uint16x8_t {
         vreinterpretq_u16_s16(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_u16_to_i16(self, a: uint16x8_t) -> int16x8_t {
         vreinterpretq_s16_u16(a)
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl I16x16Bitcast for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl I16x16BitcastOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_i16_to_u16(self, a: [int16x8_t; 2]) -> [uint16x8_t; 2] {
         [vreinterpretq_u16_s16(a[0]), vreinterpretq_u16_s16(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_u16_to_i16(self, a: [uint16x8_t; 2]) -> [int16x8_t; 2] {
         [vreinterpretq_s16_u16(a[0]), vreinterpretq_s16_u16(a[1])]
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U64x2Bitcast for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl U64x2BitcastOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_u64_to_i64(self, a: uint64x2_t) -> int64x2_t {
         vreinterpretq_s64_u64(a)
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_i64_to_u64(self, a: int64x2_t) -> uint64x2_t {
         vreinterpretq_u64_s64(a)
     }
 }
 
 #[cfg(target_arch = "aarch64")]
-impl U64x4Bitcast for NeonToken {
-    #[arcane(suppress_const_test, _self = NeonToken)]
+impl U64x4BitcastOps for NeonToken {
+    #[arcane(_self = NeonToken)]
     fn bitcast_u64_to_i64(self, a: [uint64x2_t; 2]) -> [int64x2_t; 2] {
         [vreinterpretq_s64_u64(a[0]), vreinterpretq_s64_u64(a[1])]
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn bitcast_i64_to_u64(self, a: [int64x2_t; 2]) -> [uint64x2_t; 2] {
         [vreinterpretq_u64_s64(a[0]), vreinterpretq_u64_s64(a[1])]
     }
 }
 #[cfg(feature = "w512")]
 #[cfg(target_arch = "aarch64")]
-impl F32x16Backend for NeonToken {
+impl F32x16Ops for NeonToken {
     type Repr = [float32x4_t; 4];
 
     #[inline(always)]
     fn splat(self, v: f32) -> [float32x4_t; 4] {
-        let q = <NeonToken as F32x4Backend>::splat(self, v);
+        let q = <NeonToken as F32x4Ops>::splat(self, v);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn zero(self) -> [float32x4_t; 4] {
-        let q = <NeonToken as F32x4Backend>::zero(self);
+        let q = <NeonToken as F32x4Ops>::zero(self);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn load(self, data: &[f32; 16]) -> [float32x4_t; 4] {
         [
-            <NeonToken as F32x4Backend>::load(self, data[0..4].try_into().unwrap()),
-            <NeonToken as F32x4Backend>::load(self, data[4..8].try_into().unwrap()),
-            <NeonToken as F32x4Backend>::load(self, data[8..12].try_into().unwrap()),
-            <NeonToken as F32x4Backend>::load(self, data[12..16].try_into().unwrap()),
+            <NeonToken as F32x4Ops>::load(self, data[0..4].try_into().unwrap()),
+            <NeonToken as F32x4Ops>::load(self, data[4..8].try_into().unwrap()),
+            <NeonToken as F32x4Ops>::load(self, data[8..12].try_into().unwrap()),
+            <NeonToken as F32x4Ops>::load(self, data[12..16].try_into().unwrap()),
         ]
     }
 
@@ -4555,10 +5016,10 @@ impl F32x16Backend for NeonToken {
         q2.copy_from_slice(&arr[8..12]);
         q3.copy_from_slice(&arr[12..16]);
         [
-            <NeonToken as F32x4Backend>::from_array(self, q0),
-            <NeonToken as F32x4Backend>::from_array(self, q1),
-            <NeonToken as F32x4Backend>::from_array(self, q2),
-            <NeonToken as F32x4Backend>::from_array(self, q3),
+            <NeonToken as F32x4Ops>::from_array(self, q0),
+            <NeonToken as F32x4Ops>::from_array(self, q1),
+            <NeonToken as F32x4Ops>::from_array(self, q2),
+            <NeonToken as F32x4Ops>::from_array(self, q3),
         ]
     }
 
@@ -4567,18 +5028,18 @@ impl F32x16Backend for NeonToken {
         let (o01, o23) = out.split_at_mut(8);
         let (o0, o1) = o01.split_at_mut(4);
         let (o2, o3) = o23.split_at_mut(4);
-        <NeonToken as F32x4Backend>::store(self, repr[0], o0.try_into().unwrap());
-        <NeonToken as F32x4Backend>::store(self, repr[1], o1.try_into().unwrap());
-        <NeonToken as F32x4Backend>::store(self, repr[2], o2.try_into().unwrap());
-        <NeonToken as F32x4Backend>::store(self, repr[3], o3.try_into().unwrap());
+        <NeonToken as F32x4Ops>::store(self, repr[0], o0.try_into().unwrap());
+        <NeonToken as F32x4Ops>::store(self, repr[1], o1.try_into().unwrap());
+        <NeonToken as F32x4Ops>::store(self, repr[2], o2.try_into().unwrap());
+        <NeonToken as F32x4Ops>::store(self, repr[3], o3.try_into().unwrap());
     }
 
     #[inline(always)]
     fn to_array(self, repr: [float32x4_t; 4]) -> [f32; 16] {
-        let a0 = <NeonToken as F32x4Backend>::to_array(self, repr[0]);
-        let a1 = <NeonToken as F32x4Backend>::to_array(self, repr[1]);
-        let a2 = <NeonToken as F32x4Backend>::to_array(self, repr[2]);
-        let a3 = <NeonToken as F32x4Backend>::to_array(self, repr[3]);
+        let a0 = <NeonToken as F32x4Ops>::to_array(self, repr[0]);
+        let a1 = <NeonToken as F32x4Ops>::to_array(self, repr[1]);
+        let a2 = <NeonToken as F32x4Ops>::to_array(self, repr[2]);
+        let a3 = <NeonToken as F32x4Ops>::to_array(self, repr[3]);
         let mut out = [0.0f32; 16];
         out[0..4].copy_from_slice(&a0);
         out[4..8].copy_from_slice(&a1);
@@ -4589,42 +5050,42 @@ impl F32x16Backend for NeonToken {
 
     #[inline(always)]
     fn add(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sub(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::sub(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn mul(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::mul(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::mul(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn div(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::div(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::div(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn neg(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::neg(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::neg(self, a[i]))
     }
 
     #[inline(always)]
     fn min(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::min(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::min(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn max(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::max(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::max(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sqrt(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::sqrt(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::sqrt(self, a[i]))
     }
 
     // Reciprocals delegate to the quarter backend so the full-precision
@@ -4632,42 +5093,42 @@ impl F32x16Backend for NeonToken {
     // (Without these the trait defaults make recip/rcp_approx the identity.)
     #[inline(always)]
     fn rcp_approx(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::rcp_approx(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::rcp_approx(self, a[i]))
     }
 
     #[inline(always)]
     fn rsqrt_approx(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::rsqrt_approx(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::rsqrt_approx(self, a[i]))
     }
 
     #[inline(always)]
     fn recip(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::recip(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::recip(self, a[i]))
     }
 
     #[inline(always)]
     fn rsqrt(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::rsqrt(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::rsqrt(self, a[i]))
     }
 
     #[inline(always)]
     fn abs(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::abs(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::abs(self, a[i]))
     }
 
     #[inline(always)]
     fn floor(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::floor(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::floor(self, a[i]))
     }
 
     #[inline(always)]
     fn ceil(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::ceil(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::ceil(self, a[i]))
     }
 
     #[inline(always)]
     fn round(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::round(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::round(self, a[i]))
     }
 
     #[inline(always)]
@@ -4677,7 +5138,7 @@ impl F32x16Backend for NeonToken {
         b: [float32x4_t; 4],
         c: [float32x4_t; 4],
     ) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::mul_add(self, a[i], b[i], c[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::mul_add(self, a[i], b[i], c[i]))
     }
 
     #[inline(always)]
@@ -4687,7 +5148,7 @@ impl F32x16Backend for NeonToken {
         b: [float32x4_t; 4],
         c: [float32x4_t; 4],
     ) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::mul_sub(self, a[i], b[i], c[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::mul_sub(self, a[i], b[i], c[i]))
     }
 
     #[inline(always)]
@@ -4697,9 +5158,7 @@ impl F32x16Backend for NeonToken {
         b: [float32x4_t; 4],
         c: [float32x4_t; 4],
     ) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as F32x4Backend>::mul_add_portable(self, a[i], b[i], c[i])
-        })
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::mul_add_portable(self, a[i], b[i], c[i]))
     }
 
     #[inline(always)]
@@ -4709,29 +5168,27 @@ impl F32x16Backend for NeonToken {
         b: [float32x4_t; 4],
         c: [float32x4_t; 4],
     ) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as F32x4Backend>::mul_sub_portable(self, a[i], b[i], c[i])
-        })
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::mul_sub_portable(self, a[i], b[i], c[i]))
     }
 
     #[inline(always)]
     fn reduce_add(self, a: [float32x4_t; 4]) -> f32 {
-        <NeonToken as F32x4Backend>::reduce_add(self, a[0])
-            + <NeonToken as F32x4Backend>::reduce_add(self, a[1])
-            + <NeonToken as F32x4Backend>::reduce_add(self, a[2])
-            + <NeonToken as F32x4Backend>::reduce_add(self, a[3])
+        <NeonToken as F32x4Ops>::reduce_add(self, a[0])
+            + <NeonToken as F32x4Ops>::reduce_add(self, a[1])
+            + <NeonToken as F32x4Ops>::reduce_add(self, a[2])
+            + <NeonToken as F32x4Ops>::reduce_add(self, a[3])
     }
 
     #[inline(always)]
     fn reduce_min(self, a: [float32x4_t; 4]) -> f32 {
         let m01 = {
-            let l = <NeonToken as F32x4Backend>::reduce_min(self, a[0]);
-            let r = <NeonToken as F32x4Backend>::reduce_min(self, a[1]);
+            let l = <NeonToken as F32x4Ops>::reduce_min(self, a[0]);
+            let r = <NeonToken as F32x4Ops>::reduce_min(self, a[1]);
             if l < r { l } else { r }
         };
         let m23 = {
-            let l = <NeonToken as F32x4Backend>::reduce_min(self, a[2]);
-            let r = <NeonToken as F32x4Backend>::reduce_min(self, a[3]);
+            let l = <NeonToken as F32x4Ops>::reduce_min(self, a[2]);
+            let r = <NeonToken as F32x4Ops>::reduce_min(self, a[3]);
             if l < r { l } else { r }
         };
         if m01 < m23 { m01 } else { m23 }
@@ -4740,46 +5197,70 @@ impl F32x16Backend for NeonToken {
     #[inline(always)]
     fn reduce_max(self, a: [float32x4_t; 4]) -> f32 {
         let m01 = {
-            let l = <NeonToken as F32x4Backend>::reduce_max(self, a[0]);
-            let r = <NeonToken as F32x4Backend>::reduce_max(self, a[1]);
+            let l = <NeonToken as F32x4Ops>::reduce_max(self, a[0]);
+            let r = <NeonToken as F32x4Ops>::reduce_max(self, a[1]);
             if l > r { l } else { r }
         };
         let m23 = {
-            let l = <NeonToken as F32x4Backend>::reduce_max(self, a[2]);
-            let r = <NeonToken as F32x4Backend>::reduce_max(self, a[3]);
+            let l = <NeonToken as F32x4Ops>::reduce_max(self, a[2]);
+            let r = <NeonToken as F32x4Ops>::reduce_max(self, a[3]);
             if l > r { l } else { r }
         };
         if m01 > m23 { m01 } else { m23 }
     }
 
     #[inline(always)]
+    fn to_u8_bytes(self, a: [float32x4_t; 4]) -> [u8; 16] {
+        let b0 = <NeonToken as F32x4Ops>::to_u8_bytes(self, a[0]);
+        let b1 = <NeonToken as F32x4Ops>::to_u8_bytes(self, a[1]);
+        let b2 = <NeonToken as F32x4Ops>::to_u8_bytes(self, a[2]);
+        let b3 = <NeonToken as F32x4Ops>::to_u8_bytes(self, a[3]);
+        crate::simd_storage::cast([b0, b1, b2, b3])
+    }
+
+    #[inline(always)]
+    fn store_rgba_bytes(
+        self,
+        r: [float32x4_t; 4],
+        g: [float32x4_t; 4],
+        b: [float32x4_t; 4],
+        a: [float32x4_t; 4],
+    ) -> [u8; 64] {
+        let p0 = <NeonToken as F32x4Ops>::store_rgba_bytes(self, r[0], g[0], b[0], a[0]);
+        let p1 = <NeonToken as F32x4Ops>::store_rgba_bytes(self, r[1], g[1], b[1], a[1]);
+        let p2 = <NeonToken as F32x4Ops>::store_rgba_bytes(self, r[2], g[2], b[2], a[2]);
+        let p3 = <NeonToken as F32x4Ops>::store_rgba_bytes(self, r[3], g[3], b[3], a[3]);
+        crate::simd_storage::cast([p0, p1, p2, p3])
+    }
+
+    #[inline(always)]
     fn simd_eq(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::simd_eq(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::simd_eq(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ne(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::simd_ne(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::simd_ne(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_lt(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::simd_lt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::simd_lt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_le(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::simd_le(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::simd_le(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_gt(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::simd_gt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::simd_gt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ge(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::simd_ge(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::simd_ge(self, a[i], b[i]))
     }
 
     #[inline(always)]
@@ -4790,55 +5271,55 @@ impl F32x16Backend for NeonToken {
         if_false: [float32x4_t; 4],
     ) -> [float32x4_t; 4] {
         core::array::from_fn(|i| {
-            <NeonToken as F32x4Backend>::blend(self, mask[i], if_true[i], if_false[i])
+            <NeonToken as F32x4Ops>::blend(self, mask[i], if_true[i], if_false[i])
         })
     }
 
     #[inline(always)]
     fn not(self, a: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::not(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::not(self, a[i]))
     }
 
     #[inline(always)]
     fn bitand(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::bitand(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::bitand(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitor(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::bitor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::bitor(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitxor(self, a: [float32x4_t; 4], b: [float32x4_t; 4]) -> [float32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F32x4Backend>::bitxor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F32x4Ops>::bitxor(self, a[i], b[i]))
     }
 }
 
 #[cfg(feature = "w512")]
 #[cfg(target_arch = "aarch64")]
-impl F64x8Backend for NeonToken {
+impl F64x8Ops for NeonToken {
     type Repr = [float64x2_t; 4];
 
     #[inline(always)]
     fn splat(self, v: f64) -> [float64x2_t; 4] {
-        let q = <NeonToken as F64x2Backend>::splat(self, v);
+        let q = <NeonToken as F64x2Ops>::splat(self, v);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn zero(self) -> [float64x2_t; 4] {
-        let q = <NeonToken as F64x2Backend>::zero(self);
+        let q = <NeonToken as F64x2Ops>::zero(self);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn load(self, data: &[f64; 8]) -> [float64x2_t; 4] {
         [
-            <NeonToken as F64x2Backend>::load(self, data[0..2].try_into().unwrap()),
-            <NeonToken as F64x2Backend>::load(self, data[2..4].try_into().unwrap()),
-            <NeonToken as F64x2Backend>::load(self, data[4..6].try_into().unwrap()),
-            <NeonToken as F64x2Backend>::load(self, data[6..8].try_into().unwrap()),
+            <NeonToken as F64x2Ops>::load(self, data[0..2].try_into().unwrap()),
+            <NeonToken as F64x2Ops>::load(self, data[2..4].try_into().unwrap()),
+            <NeonToken as F64x2Ops>::load(self, data[4..6].try_into().unwrap()),
+            <NeonToken as F64x2Ops>::load(self, data[6..8].try_into().unwrap()),
         ]
     }
 
@@ -4853,10 +5334,10 @@ impl F64x8Backend for NeonToken {
         q2.copy_from_slice(&arr[4..6]);
         q3.copy_from_slice(&arr[6..8]);
         [
-            <NeonToken as F64x2Backend>::from_array(self, q0),
-            <NeonToken as F64x2Backend>::from_array(self, q1),
-            <NeonToken as F64x2Backend>::from_array(self, q2),
-            <NeonToken as F64x2Backend>::from_array(self, q3),
+            <NeonToken as F64x2Ops>::from_array(self, q0),
+            <NeonToken as F64x2Ops>::from_array(self, q1),
+            <NeonToken as F64x2Ops>::from_array(self, q2),
+            <NeonToken as F64x2Ops>::from_array(self, q3),
         ]
     }
 
@@ -4865,18 +5346,18 @@ impl F64x8Backend for NeonToken {
         let (o01, o23) = out.split_at_mut(4);
         let (o0, o1) = o01.split_at_mut(2);
         let (o2, o3) = o23.split_at_mut(2);
-        <NeonToken as F64x2Backend>::store(self, repr[0], o0.try_into().unwrap());
-        <NeonToken as F64x2Backend>::store(self, repr[1], o1.try_into().unwrap());
-        <NeonToken as F64x2Backend>::store(self, repr[2], o2.try_into().unwrap());
-        <NeonToken as F64x2Backend>::store(self, repr[3], o3.try_into().unwrap());
+        <NeonToken as F64x2Ops>::store(self, repr[0], o0.try_into().unwrap());
+        <NeonToken as F64x2Ops>::store(self, repr[1], o1.try_into().unwrap());
+        <NeonToken as F64x2Ops>::store(self, repr[2], o2.try_into().unwrap());
+        <NeonToken as F64x2Ops>::store(self, repr[3], o3.try_into().unwrap());
     }
 
     #[inline(always)]
     fn to_array(self, repr: [float64x2_t; 4]) -> [f64; 8] {
-        let a0 = <NeonToken as F64x2Backend>::to_array(self, repr[0]);
-        let a1 = <NeonToken as F64x2Backend>::to_array(self, repr[1]);
-        let a2 = <NeonToken as F64x2Backend>::to_array(self, repr[2]);
-        let a3 = <NeonToken as F64x2Backend>::to_array(self, repr[3]);
+        let a0 = <NeonToken as F64x2Ops>::to_array(self, repr[0]);
+        let a1 = <NeonToken as F64x2Ops>::to_array(self, repr[1]);
+        let a2 = <NeonToken as F64x2Ops>::to_array(self, repr[2]);
+        let a3 = <NeonToken as F64x2Ops>::to_array(self, repr[3]);
         let mut out = [0.0f64; 8];
         out[0..2].copy_from_slice(&a0);
         out[2..4].copy_from_slice(&a1);
@@ -4887,42 +5368,42 @@ impl F64x8Backend for NeonToken {
 
     #[inline(always)]
     fn add(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sub(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::sub(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn mul(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::mul(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::mul(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn div(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::div(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::div(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn neg(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::neg(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::neg(self, a[i]))
     }
 
     #[inline(always)]
     fn min(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::min(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::min(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn max(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::max(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::max(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sqrt(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::sqrt(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::sqrt(self, a[i]))
     }
 
     // Reciprocals delegate to the quarter backend so the full-precision
@@ -4930,42 +5411,42 @@ impl F64x8Backend for NeonToken {
     // (Without these the trait defaults make recip/rcp_approx the identity.)
     #[inline(always)]
     fn rcp_approx(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::rcp_approx(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::rcp_approx(self, a[i]))
     }
 
     #[inline(always)]
     fn rsqrt_approx(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::rsqrt_approx(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::rsqrt_approx(self, a[i]))
     }
 
     #[inline(always)]
     fn recip(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::recip(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::recip(self, a[i]))
     }
 
     #[inline(always)]
     fn rsqrt(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::rsqrt(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::rsqrt(self, a[i]))
     }
 
     #[inline(always)]
     fn abs(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::abs(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::abs(self, a[i]))
     }
 
     #[inline(always)]
     fn floor(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::floor(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::floor(self, a[i]))
     }
 
     #[inline(always)]
     fn ceil(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::ceil(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::ceil(self, a[i]))
     }
 
     #[inline(always)]
     fn round(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::round(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::round(self, a[i]))
     }
 
     #[inline(always)]
@@ -4975,7 +5456,7 @@ impl F64x8Backend for NeonToken {
         b: [float64x2_t; 4],
         c: [float64x2_t; 4],
     ) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::mul_add(self, a[i], b[i], c[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::mul_add(self, a[i], b[i], c[i]))
     }
 
     #[inline(always)]
@@ -4985,7 +5466,7 @@ impl F64x8Backend for NeonToken {
         b: [float64x2_t; 4],
         c: [float64x2_t; 4],
     ) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::mul_sub(self, a[i], b[i], c[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::mul_sub(self, a[i], b[i], c[i]))
     }
 
     #[inline(always)]
@@ -4995,9 +5476,7 @@ impl F64x8Backend for NeonToken {
         b: [float64x2_t; 4],
         c: [float64x2_t; 4],
     ) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as F64x2Backend>::mul_add_portable(self, a[i], b[i], c[i])
-        })
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::mul_add_portable(self, a[i], b[i], c[i]))
     }
 
     #[inline(always)]
@@ -5007,29 +5486,27 @@ impl F64x8Backend for NeonToken {
         b: [float64x2_t; 4],
         c: [float64x2_t; 4],
     ) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as F64x2Backend>::mul_sub_portable(self, a[i], b[i], c[i])
-        })
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::mul_sub_portable(self, a[i], b[i], c[i]))
     }
 
     #[inline(always)]
     fn reduce_add(self, a: [float64x2_t; 4]) -> f64 {
-        <NeonToken as F64x2Backend>::reduce_add(self, a[0])
-            + <NeonToken as F64x2Backend>::reduce_add(self, a[1])
-            + <NeonToken as F64x2Backend>::reduce_add(self, a[2])
-            + <NeonToken as F64x2Backend>::reduce_add(self, a[3])
+        <NeonToken as F64x2Ops>::reduce_add(self, a[0])
+            + <NeonToken as F64x2Ops>::reduce_add(self, a[1])
+            + <NeonToken as F64x2Ops>::reduce_add(self, a[2])
+            + <NeonToken as F64x2Ops>::reduce_add(self, a[3])
     }
 
     #[inline(always)]
     fn reduce_min(self, a: [float64x2_t; 4]) -> f64 {
         let m01 = {
-            let l = <NeonToken as F64x2Backend>::reduce_min(self, a[0]);
-            let r = <NeonToken as F64x2Backend>::reduce_min(self, a[1]);
+            let l = <NeonToken as F64x2Ops>::reduce_min(self, a[0]);
+            let r = <NeonToken as F64x2Ops>::reduce_min(self, a[1]);
             if l < r { l } else { r }
         };
         let m23 = {
-            let l = <NeonToken as F64x2Backend>::reduce_min(self, a[2]);
-            let r = <NeonToken as F64x2Backend>::reduce_min(self, a[3]);
+            let l = <NeonToken as F64x2Ops>::reduce_min(self, a[2]);
+            let r = <NeonToken as F64x2Ops>::reduce_min(self, a[3]);
             if l < r { l } else { r }
         };
         if m01 < m23 { m01 } else { m23 }
@@ -5038,13 +5515,13 @@ impl F64x8Backend for NeonToken {
     #[inline(always)]
     fn reduce_max(self, a: [float64x2_t; 4]) -> f64 {
         let m01 = {
-            let l = <NeonToken as F64x2Backend>::reduce_max(self, a[0]);
-            let r = <NeonToken as F64x2Backend>::reduce_max(self, a[1]);
+            let l = <NeonToken as F64x2Ops>::reduce_max(self, a[0]);
+            let r = <NeonToken as F64x2Ops>::reduce_max(self, a[1]);
             if l > r { l } else { r }
         };
         let m23 = {
-            let l = <NeonToken as F64x2Backend>::reduce_max(self, a[2]);
-            let r = <NeonToken as F64x2Backend>::reduce_max(self, a[3]);
+            let l = <NeonToken as F64x2Ops>::reduce_max(self, a[2]);
+            let r = <NeonToken as F64x2Ops>::reduce_max(self, a[3]);
             if l > r { l } else { r }
         };
         if m01 > m23 { m01 } else { m23 }
@@ -5052,32 +5529,32 @@ impl F64x8Backend for NeonToken {
 
     #[inline(always)]
     fn simd_eq(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::simd_eq(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::simd_eq(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ne(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::simd_ne(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::simd_ne(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_lt(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::simd_lt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::simd_lt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_le(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::simd_le(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::simd_le(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_gt(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::simd_gt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::simd_gt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ge(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::simd_ge(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::simd_ge(self, a[i], b[i]))
     }
 
     #[inline(always)]
@@ -5088,55 +5565,55 @@ impl F64x8Backend for NeonToken {
         if_false: [float64x2_t; 4],
     ) -> [float64x2_t; 4] {
         core::array::from_fn(|i| {
-            <NeonToken as F64x2Backend>::blend(self, mask[i], if_true[i], if_false[i])
+            <NeonToken as F64x2Ops>::blend(self, mask[i], if_true[i], if_false[i])
         })
     }
 
     #[inline(always)]
     fn not(self, a: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::not(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::not(self, a[i]))
     }
 
     #[inline(always)]
     fn bitand(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::bitand(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::bitand(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitor(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::bitor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::bitor(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitxor(self, a: [float64x2_t; 4], b: [float64x2_t; 4]) -> [float64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as F64x2Backend>::bitxor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as F64x2Ops>::bitxor(self, a[i], b[i]))
     }
 }
 
 #[cfg(feature = "w512")]
 #[cfg(target_arch = "aarch64")]
-impl I8x64Backend for NeonToken {
+impl I8x64Ops for NeonToken {
     type Repr = [int8x16_t; 4];
 
     #[inline(always)]
     fn splat(self, v: i8) -> [int8x16_t; 4] {
-        let q = <NeonToken as I8x16Backend>::splat(self, v);
+        let q = <NeonToken as I8x16Ops>::splat(self, v);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn zero(self) -> [int8x16_t; 4] {
-        let q = <NeonToken as I8x16Backend>::zero(self);
+        let q = <NeonToken as I8x16Ops>::zero(self);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn load(self, data: &[i8; 64]) -> [int8x16_t; 4] {
         [
-            <NeonToken as I8x16Backend>::load(self, data[0..16].try_into().unwrap()),
-            <NeonToken as I8x16Backend>::load(self, data[16..32].try_into().unwrap()),
-            <NeonToken as I8x16Backend>::load(self, data[32..48].try_into().unwrap()),
-            <NeonToken as I8x16Backend>::load(self, data[48..64].try_into().unwrap()),
+            <NeonToken as I8x16Ops>::load(self, data[0..16].try_into().unwrap()),
+            <NeonToken as I8x16Ops>::load(self, data[16..32].try_into().unwrap()),
+            <NeonToken as I8x16Ops>::load(self, data[32..48].try_into().unwrap()),
+            <NeonToken as I8x16Ops>::load(self, data[48..64].try_into().unwrap()),
         ]
     }
 
@@ -5151,10 +5628,10 @@ impl I8x64Backend for NeonToken {
         q2.copy_from_slice(&arr[32..48]);
         q3.copy_from_slice(&arr[48..64]);
         [
-            <NeonToken as I8x16Backend>::from_array(self, q0),
-            <NeonToken as I8x16Backend>::from_array(self, q1),
-            <NeonToken as I8x16Backend>::from_array(self, q2),
-            <NeonToken as I8x16Backend>::from_array(self, q3),
+            <NeonToken as I8x16Ops>::from_array(self, q0),
+            <NeonToken as I8x16Ops>::from_array(self, q1),
+            <NeonToken as I8x16Ops>::from_array(self, q2),
+            <NeonToken as I8x16Ops>::from_array(self, q3),
         ]
     }
 
@@ -5163,18 +5640,18 @@ impl I8x64Backend for NeonToken {
         let (o01, o23) = out.split_at_mut(32);
         let (o0, o1) = o01.split_at_mut(16);
         let (o2, o3) = o23.split_at_mut(16);
-        <NeonToken as I8x16Backend>::store(self, repr[0], o0.try_into().unwrap());
-        <NeonToken as I8x16Backend>::store(self, repr[1], o1.try_into().unwrap());
-        <NeonToken as I8x16Backend>::store(self, repr[2], o2.try_into().unwrap());
-        <NeonToken as I8x16Backend>::store(self, repr[3], o3.try_into().unwrap());
+        <NeonToken as I8x16Ops>::store(self, repr[0], o0.try_into().unwrap());
+        <NeonToken as I8x16Ops>::store(self, repr[1], o1.try_into().unwrap());
+        <NeonToken as I8x16Ops>::store(self, repr[2], o2.try_into().unwrap());
+        <NeonToken as I8x16Ops>::store(self, repr[3], o3.try_into().unwrap());
     }
 
     #[inline(always)]
     fn to_array(self, repr: [int8x16_t; 4]) -> [i8; 64] {
-        let a0 = <NeonToken as I8x16Backend>::to_array(self, repr[0]);
-        let a1 = <NeonToken as I8x16Backend>::to_array(self, repr[1]);
-        let a2 = <NeonToken as I8x16Backend>::to_array(self, repr[2]);
-        let a3 = <NeonToken as I8x16Backend>::to_array(self, repr[3]);
+        let a0 = <NeonToken as I8x16Ops>::to_array(self, repr[0]);
+        let a1 = <NeonToken as I8x16Ops>::to_array(self, repr[1]);
+        let a2 = <NeonToken as I8x16Ops>::to_array(self, repr[2]);
+        let a3 = <NeonToken as I8x16Ops>::to_array(self, repr[3]);
         let mut out = [0; 64];
         out[0..16].copy_from_slice(&a0);
         out[16..32].copy_from_slice(&a1);
@@ -5185,122 +5662,122 @@ impl I8x64Backend for NeonToken {
 
     #[inline(always)]
     fn add(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sub(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::sub(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn neg(self, a: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::neg(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::neg(self, a[i]))
     }
 
     #[inline(always)]
     fn min(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::min(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::min(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn max(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::max(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::max(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn abs(self, a: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::abs(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::abs(self, a[i]))
     }
 
     #[inline(always)]
     fn reduce_add(self, a: [int8x16_t; 4]) -> i8 {
-        <NeonToken as I8x16Backend>::reduce_add(self, a[0])
-            .wrapping_add(<NeonToken as I8x16Backend>::reduce_add(self, a[1]))
-            .wrapping_add(<NeonToken as I8x16Backend>::reduce_add(self, a[2]))
-            .wrapping_add(<NeonToken as I8x16Backend>::reduce_add(self, a[3]))
+        <NeonToken as I8x16Ops>::reduce_add(self, a[0])
+            .wrapping_add(<NeonToken as I8x16Ops>::reduce_add(self, a[1]))
+            .wrapping_add(<NeonToken as I8x16Ops>::reduce_add(self, a[2]))
+            .wrapping_add(<NeonToken as I8x16Ops>::reduce_add(self, a[3]))
     }
 
     #[inline(always)]
     fn shl_const<const N: i32>(self, a: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::shl_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::shl_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_arithmetic_const<const N: i32>(self, a: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::shr_arithmetic_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::shr_arithmetic_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_logical_const<const N: i32>(self, a: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn saturating_add(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::saturating_add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::saturating_add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn saturating_sub(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::saturating_sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::saturating_sub(self, a[i], b[i]))
     }
 
     // Reduce the quarters with vector AND/OR first, then ONE lane
     // reduction (fearless_simd's polyfill lesson; branchless).
     #[inline(always)]
     fn all_true(self, a: [int8x16_t; 4]) -> bool {
-        let c01 = <NeonToken as I8x16Backend>::bitand(self, a[0], a[1]);
-        let c23 = <NeonToken as I8x16Backend>::bitand(self, a[2], a[3]);
-        let c = <NeonToken as I8x16Backend>::bitand(self, c01, c23);
-        <NeonToken as I8x16Backend>::all_true(self, c)
+        let c01 = <NeonToken as I8x16Ops>::bitand(self, a[0], a[1]);
+        let c23 = <NeonToken as I8x16Ops>::bitand(self, a[2], a[3]);
+        let c = <NeonToken as I8x16Ops>::bitand(self, c01, c23);
+        <NeonToken as I8x16Ops>::all_true(self, c)
     }
 
     #[inline(always)]
     fn any_true(self, a: [int8x16_t; 4]) -> bool {
-        let c01 = <NeonToken as I8x16Backend>::bitor(self, a[0], a[1]);
-        let c23 = <NeonToken as I8x16Backend>::bitor(self, a[2], a[3]);
-        let c = <NeonToken as I8x16Backend>::bitor(self, c01, c23);
-        <NeonToken as I8x16Backend>::any_true(self, c)
+        let c01 = <NeonToken as I8x16Ops>::bitor(self, a[0], a[1]);
+        let c23 = <NeonToken as I8x16Ops>::bitor(self, a[2], a[3]);
+        let c = <NeonToken as I8x16Ops>::bitor(self, c01, c23);
+        <NeonToken as I8x16Ops>::any_true(self, c)
     }
 
     #[inline(always)]
     fn bitmask(self, a: [int8x16_t; 4]) -> u64 {
-        let q0 = <NeonToken as I8x16Backend>::bitmask(self, a[0]) as u64;
-        let q1 = <NeonToken as I8x16Backend>::bitmask(self, a[1]) as u64;
-        let q2 = <NeonToken as I8x16Backend>::bitmask(self, a[2]) as u64;
-        let q3 = <NeonToken as I8x16Backend>::bitmask(self, a[3]) as u64;
+        let q0 = <NeonToken as I8x16Ops>::bitmask(self, a[0]) as u64;
+        let q1 = <NeonToken as I8x16Ops>::bitmask(self, a[1]) as u64;
+        let q2 = <NeonToken as I8x16Ops>::bitmask(self, a[2]) as u64;
+        let q3 = <NeonToken as I8x16Ops>::bitmask(self, a[3]) as u64;
         q0 | (q1 << 16) | (q2 << 32) | (q3 << 48)
     }
 
     #[inline(always)]
     fn simd_eq(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::simd_eq(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::simd_eq(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ne(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::simd_ne(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::simd_ne(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_lt(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::simd_lt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::simd_lt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_le(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::simd_le(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::simd_le(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_gt(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::simd_gt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::simd_gt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ge(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::simd_ge(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::simd_ge(self, a[i], b[i]))
     }
 
     #[inline(always)]
@@ -5311,30 +5788,30 @@ impl I8x64Backend for NeonToken {
         if_false: [int8x16_t; 4],
     ) -> [int8x16_t; 4] {
         core::array::from_fn(|i| {
-            <NeonToken as I8x16Backend>::blend(self, mask[i], if_true[i], if_false[i])
+            <NeonToken as I8x16Ops>::blend(self, mask[i], if_true[i], if_false[i])
         })
     }
 
     #[inline(always)]
     fn not(self, a: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::not(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::not(self, a[i]))
     }
 
     #[inline(always)]
     fn bitand(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::bitand(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::bitand(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitor(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::bitor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::bitor(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitxor(self, a: [int8x16_t; 4], b: [int8x16_t; 4]) -> [int8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I8x16Backend>::bitxor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I8x16Ops>::bitxor(self, a[i], b[i]))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_i8_to_i16(self, a: [int8x16_t; 4]) -> [int16x8_t; 4] {
         [
             vmovl_s8(vget_low_s8(a[0])),
@@ -5344,7 +5821,7 @@ impl I8x64Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_i8_to_i16(self, a: [int8x16_t; 4]) -> [int16x8_t; 4] {
         [
             vmovl_s8(vget_low_s8(a[2])),
@@ -5357,28 +5834,28 @@ impl I8x64Backend for NeonToken {
 
 #[cfg(feature = "w512")]
 #[cfg(target_arch = "aarch64")]
-impl U8x64Backend for NeonToken {
+impl U8x64Ops for NeonToken {
     type Repr = [uint8x16_t; 4];
 
     #[inline(always)]
     fn splat(self, v: u8) -> [uint8x16_t; 4] {
-        let q = <NeonToken as U8x16Backend>::splat(self, v);
+        let q = <NeonToken as U8x16Ops>::splat(self, v);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn zero(self) -> [uint8x16_t; 4] {
-        let q = <NeonToken as U8x16Backend>::zero(self);
+        let q = <NeonToken as U8x16Ops>::zero(self);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn load(self, data: &[u8; 64]) -> [uint8x16_t; 4] {
         [
-            <NeonToken as U8x16Backend>::load(self, data[0..16].try_into().unwrap()),
-            <NeonToken as U8x16Backend>::load(self, data[16..32].try_into().unwrap()),
-            <NeonToken as U8x16Backend>::load(self, data[32..48].try_into().unwrap()),
-            <NeonToken as U8x16Backend>::load(self, data[48..64].try_into().unwrap()),
+            <NeonToken as U8x16Ops>::load(self, data[0..16].try_into().unwrap()),
+            <NeonToken as U8x16Ops>::load(self, data[16..32].try_into().unwrap()),
+            <NeonToken as U8x16Ops>::load(self, data[32..48].try_into().unwrap()),
+            <NeonToken as U8x16Ops>::load(self, data[48..64].try_into().unwrap()),
         ]
     }
 
@@ -5393,10 +5870,10 @@ impl U8x64Backend for NeonToken {
         q2.copy_from_slice(&arr[32..48]);
         q3.copy_from_slice(&arr[48..64]);
         [
-            <NeonToken as U8x16Backend>::from_array(self, q0),
-            <NeonToken as U8x16Backend>::from_array(self, q1),
-            <NeonToken as U8x16Backend>::from_array(self, q2),
-            <NeonToken as U8x16Backend>::from_array(self, q3),
+            <NeonToken as U8x16Ops>::from_array(self, q0),
+            <NeonToken as U8x16Ops>::from_array(self, q1),
+            <NeonToken as U8x16Ops>::from_array(self, q2),
+            <NeonToken as U8x16Ops>::from_array(self, q3),
         ]
     }
 
@@ -5405,18 +5882,18 @@ impl U8x64Backend for NeonToken {
         let (o01, o23) = out.split_at_mut(32);
         let (o0, o1) = o01.split_at_mut(16);
         let (o2, o3) = o23.split_at_mut(16);
-        <NeonToken as U8x16Backend>::store(self, repr[0], o0.try_into().unwrap());
-        <NeonToken as U8x16Backend>::store(self, repr[1], o1.try_into().unwrap());
-        <NeonToken as U8x16Backend>::store(self, repr[2], o2.try_into().unwrap());
-        <NeonToken as U8x16Backend>::store(self, repr[3], o3.try_into().unwrap());
+        <NeonToken as U8x16Ops>::store(self, repr[0], o0.try_into().unwrap());
+        <NeonToken as U8x16Ops>::store(self, repr[1], o1.try_into().unwrap());
+        <NeonToken as U8x16Ops>::store(self, repr[2], o2.try_into().unwrap());
+        <NeonToken as U8x16Ops>::store(self, repr[3], o3.try_into().unwrap());
     }
 
     #[inline(always)]
     fn to_array(self, repr: [uint8x16_t; 4]) -> [u8; 64] {
-        let a0 = <NeonToken as U8x16Backend>::to_array(self, repr[0]);
-        let a1 = <NeonToken as U8x16Backend>::to_array(self, repr[1]);
-        let a2 = <NeonToken as U8x16Backend>::to_array(self, repr[2]);
-        let a3 = <NeonToken as U8x16Backend>::to_array(self, repr[3]);
+        let a0 = <NeonToken as U8x16Ops>::to_array(self, repr[0]);
+        let a1 = <NeonToken as U8x16Ops>::to_array(self, repr[1]);
+        let a2 = <NeonToken as U8x16Ops>::to_array(self, repr[2]);
+        let a3 = <NeonToken as U8x16Ops>::to_array(self, repr[3]);
         let mut out = [0; 64];
         out[0..16].copy_from_slice(&a0);
         out[16..32].copy_from_slice(&a1);
@@ -5427,118 +5904,118 @@ impl U8x64Backend for NeonToken {
 
     #[inline(always)]
     fn add(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sub(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::sub(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn neg(self, a: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        let z = <NeonToken as U8x16Backend>::zero(self);
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::sub(self, z, a[i]))
+        let z = <NeonToken as U8x16Ops>::zero(self);
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::sub(self, z, a[i]))
     }
 
     #[inline(always)]
     fn min(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::min(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::min(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn max(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::max(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::max(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn reduce_add(self, a: [uint8x16_t; 4]) -> u8 {
-        <NeonToken as U8x16Backend>::reduce_add(self, a[0])
-            .wrapping_add(<NeonToken as U8x16Backend>::reduce_add(self, a[1]))
-            .wrapping_add(<NeonToken as U8x16Backend>::reduce_add(self, a[2]))
-            .wrapping_add(<NeonToken as U8x16Backend>::reduce_add(self, a[3]))
+        <NeonToken as U8x16Ops>::reduce_add(self, a[0])
+            .wrapping_add(<NeonToken as U8x16Ops>::reduce_add(self, a[1]))
+            .wrapping_add(<NeonToken as U8x16Ops>::reduce_add(self, a[2]))
+            .wrapping_add(<NeonToken as U8x16Ops>::reduce_add(self, a[3]))
     }
 
     #[inline(always)]
     fn shl_const<const N: i32>(self, a: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::shl_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::shl_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_arithmetic_const<const N: i32>(self, a: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_logical_const<const N: i32>(self, a: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn saturating_add(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::saturating_add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::saturating_add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn saturating_sub(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::saturating_sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::saturating_sub(self, a[i], b[i]))
     }
 
     // Reduce the quarters with vector AND/OR first, then ONE lane
     // reduction (fearless_simd's polyfill lesson; branchless).
     #[inline(always)]
     fn all_true(self, a: [uint8x16_t; 4]) -> bool {
-        let c01 = <NeonToken as U8x16Backend>::bitand(self, a[0], a[1]);
-        let c23 = <NeonToken as U8x16Backend>::bitand(self, a[2], a[3]);
-        let c = <NeonToken as U8x16Backend>::bitand(self, c01, c23);
-        <NeonToken as U8x16Backend>::all_true(self, c)
+        let c01 = <NeonToken as U8x16Ops>::bitand(self, a[0], a[1]);
+        let c23 = <NeonToken as U8x16Ops>::bitand(self, a[2], a[3]);
+        let c = <NeonToken as U8x16Ops>::bitand(self, c01, c23);
+        <NeonToken as U8x16Ops>::all_true(self, c)
     }
 
     #[inline(always)]
     fn any_true(self, a: [uint8x16_t; 4]) -> bool {
-        let c01 = <NeonToken as U8x16Backend>::bitor(self, a[0], a[1]);
-        let c23 = <NeonToken as U8x16Backend>::bitor(self, a[2], a[3]);
-        let c = <NeonToken as U8x16Backend>::bitor(self, c01, c23);
-        <NeonToken as U8x16Backend>::any_true(self, c)
+        let c01 = <NeonToken as U8x16Ops>::bitor(self, a[0], a[1]);
+        let c23 = <NeonToken as U8x16Ops>::bitor(self, a[2], a[3]);
+        let c = <NeonToken as U8x16Ops>::bitor(self, c01, c23);
+        <NeonToken as U8x16Ops>::any_true(self, c)
     }
 
     #[inline(always)]
     fn bitmask(self, a: [uint8x16_t; 4]) -> u64 {
-        let q0 = <NeonToken as U8x16Backend>::bitmask(self, a[0]) as u64;
-        let q1 = <NeonToken as U8x16Backend>::bitmask(self, a[1]) as u64;
-        let q2 = <NeonToken as U8x16Backend>::bitmask(self, a[2]) as u64;
-        let q3 = <NeonToken as U8x16Backend>::bitmask(self, a[3]) as u64;
+        let q0 = <NeonToken as U8x16Ops>::bitmask(self, a[0]) as u64;
+        let q1 = <NeonToken as U8x16Ops>::bitmask(self, a[1]) as u64;
+        let q2 = <NeonToken as U8x16Ops>::bitmask(self, a[2]) as u64;
+        let q3 = <NeonToken as U8x16Ops>::bitmask(self, a[3]) as u64;
         q0 | (q1 << 16) | (q2 << 32) | (q3 << 48)
     }
 
     #[inline(always)]
     fn simd_eq(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::simd_eq(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::simd_eq(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ne(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::simd_ne(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::simd_ne(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_lt(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::simd_lt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::simd_lt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_le(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::simd_le(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::simd_le(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_gt(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::simd_gt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::simd_gt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ge(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::simd_ge(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::simd_ge(self, a[i], b[i]))
     }
 
     #[inline(always)]
@@ -5549,30 +6026,30 @@ impl U8x64Backend for NeonToken {
         if_false: [uint8x16_t; 4],
     ) -> [uint8x16_t; 4] {
         core::array::from_fn(|i| {
-            <NeonToken as U8x16Backend>::blend(self, mask[i], if_true[i], if_false[i])
+            <NeonToken as U8x16Ops>::blend(self, mask[i], if_true[i], if_false[i])
         })
     }
 
     #[inline(always)]
     fn not(self, a: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::not(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::not(self, a[i]))
     }
 
     #[inline(always)]
     fn bitand(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::bitand(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::bitand(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitor(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::bitor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::bitor(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitxor(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U8x16Backend>::bitxor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U8x16Ops>::bitxor(self, a[i], b[i]))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_u8_to_u16(self, a: [uint8x16_t; 4]) -> [uint16x8_t; 4] {
         [
             vmovl_u8(vget_low_u8(a[0])),
@@ -5582,7 +6059,7 @@ impl U8x64Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_u8_to_u16(self, a: [uint8x16_t; 4]) -> [uint16x8_t; 4] {
         [
             vmovl_u8(vget_low_u8(a[2])),
@@ -5592,7 +6069,7 @@ impl U8x64Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs_diff(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> [uint8x16_t; 4] {
         [
             vabdq_u8(a[0], b[0]),
@@ -5602,7 +6079,7 @@ impl U8x64Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn reduce_add_u32(self, a: [uint8x16_t; 4]) -> u32 {
         (vaddlvq_u8(a[0]) as u32)
             + (vaddlvq_u8(a[1]) as u32)
@@ -5610,7 +6087,7 @@ impl U8x64Backend for NeonToken {
             + (vaddlvq_u8(a[3]) as u32)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn sum_abs_diff(self, a: [uint8x16_t; 4], b: [uint8x16_t; 4]) -> u32 {
         (vaddlvq_u8(vabdq_u8(a[0], b[0])) as u32)
             + (vaddlvq_u8(vabdq_u8(a[1], b[1])) as u32)
@@ -5618,7 +6095,7 @@ impl U8x64Backend for NeonToken {
             + (vaddlvq_u8(vabdq_u8(a[3], b[3])) as u32)
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn pairwise_widen_add(self, a: [uint8x16_t; 4]) -> [uint16x8_t; 4] {
         [
             vpaddlq_u8(a[0]),
@@ -5631,28 +6108,28 @@ impl U8x64Backend for NeonToken {
 
 #[cfg(feature = "w512")]
 #[cfg(target_arch = "aarch64")]
-impl I16x32Backend for NeonToken {
+impl I16x32Ops for NeonToken {
     type Repr = [int16x8_t; 4];
 
     #[inline(always)]
     fn splat(self, v: i16) -> [int16x8_t; 4] {
-        let q = <NeonToken as I16x8Backend>::splat(self, v);
+        let q = <NeonToken as I16x8Ops>::splat(self, v);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn zero(self) -> [int16x8_t; 4] {
-        let q = <NeonToken as I16x8Backend>::zero(self);
+        let q = <NeonToken as I16x8Ops>::zero(self);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn load(self, data: &[i16; 32]) -> [int16x8_t; 4] {
         [
-            <NeonToken as I16x8Backend>::load(self, data[0..8].try_into().unwrap()),
-            <NeonToken as I16x8Backend>::load(self, data[8..16].try_into().unwrap()),
-            <NeonToken as I16x8Backend>::load(self, data[16..24].try_into().unwrap()),
-            <NeonToken as I16x8Backend>::load(self, data[24..32].try_into().unwrap()),
+            <NeonToken as I16x8Ops>::load(self, data[0..8].try_into().unwrap()),
+            <NeonToken as I16x8Ops>::load(self, data[8..16].try_into().unwrap()),
+            <NeonToken as I16x8Ops>::load(self, data[16..24].try_into().unwrap()),
+            <NeonToken as I16x8Ops>::load(self, data[24..32].try_into().unwrap()),
         ]
     }
 
@@ -5667,10 +6144,10 @@ impl I16x32Backend for NeonToken {
         q2.copy_from_slice(&arr[16..24]);
         q3.copy_from_slice(&arr[24..32]);
         [
-            <NeonToken as I16x8Backend>::from_array(self, q0),
-            <NeonToken as I16x8Backend>::from_array(self, q1),
-            <NeonToken as I16x8Backend>::from_array(self, q2),
-            <NeonToken as I16x8Backend>::from_array(self, q3),
+            <NeonToken as I16x8Ops>::from_array(self, q0),
+            <NeonToken as I16x8Ops>::from_array(self, q1),
+            <NeonToken as I16x8Ops>::from_array(self, q2),
+            <NeonToken as I16x8Ops>::from_array(self, q3),
         ]
     }
 
@@ -5679,18 +6156,18 @@ impl I16x32Backend for NeonToken {
         let (o01, o23) = out.split_at_mut(16);
         let (o0, o1) = o01.split_at_mut(8);
         let (o2, o3) = o23.split_at_mut(8);
-        <NeonToken as I16x8Backend>::store(self, repr[0], o0.try_into().unwrap());
-        <NeonToken as I16x8Backend>::store(self, repr[1], o1.try_into().unwrap());
-        <NeonToken as I16x8Backend>::store(self, repr[2], o2.try_into().unwrap());
-        <NeonToken as I16x8Backend>::store(self, repr[3], o3.try_into().unwrap());
+        <NeonToken as I16x8Ops>::store(self, repr[0], o0.try_into().unwrap());
+        <NeonToken as I16x8Ops>::store(self, repr[1], o1.try_into().unwrap());
+        <NeonToken as I16x8Ops>::store(self, repr[2], o2.try_into().unwrap());
+        <NeonToken as I16x8Ops>::store(self, repr[3], o3.try_into().unwrap());
     }
 
     #[inline(always)]
     fn to_array(self, repr: [int16x8_t; 4]) -> [i16; 32] {
-        let a0 = <NeonToken as I16x8Backend>::to_array(self, repr[0]);
-        let a1 = <NeonToken as I16x8Backend>::to_array(self, repr[1]);
-        let a2 = <NeonToken as I16x8Backend>::to_array(self, repr[2]);
-        let a3 = <NeonToken as I16x8Backend>::to_array(self, repr[3]);
+        let a0 = <NeonToken as I16x8Ops>::to_array(self, repr[0]);
+        let a1 = <NeonToken as I16x8Ops>::to_array(self, repr[1]);
+        let a2 = <NeonToken as I16x8Ops>::to_array(self, repr[2]);
+        let a3 = <NeonToken as I16x8Ops>::to_array(self, repr[3]);
         let mut out = [0; 32];
         out[0..8].copy_from_slice(&a0);
         out[8..16].copy_from_slice(&a1);
@@ -5701,146 +6178,147 @@ impl I16x32Backend for NeonToken {
 
     #[inline(always)]
     fn add(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sub(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::sub(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn mul(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::mul(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::mul(self, a[i], b[i]))
+    }
+
+    #[inline(always)]
+    fn mul_hrs_q15(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::mul_hrs_q15(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn neg(self, a: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::neg(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::neg(self, a[i]))
     }
 
     #[inline(always)]
     fn min(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::min(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::min(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn max(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::max(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::max(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn abs(self, a: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::abs(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::abs(self, a[i]))
     }
 
     #[inline(always)]
     fn reduce_add(self, a: [int16x8_t; 4]) -> i16 {
-        <NeonToken as I16x8Backend>::reduce_add(self, a[0])
-            .wrapping_add(<NeonToken as I16x8Backend>::reduce_add(self, a[1]))
-            .wrapping_add(<NeonToken as I16x8Backend>::reduce_add(self, a[2]))
-            .wrapping_add(<NeonToken as I16x8Backend>::reduce_add(self, a[3]))
+        <NeonToken as I16x8Ops>::reduce_add(self, a[0])
+            .wrapping_add(<NeonToken as I16x8Ops>::reduce_add(self, a[1]))
+            .wrapping_add(<NeonToken as I16x8Ops>::reduce_add(self, a[2]))
+            .wrapping_add(<NeonToken as I16x8Ops>::reduce_add(self, a[3]))
     }
 
     #[inline(always)]
     fn shl_const<const N: i32>(self, a: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::shl_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::shl_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_arithmetic_const<const N: i32>(self, a: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::shr_arithmetic_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::shr_arithmetic_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_logical_const<const N: i32>(self, a: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shl_uniform(self, a: [int16x8_t; 4], count: u32) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::shl_uniform(self, a[i], count))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::shl_uniform(self, a[i], count))
     }
 
     #[inline(always)]
     fn shr_logical_uniform(self, a: [int16x8_t; 4], count: u32) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as I16x8Backend>::shr_logical_uniform(self, a[i], count)
-        })
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::shr_logical_uniform(self, a[i], count))
     }
 
     #[inline(always)]
     fn shr_arithmetic_uniform(self, a: [int16x8_t; 4], count: u32) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as I16x8Backend>::shr_arithmetic_uniform(self, a[i], count)
-        })
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::shr_arithmetic_uniform(self, a[i], count))
     }
 
     #[inline(always)]
     fn saturating_add(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::saturating_add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::saturating_add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn saturating_sub(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::saturating_sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::saturating_sub(self, a[i], b[i]))
     }
 
     // Reduce the quarters with vector AND/OR first, then ONE lane
     // reduction (fearless_simd's polyfill lesson; branchless).
     #[inline(always)]
     fn all_true(self, a: [int16x8_t; 4]) -> bool {
-        let c01 = <NeonToken as I16x8Backend>::bitand(self, a[0], a[1]);
-        let c23 = <NeonToken as I16x8Backend>::bitand(self, a[2], a[3]);
-        let c = <NeonToken as I16x8Backend>::bitand(self, c01, c23);
-        <NeonToken as I16x8Backend>::all_true(self, c)
+        let c01 = <NeonToken as I16x8Ops>::bitand(self, a[0], a[1]);
+        let c23 = <NeonToken as I16x8Ops>::bitand(self, a[2], a[3]);
+        let c = <NeonToken as I16x8Ops>::bitand(self, c01, c23);
+        <NeonToken as I16x8Ops>::all_true(self, c)
     }
 
     #[inline(always)]
     fn any_true(self, a: [int16x8_t; 4]) -> bool {
-        let c01 = <NeonToken as I16x8Backend>::bitor(self, a[0], a[1]);
-        let c23 = <NeonToken as I16x8Backend>::bitor(self, a[2], a[3]);
-        let c = <NeonToken as I16x8Backend>::bitor(self, c01, c23);
-        <NeonToken as I16x8Backend>::any_true(self, c)
+        let c01 = <NeonToken as I16x8Ops>::bitor(self, a[0], a[1]);
+        let c23 = <NeonToken as I16x8Ops>::bitor(self, a[2], a[3]);
+        let c = <NeonToken as I16x8Ops>::bitor(self, c01, c23);
+        <NeonToken as I16x8Ops>::any_true(self, c)
     }
 
     #[inline(always)]
     fn bitmask(self, a: [int16x8_t; 4]) -> u64 {
-        let q0 = <NeonToken as I16x8Backend>::bitmask(self, a[0]) as u64;
-        let q1 = <NeonToken as I16x8Backend>::bitmask(self, a[1]) as u64;
-        let q2 = <NeonToken as I16x8Backend>::bitmask(self, a[2]) as u64;
-        let q3 = <NeonToken as I16x8Backend>::bitmask(self, a[3]) as u64;
+        let q0 = <NeonToken as I16x8Ops>::bitmask(self, a[0]) as u64;
+        let q1 = <NeonToken as I16x8Ops>::bitmask(self, a[1]) as u64;
+        let q2 = <NeonToken as I16x8Ops>::bitmask(self, a[2]) as u64;
+        let q3 = <NeonToken as I16x8Ops>::bitmask(self, a[3]) as u64;
         q0 | (q1 << 8) | (q2 << 16) | (q3 << 24)
     }
 
     #[inline(always)]
     fn simd_eq(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::simd_eq(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::simd_eq(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ne(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::simd_ne(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::simd_ne(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_lt(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::simd_lt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::simd_lt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_le(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::simd_le(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::simd_le(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_gt(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::simd_gt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::simd_gt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ge(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::simd_ge(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::simd_ge(self, a[i], b[i]))
     }
 
     #[inline(always)]
@@ -5851,30 +6329,30 @@ impl I16x32Backend for NeonToken {
         if_false: [int16x8_t; 4],
     ) -> [int16x8_t; 4] {
         core::array::from_fn(|i| {
-            <NeonToken as I16x8Backend>::blend(self, mask[i], if_true[i], if_false[i])
+            <NeonToken as I16x8Ops>::blend(self, mask[i], if_true[i], if_false[i])
         })
     }
 
     #[inline(always)]
     fn not(self, a: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::not(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::not(self, a[i]))
     }
 
     #[inline(always)]
     fn bitand(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::bitand(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::bitand(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitor(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::bitor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::bitor(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitxor(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I16x8Backend>::bitxor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I16x8Ops>::bitxor(self, a[i], b[i]))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_i16_to_i32(self, a: [int16x8_t; 4]) -> [int32x4_t; 4] {
         [
             vmovl_s16(vget_low_s16(a[0])),
@@ -5884,7 +6362,7 @@ impl I16x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_i16_to_i32(self, a: [int16x8_t; 4]) -> [int32x4_t; 4] {
         [
             vmovl_s16(vget_low_s16(a[2])),
@@ -5894,7 +6372,7 @@ impl I16x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i16_to_i8(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int8x16_t; 4] {
         [
             vcombine_s8(vqmovn_s16(a[0]), vqmovn_s16(a[1])),
@@ -5904,7 +6382,7 @@ impl I16x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i16_to_u8(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [uint8x16_t; 4] {
         [
             vcombine_u8(vqmovun_s16(a[0]), vqmovun_s16(a[1])),
@@ -5914,7 +6392,7 @@ impl I16x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn madd_adjacent(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [int32x4_t; 4] {
         [
             vpaddq_s32(
@@ -5936,7 +6414,7 @@ impl I16x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn abs_diff(self, a: [int16x8_t; 4], b: [int16x8_t; 4]) -> [uint16x8_t; 4] {
         [
             vreinterpretq_u16_s16(vabdq_s16(a[0], b[0])),
@@ -5949,28 +6427,28 @@ impl I16x32Backend for NeonToken {
 
 #[cfg(feature = "w512")]
 #[cfg(target_arch = "aarch64")]
-impl U16x32Backend for NeonToken {
+impl U16x32Ops for NeonToken {
     type Repr = [uint16x8_t; 4];
 
     #[inline(always)]
     fn splat(self, v: u16) -> [uint16x8_t; 4] {
-        let q = <NeonToken as U16x8Backend>::splat(self, v);
+        let q = <NeonToken as U16x8Ops>::splat(self, v);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn zero(self) -> [uint16x8_t; 4] {
-        let q = <NeonToken as U16x8Backend>::zero(self);
+        let q = <NeonToken as U16x8Ops>::zero(self);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn load(self, data: &[u16; 32]) -> [uint16x8_t; 4] {
         [
-            <NeonToken as U16x8Backend>::load(self, data[0..8].try_into().unwrap()),
-            <NeonToken as U16x8Backend>::load(self, data[8..16].try_into().unwrap()),
-            <NeonToken as U16x8Backend>::load(self, data[16..24].try_into().unwrap()),
-            <NeonToken as U16x8Backend>::load(self, data[24..32].try_into().unwrap()),
+            <NeonToken as U16x8Ops>::load(self, data[0..8].try_into().unwrap()),
+            <NeonToken as U16x8Ops>::load(self, data[8..16].try_into().unwrap()),
+            <NeonToken as U16x8Ops>::load(self, data[16..24].try_into().unwrap()),
+            <NeonToken as U16x8Ops>::load(self, data[24..32].try_into().unwrap()),
         ]
     }
 
@@ -5985,10 +6463,10 @@ impl U16x32Backend for NeonToken {
         q2.copy_from_slice(&arr[16..24]);
         q3.copy_from_slice(&arr[24..32]);
         [
-            <NeonToken as U16x8Backend>::from_array(self, q0),
-            <NeonToken as U16x8Backend>::from_array(self, q1),
-            <NeonToken as U16x8Backend>::from_array(self, q2),
-            <NeonToken as U16x8Backend>::from_array(self, q3),
+            <NeonToken as U16x8Ops>::from_array(self, q0),
+            <NeonToken as U16x8Ops>::from_array(self, q1),
+            <NeonToken as U16x8Ops>::from_array(self, q2),
+            <NeonToken as U16x8Ops>::from_array(self, q3),
         ]
     }
 
@@ -5997,18 +6475,18 @@ impl U16x32Backend for NeonToken {
         let (o01, o23) = out.split_at_mut(16);
         let (o0, o1) = o01.split_at_mut(8);
         let (o2, o3) = o23.split_at_mut(8);
-        <NeonToken as U16x8Backend>::store(self, repr[0], o0.try_into().unwrap());
-        <NeonToken as U16x8Backend>::store(self, repr[1], o1.try_into().unwrap());
-        <NeonToken as U16x8Backend>::store(self, repr[2], o2.try_into().unwrap());
-        <NeonToken as U16x8Backend>::store(self, repr[3], o3.try_into().unwrap());
+        <NeonToken as U16x8Ops>::store(self, repr[0], o0.try_into().unwrap());
+        <NeonToken as U16x8Ops>::store(self, repr[1], o1.try_into().unwrap());
+        <NeonToken as U16x8Ops>::store(self, repr[2], o2.try_into().unwrap());
+        <NeonToken as U16x8Ops>::store(self, repr[3], o3.try_into().unwrap());
     }
 
     #[inline(always)]
     fn to_array(self, repr: [uint16x8_t; 4]) -> [u16; 32] {
-        let a0 = <NeonToken as U16x8Backend>::to_array(self, repr[0]);
-        let a1 = <NeonToken as U16x8Backend>::to_array(self, repr[1]);
-        let a2 = <NeonToken as U16x8Backend>::to_array(self, repr[2]);
-        let a3 = <NeonToken as U16x8Backend>::to_array(self, repr[3]);
+        let a0 = <NeonToken as U16x8Ops>::to_array(self, repr[0]);
+        let a1 = <NeonToken as U16x8Ops>::to_array(self, repr[1]);
+        let a2 = <NeonToken as U16x8Ops>::to_array(self, repr[2]);
+        let a3 = <NeonToken as U16x8Ops>::to_array(self, repr[3]);
         let mut out = [0; 32];
         out[0..8].copy_from_slice(&a0);
         out[8..16].copy_from_slice(&a1);
@@ -6019,142 +6497,138 @@ impl U16x32Backend for NeonToken {
 
     #[inline(always)]
     fn add(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sub(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::sub(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn mul(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::mul(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::mul(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn neg(self, a: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        let z = <NeonToken as U16x8Backend>::zero(self);
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::sub(self, z, a[i]))
+        let z = <NeonToken as U16x8Ops>::zero(self);
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::sub(self, z, a[i]))
     }
 
     #[inline(always)]
     fn min(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::min(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::min(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn max(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::max(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::max(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn reduce_add(self, a: [uint16x8_t; 4]) -> u16 {
-        <NeonToken as U16x8Backend>::reduce_add(self, a[0])
-            .wrapping_add(<NeonToken as U16x8Backend>::reduce_add(self, a[1]))
-            .wrapping_add(<NeonToken as U16x8Backend>::reduce_add(self, a[2]))
-            .wrapping_add(<NeonToken as U16x8Backend>::reduce_add(self, a[3]))
+        <NeonToken as U16x8Ops>::reduce_add(self, a[0])
+            .wrapping_add(<NeonToken as U16x8Ops>::reduce_add(self, a[1]))
+            .wrapping_add(<NeonToken as U16x8Ops>::reduce_add(self, a[2]))
+            .wrapping_add(<NeonToken as U16x8Ops>::reduce_add(self, a[3]))
     }
 
     #[inline(always)]
     fn shl_const<const N: i32>(self, a: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::shl_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::shl_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_arithmetic_const<const N: i32>(self, a: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_logical_const<const N: i32>(self, a: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shl_uniform(self, a: [uint16x8_t; 4], count: u32) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::shl_uniform(self, a[i], count))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::shl_uniform(self, a[i], count))
     }
 
     #[inline(always)]
     fn shr_logical_uniform(self, a: [uint16x8_t; 4], count: u32) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as U16x8Backend>::shr_logical_uniform(self, a[i], count)
-        })
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::shr_logical_uniform(self, a[i], count))
     }
 
     #[inline(always)]
     fn shr_arithmetic_uniform(self, a: [uint16x8_t; 4], count: u32) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as U16x8Backend>::shr_logical_uniform(self, a[i], count)
-        })
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::shr_logical_uniform(self, a[i], count))
     }
 
     #[inline(always)]
     fn saturating_add(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::saturating_add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::saturating_add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn saturating_sub(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::saturating_sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::saturating_sub(self, a[i], b[i]))
     }
 
     // Reduce the quarters with vector AND/OR first, then ONE lane
     // reduction (fearless_simd's polyfill lesson; branchless).
     #[inline(always)]
     fn all_true(self, a: [uint16x8_t; 4]) -> bool {
-        let c01 = <NeonToken as U16x8Backend>::bitand(self, a[0], a[1]);
-        let c23 = <NeonToken as U16x8Backend>::bitand(self, a[2], a[3]);
-        let c = <NeonToken as U16x8Backend>::bitand(self, c01, c23);
-        <NeonToken as U16x8Backend>::all_true(self, c)
+        let c01 = <NeonToken as U16x8Ops>::bitand(self, a[0], a[1]);
+        let c23 = <NeonToken as U16x8Ops>::bitand(self, a[2], a[3]);
+        let c = <NeonToken as U16x8Ops>::bitand(self, c01, c23);
+        <NeonToken as U16x8Ops>::all_true(self, c)
     }
 
     #[inline(always)]
     fn any_true(self, a: [uint16x8_t; 4]) -> bool {
-        let c01 = <NeonToken as U16x8Backend>::bitor(self, a[0], a[1]);
-        let c23 = <NeonToken as U16x8Backend>::bitor(self, a[2], a[3]);
-        let c = <NeonToken as U16x8Backend>::bitor(self, c01, c23);
-        <NeonToken as U16x8Backend>::any_true(self, c)
+        let c01 = <NeonToken as U16x8Ops>::bitor(self, a[0], a[1]);
+        let c23 = <NeonToken as U16x8Ops>::bitor(self, a[2], a[3]);
+        let c = <NeonToken as U16x8Ops>::bitor(self, c01, c23);
+        <NeonToken as U16x8Ops>::any_true(self, c)
     }
 
     #[inline(always)]
     fn bitmask(self, a: [uint16x8_t; 4]) -> u64 {
-        let q0 = <NeonToken as U16x8Backend>::bitmask(self, a[0]) as u64;
-        let q1 = <NeonToken as U16x8Backend>::bitmask(self, a[1]) as u64;
-        let q2 = <NeonToken as U16x8Backend>::bitmask(self, a[2]) as u64;
-        let q3 = <NeonToken as U16x8Backend>::bitmask(self, a[3]) as u64;
+        let q0 = <NeonToken as U16x8Ops>::bitmask(self, a[0]) as u64;
+        let q1 = <NeonToken as U16x8Ops>::bitmask(self, a[1]) as u64;
+        let q2 = <NeonToken as U16x8Ops>::bitmask(self, a[2]) as u64;
+        let q3 = <NeonToken as U16x8Ops>::bitmask(self, a[3]) as u64;
         q0 | (q1 << 8) | (q2 << 16) | (q3 << 24)
     }
 
     #[inline(always)]
     fn simd_eq(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::simd_eq(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::simd_eq(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ne(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::simd_ne(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::simd_ne(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_lt(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::simd_lt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::simd_lt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_le(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::simd_le(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::simd_le(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_gt(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::simd_gt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::simd_gt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ge(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::simd_ge(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::simd_ge(self, a[i], b[i]))
     }
 
     #[inline(always)]
@@ -6165,30 +6639,30 @@ impl U16x32Backend for NeonToken {
         if_false: [uint16x8_t; 4],
     ) -> [uint16x8_t; 4] {
         core::array::from_fn(|i| {
-            <NeonToken as U16x8Backend>::blend(self, mask[i], if_true[i], if_false[i])
+            <NeonToken as U16x8Ops>::blend(self, mask[i], if_true[i], if_false[i])
         })
     }
 
     #[inline(always)]
     fn not(self, a: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::not(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::not(self, a[i]))
     }
 
     #[inline(always)]
     fn bitand(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::bitand(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::bitand(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitor(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::bitor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::bitor(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitxor(self, a: [uint16x8_t; 4], b: [uint16x8_t; 4]) -> [uint16x8_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U16x8Backend>::bitxor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U16x8Ops>::bitxor(self, a[i], b[i]))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_low_u16_to_u32(self, a: [uint16x8_t; 4]) -> [uint32x4_t; 4] {
         [
             vmovl_u16(vget_low_u16(a[0])),
@@ -6198,7 +6672,7 @@ impl U16x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn widen_high_u16_to_u32(self, a: [uint16x8_t; 4]) -> [uint32x4_t; 4] {
         [
             vmovl_u16(vget_low_u16(a[2])),
@@ -6208,7 +6682,7 @@ impl U16x32Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn pairwise_widen_add(self, a: [uint16x8_t; 4]) -> [uint32x4_t; 4] {
         [
             vpaddlq_u16(a[0]),
@@ -6221,28 +6695,28 @@ impl U16x32Backend for NeonToken {
 
 #[cfg(feature = "w512")]
 #[cfg(target_arch = "aarch64")]
-impl I32x16Backend for NeonToken {
+impl I32x16Ops for NeonToken {
     type Repr = [int32x4_t; 4];
 
     #[inline(always)]
     fn splat(self, v: i32) -> [int32x4_t; 4] {
-        let q = <NeonToken as I32x4Backend>::splat(self, v);
+        let q = <NeonToken as I32x4Ops>::splat(self, v);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn zero(self) -> [int32x4_t; 4] {
-        let q = <NeonToken as I32x4Backend>::zero(self);
+        let q = <NeonToken as I32x4Ops>::zero(self);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn load(self, data: &[i32; 16]) -> [int32x4_t; 4] {
         [
-            <NeonToken as I32x4Backend>::load(self, data[0..4].try_into().unwrap()),
-            <NeonToken as I32x4Backend>::load(self, data[4..8].try_into().unwrap()),
-            <NeonToken as I32x4Backend>::load(self, data[8..12].try_into().unwrap()),
-            <NeonToken as I32x4Backend>::load(self, data[12..16].try_into().unwrap()),
+            <NeonToken as I32x4Ops>::load(self, data[0..4].try_into().unwrap()),
+            <NeonToken as I32x4Ops>::load(self, data[4..8].try_into().unwrap()),
+            <NeonToken as I32x4Ops>::load(self, data[8..12].try_into().unwrap()),
+            <NeonToken as I32x4Ops>::load(self, data[12..16].try_into().unwrap()),
         ]
     }
 
@@ -6257,10 +6731,10 @@ impl I32x16Backend for NeonToken {
         q2.copy_from_slice(&arr[8..12]);
         q3.copy_from_slice(&arr[12..16]);
         [
-            <NeonToken as I32x4Backend>::from_array(self, q0),
-            <NeonToken as I32x4Backend>::from_array(self, q1),
-            <NeonToken as I32x4Backend>::from_array(self, q2),
-            <NeonToken as I32x4Backend>::from_array(self, q3),
+            <NeonToken as I32x4Ops>::from_array(self, q0),
+            <NeonToken as I32x4Ops>::from_array(self, q1),
+            <NeonToken as I32x4Ops>::from_array(self, q2),
+            <NeonToken as I32x4Ops>::from_array(self, q3),
         ]
     }
 
@@ -6269,18 +6743,18 @@ impl I32x16Backend for NeonToken {
         let (o01, o23) = out.split_at_mut(8);
         let (o0, o1) = o01.split_at_mut(4);
         let (o2, o3) = o23.split_at_mut(4);
-        <NeonToken as I32x4Backend>::store(self, repr[0], o0.try_into().unwrap());
-        <NeonToken as I32x4Backend>::store(self, repr[1], o1.try_into().unwrap());
-        <NeonToken as I32x4Backend>::store(self, repr[2], o2.try_into().unwrap());
-        <NeonToken as I32x4Backend>::store(self, repr[3], o3.try_into().unwrap());
+        <NeonToken as I32x4Ops>::store(self, repr[0], o0.try_into().unwrap());
+        <NeonToken as I32x4Ops>::store(self, repr[1], o1.try_into().unwrap());
+        <NeonToken as I32x4Ops>::store(self, repr[2], o2.try_into().unwrap());
+        <NeonToken as I32x4Ops>::store(self, repr[3], o3.try_into().unwrap());
     }
 
     #[inline(always)]
     fn to_array(self, repr: [int32x4_t; 4]) -> [i32; 16] {
-        let a0 = <NeonToken as I32x4Backend>::to_array(self, repr[0]);
-        let a1 = <NeonToken as I32x4Backend>::to_array(self, repr[1]);
-        let a2 = <NeonToken as I32x4Backend>::to_array(self, repr[2]);
-        let a3 = <NeonToken as I32x4Backend>::to_array(self, repr[3]);
+        let a0 = <NeonToken as I32x4Ops>::to_array(self, repr[0]);
+        let a1 = <NeonToken as I32x4Ops>::to_array(self, repr[1]);
+        let a2 = <NeonToken as I32x4Ops>::to_array(self, repr[2]);
+        let a3 = <NeonToken as I32x4Ops>::to_array(self, repr[3]);
         let mut out = [0; 16];
         out[0..4].copy_from_slice(&a0);
         out[4..8].copy_from_slice(&a1);
@@ -6291,136 +6765,132 @@ impl I32x16Backend for NeonToken {
 
     #[inline(always)]
     fn add(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sub(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::sub(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn mul(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::mul(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::mul(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn neg(self, a: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::neg(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::neg(self, a[i]))
     }
 
     #[inline(always)]
     fn min(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::min(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::min(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn max(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::max(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::max(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn abs(self, a: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::abs(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::abs(self, a[i]))
     }
 
     #[inline(always)]
     fn reduce_add(self, a: [int32x4_t; 4]) -> i32 {
-        <NeonToken as I32x4Backend>::reduce_add(self, a[0])
-            .wrapping_add(<NeonToken as I32x4Backend>::reduce_add(self, a[1]))
-            .wrapping_add(<NeonToken as I32x4Backend>::reduce_add(self, a[2]))
-            .wrapping_add(<NeonToken as I32x4Backend>::reduce_add(self, a[3]))
+        <NeonToken as I32x4Ops>::reduce_add(self, a[0])
+            .wrapping_add(<NeonToken as I32x4Ops>::reduce_add(self, a[1]))
+            .wrapping_add(<NeonToken as I32x4Ops>::reduce_add(self, a[2]))
+            .wrapping_add(<NeonToken as I32x4Ops>::reduce_add(self, a[3]))
     }
 
     #[inline(always)]
     fn shl_const<const N: i32>(self, a: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::shl_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::shl_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_arithmetic_const<const N: i32>(self, a: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::shr_arithmetic_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::shr_arithmetic_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_logical_const<const N: i32>(self, a: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shl_uniform(self, a: [int32x4_t; 4], count: u32) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::shl_uniform(self, a[i], count))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::shl_uniform(self, a[i], count))
     }
 
     #[inline(always)]
     fn shr_logical_uniform(self, a: [int32x4_t; 4], count: u32) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as I32x4Backend>::shr_logical_uniform(self, a[i], count)
-        })
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::shr_logical_uniform(self, a[i], count))
     }
 
     #[inline(always)]
     fn shr_arithmetic_uniform(self, a: [int32x4_t; 4], count: u32) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as I32x4Backend>::shr_arithmetic_uniform(self, a[i], count)
-        })
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::shr_arithmetic_uniform(self, a[i], count))
     }
 
     // Reduce the quarters with vector AND/OR first, then ONE lane
     // reduction (fearless_simd's polyfill lesson; branchless).
     #[inline(always)]
     fn all_true(self, a: [int32x4_t; 4]) -> bool {
-        let c01 = <NeonToken as I32x4Backend>::bitand(self, a[0], a[1]);
-        let c23 = <NeonToken as I32x4Backend>::bitand(self, a[2], a[3]);
-        let c = <NeonToken as I32x4Backend>::bitand(self, c01, c23);
-        <NeonToken as I32x4Backend>::all_true(self, c)
+        let c01 = <NeonToken as I32x4Ops>::bitand(self, a[0], a[1]);
+        let c23 = <NeonToken as I32x4Ops>::bitand(self, a[2], a[3]);
+        let c = <NeonToken as I32x4Ops>::bitand(self, c01, c23);
+        <NeonToken as I32x4Ops>::all_true(self, c)
     }
 
     #[inline(always)]
     fn any_true(self, a: [int32x4_t; 4]) -> bool {
-        let c01 = <NeonToken as I32x4Backend>::bitor(self, a[0], a[1]);
-        let c23 = <NeonToken as I32x4Backend>::bitor(self, a[2], a[3]);
-        let c = <NeonToken as I32x4Backend>::bitor(self, c01, c23);
-        <NeonToken as I32x4Backend>::any_true(self, c)
+        let c01 = <NeonToken as I32x4Ops>::bitor(self, a[0], a[1]);
+        let c23 = <NeonToken as I32x4Ops>::bitor(self, a[2], a[3]);
+        let c = <NeonToken as I32x4Ops>::bitor(self, c01, c23);
+        <NeonToken as I32x4Ops>::any_true(self, c)
     }
 
     #[inline(always)]
     fn bitmask(self, a: [int32x4_t; 4]) -> u64 {
-        let q0 = <NeonToken as I32x4Backend>::bitmask(self, a[0]) as u64;
-        let q1 = <NeonToken as I32x4Backend>::bitmask(self, a[1]) as u64;
-        let q2 = <NeonToken as I32x4Backend>::bitmask(self, a[2]) as u64;
-        let q3 = <NeonToken as I32x4Backend>::bitmask(self, a[3]) as u64;
+        let q0 = <NeonToken as I32x4Ops>::bitmask(self, a[0]) as u64;
+        let q1 = <NeonToken as I32x4Ops>::bitmask(self, a[1]) as u64;
+        let q2 = <NeonToken as I32x4Ops>::bitmask(self, a[2]) as u64;
+        let q3 = <NeonToken as I32x4Ops>::bitmask(self, a[3]) as u64;
         q0 | (q1 << 4) | (q2 << 8) | (q3 << 12)
     }
 
     #[inline(always)]
     fn simd_eq(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::simd_eq(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::simd_eq(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ne(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::simd_ne(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::simd_ne(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_lt(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::simd_lt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::simd_lt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_le(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::simd_le(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::simd_le(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_gt(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::simd_gt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::simd_gt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ge(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::simd_ge(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::simd_ge(self, a[i], b[i]))
     }
 
     #[inline(always)]
@@ -6431,30 +6901,30 @@ impl I32x16Backend for NeonToken {
         if_false: [int32x4_t; 4],
     ) -> [int32x4_t; 4] {
         core::array::from_fn(|i| {
-            <NeonToken as I32x4Backend>::blend(self, mask[i], if_true[i], if_false[i])
+            <NeonToken as I32x4Ops>::blend(self, mask[i], if_true[i], if_false[i])
         })
     }
 
     #[inline(always)]
     fn not(self, a: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::not(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::not(self, a[i]))
     }
 
     #[inline(always)]
     fn bitand(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::bitand(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::bitand(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitor(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::bitor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::bitor(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitxor(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I32x4Backend>::bitxor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I32x4Ops>::bitxor(self, a[i], b[i]))
     }
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i32_to_i16(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [int16x8_t; 4] {
         [
             vcombine_s16(vqmovn_s32(a[0]), vqmovn_s32(a[1])),
@@ -6464,7 +6934,7 @@ impl I32x16Backend for NeonToken {
         ]
     }
 
-    #[arcane(suppress_const_test, _self = NeonToken)]
+    #[arcane(_self = NeonToken)]
     fn narrow_saturating_i32_to_u16(self, a: [int32x4_t; 4], b: [int32x4_t; 4]) -> [uint16x8_t; 4] {
         [
             vcombine_u16(vqmovun_s32(a[0]), vqmovun_s32(a[1])),
@@ -6477,28 +6947,28 @@ impl I32x16Backend for NeonToken {
 
 #[cfg(feature = "w512")]
 #[cfg(target_arch = "aarch64")]
-impl U32x16Backend for NeonToken {
+impl U32x16Ops for NeonToken {
     type Repr = [uint32x4_t; 4];
 
     #[inline(always)]
     fn splat(self, v: u32) -> [uint32x4_t; 4] {
-        let q = <NeonToken as U32x4Backend>::splat(self, v);
+        let q = <NeonToken as U32x4Ops>::splat(self, v);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn zero(self) -> [uint32x4_t; 4] {
-        let q = <NeonToken as U32x4Backend>::zero(self);
+        let q = <NeonToken as U32x4Ops>::zero(self);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn load(self, data: &[u32; 16]) -> [uint32x4_t; 4] {
         [
-            <NeonToken as U32x4Backend>::load(self, data[0..4].try_into().unwrap()),
-            <NeonToken as U32x4Backend>::load(self, data[4..8].try_into().unwrap()),
-            <NeonToken as U32x4Backend>::load(self, data[8..12].try_into().unwrap()),
-            <NeonToken as U32x4Backend>::load(self, data[12..16].try_into().unwrap()),
+            <NeonToken as U32x4Ops>::load(self, data[0..4].try_into().unwrap()),
+            <NeonToken as U32x4Ops>::load(self, data[4..8].try_into().unwrap()),
+            <NeonToken as U32x4Ops>::load(self, data[8..12].try_into().unwrap()),
+            <NeonToken as U32x4Ops>::load(self, data[12..16].try_into().unwrap()),
         ]
     }
 
@@ -6513,10 +6983,10 @@ impl U32x16Backend for NeonToken {
         q2.copy_from_slice(&arr[8..12]);
         q3.copy_from_slice(&arr[12..16]);
         [
-            <NeonToken as U32x4Backend>::from_array(self, q0),
-            <NeonToken as U32x4Backend>::from_array(self, q1),
-            <NeonToken as U32x4Backend>::from_array(self, q2),
-            <NeonToken as U32x4Backend>::from_array(self, q3),
+            <NeonToken as U32x4Ops>::from_array(self, q0),
+            <NeonToken as U32x4Ops>::from_array(self, q1),
+            <NeonToken as U32x4Ops>::from_array(self, q2),
+            <NeonToken as U32x4Ops>::from_array(self, q3),
         ]
     }
 
@@ -6525,18 +6995,18 @@ impl U32x16Backend for NeonToken {
         let (o01, o23) = out.split_at_mut(8);
         let (o0, o1) = o01.split_at_mut(4);
         let (o2, o3) = o23.split_at_mut(4);
-        <NeonToken as U32x4Backend>::store(self, repr[0], o0.try_into().unwrap());
-        <NeonToken as U32x4Backend>::store(self, repr[1], o1.try_into().unwrap());
-        <NeonToken as U32x4Backend>::store(self, repr[2], o2.try_into().unwrap());
-        <NeonToken as U32x4Backend>::store(self, repr[3], o3.try_into().unwrap());
+        <NeonToken as U32x4Ops>::store(self, repr[0], o0.try_into().unwrap());
+        <NeonToken as U32x4Ops>::store(self, repr[1], o1.try_into().unwrap());
+        <NeonToken as U32x4Ops>::store(self, repr[2], o2.try_into().unwrap());
+        <NeonToken as U32x4Ops>::store(self, repr[3], o3.try_into().unwrap());
     }
 
     #[inline(always)]
     fn to_array(self, repr: [uint32x4_t; 4]) -> [u32; 16] {
-        let a0 = <NeonToken as U32x4Backend>::to_array(self, repr[0]);
-        let a1 = <NeonToken as U32x4Backend>::to_array(self, repr[1]);
-        let a2 = <NeonToken as U32x4Backend>::to_array(self, repr[2]);
-        let a3 = <NeonToken as U32x4Backend>::to_array(self, repr[3]);
+        let a0 = <NeonToken as U32x4Ops>::to_array(self, repr[0]);
+        let a1 = <NeonToken as U32x4Ops>::to_array(self, repr[1]);
+        let a2 = <NeonToken as U32x4Ops>::to_array(self, repr[2]);
+        let a3 = <NeonToken as U32x4Ops>::to_array(self, repr[3]);
         let mut out = [0; 16];
         out[0..4].copy_from_slice(&a0);
         out[4..8].copy_from_slice(&a1);
@@ -6547,132 +7017,128 @@ impl U32x16Backend for NeonToken {
 
     #[inline(always)]
     fn add(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sub(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::sub(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn mul(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::mul(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::mul(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn neg(self, a: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        let z = <NeonToken as U32x4Backend>::zero(self);
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::sub(self, z, a[i]))
+        let z = <NeonToken as U32x4Ops>::zero(self);
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::sub(self, z, a[i]))
     }
 
     #[inline(always)]
     fn min(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::min(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::min(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn max(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::max(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::max(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn reduce_add(self, a: [uint32x4_t; 4]) -> u32 {
-        <NeonToken as U32x4Backend>::reduce_add(self, a[0])
-            .wrapping_add(<NeonToken as U32x4Backend>::reduce_add(self, a[1]))
-            .wrapping_add(<NeonToken as U32x4Backend>::reduce_add(self, a[2]))
-            .wrapping_add(<NeonToken as U32x4Backend>::reduce_add(self, a[3]))
+        <NeonToken as U32x4Ops>::reduce_add(self, a[0])
+            .wrapping_add(<NeonToken as U32x4Ops>::reduce_add(self, a[1]))
+            .wrapping_add(<NeonToken as U32x4Ops>::reduce_add(self, a[2]))
+            .wrapping_add(<NeonToken as U32x4Ops>::reduce_add(self, a[3]))
     }
 
     #[inline(always)]
     fn shl_const<const N: i32>(self, a: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::shl_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::shl_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_arithmetic_const<const N: i32>(self, a: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_logical_const<const N: i32>(self, a: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shl_uniform(self, a: [uint32x4_t; 4], count: u32) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::shl_uniform(self, a[i], count))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::shl_uniform(self, a[i], count))
     }
 
     #[inline(always)]
     fn shr_logical_uniform(self, a: [uint32x4_t; 4], count: u32) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as U32x4Backend>::shr_logical_uniform(self, a[i], count)
-        })
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::shr_logical_uniform(self, a[i], count))
     }
 
     #[inline(always)]
     fn shr_arithmetic_uniform(self, a: [uint32x4_t; 4], count: u32) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| {
-            <NeonToken as U32x4Backend>::shr_logical_uniform(self, a[i], count)
-        })
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::shr_logical_uniform(self, a[i], count))
     }
 
     // Reduce the quarters with vector AND/OR first, then ONE lane
     // reduction (fearless_simd's polyfill lesson; branchless).
     #[inline(always)]
     fn all_true(self, a: [uint32x4_t; 4]) -> bool {
-        let c01 = <NeonToken as U32x4Backend>::bitand(self, a[0], a[1]);
-        let c23 = <NeonToken as U32x4Backend>::bitand(self, a[2], a[3]);
-        let c = <NeonToken as U32x4Backend>::bitand(self, c01, c23);
-        <NeonToken as U32x4Backend>::all_true(self, c)
+        let c01 = <NeonToken as U32x4Ops>::bitand(self, a[0], a[1]);
+        let c23 = <NeonToken as U32x4Ops>::bitand(self, a[2], a[3]);
+        let c = <NeonToken as U32x4Ops>::bitand(self, c01, c23);
+        <NeonToken as U32x4Ops>::all_true(self, c)
     }
 
     #[inline(always)]
     fn any_true(self, a: [uint32x4_t; 4]) -> bool {
-        let c01 = <NeonToken as U32x4Backend>::bitor(self, a[0], a[1]);
-        let c23 = <NeonToken as U32x4Backend>::bitor(self, a[2], a[3]);
-        let c = <NeonToken as U32x4Backend>::bitor(self, c01, c23);
-        <NeonToken as U32x4Backend>::any_true(self, c)
+        let c01 = <NeonToken as U32x4Ops>::bitor(self, a[0], a[1]);
+        let c23 = <NeonToken as U32x4Ops>::bitor(self, a[2], a[3]);
+        let c = <NeonToken as U32x4Ops>::bitor(self, c01, c23);
+        <NeonToken as U32x4Ops>::any_true(self, c)
     }
 
     #[inline(always)]
     fn bitmask(self, a: [uint32x4_t; 4]) -> u64 {
-        let q0 = <NeonToken as U32x4Backend>::bitmask(self, a[0]) as u64;
-        let q1 = <NeonToken as U32x4Backend>::bitmask(self, a[1]) as u64;
-        let q2 = <NeonToken as U32x4Backend>::bitmask(self, a[2]) as u64;
-        let q3 = <NeonToken as U32x4Backend>::bitmask(self, a[3]) as u64;
+        let q0 = <NeonToken as U32x4Ops>::bitmask(self, a[0]) as u64;
+        let q1 = <NeonToken as U32x4Ops>::bitmask(self, a[1]) as u64;
+        let q2 = <NeonToken as U32x4Ops>::bitmask(self, a[2]) as u64;
+        let q3 = <NeonToken as U32x4Ops>::bitmask(self, a[3]) as u64;
         q0 | (q1 << 4) | (q2 << 8) | (q3 << 12)
     }
 
     #[inline(always)]
     fn simd_eq(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::simd_eq(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::simd_eq(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ne(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::simd_ne(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::simd_ne(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_lt(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::simd_lt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::simd_lt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_le(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::simd_le(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::simd_le(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_gt(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::simd_gt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::simd_gt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ge(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::simd_ge(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::simd_ge(self, a[i], b[i]))
     }
 
     #[inline(always)]
@@ -6683,55 +7149,55 @@ impl U32x16Backend for NeonToken {
         if_false: [uint32x4_t; 4],
     ) -> [uint32x4_t; 4] {
         core::array::from_fn(|i| {
-            <NeonToken as U32x4Backend>::blend(self, mask[i], if_true[i], if_false[i])
+            <NeonToken as U32x4Ops>::blend(self, mask[i], if_true[i], if_false[i])
         })
     }
 
     #[inline(always)]
     fn not(self, a: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::not(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::not(self, a[i]))
     }
 
     #[inline(always)]
     fn bitand(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::bitand(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::bitand(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitor(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::bitor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::bitor(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitxor(self, a: [uint32x4_t; 4], b: [uint32x4_t; 4]) -> [uint32x4_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U32x4Backend>::bitxor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U32x4Ops>::bitxor(self, a[i], b[i]))
     }
 }
 
 #[cfg(feature = "w512")]
 #[cfg(target_arch = "aarch64")]
-impl I64x8Backend for NeonToken {
+impl I64x8Ops for NeonToken {
     type Repr = [int64x2_t; 4];
 
     #[inline(always)]
     fn splat(self, v: i64) -> [int64x2_t; 4] {
-        let q = <NeonToken as I64x2Backend>::splat(self, v);
+        let q = <NeonToken as I64x2Ops>::splat(self, v);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn zero(self) -> [int64x2_t; 4] {
-        let q = <NeonToken as I64x2Backend>::zero(self);
+        let q = <NeonToken as I64x2Ops>::zero(self);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn load(self, data: &[i64; 8]) -> [int64x2_t; 4] {
         [
-            <NeonToken as I64x2Backend>::load(self, data[0..2].try_into().unwrap()),
-            <NeonToken as I64x2Backend>::load(self, data[2..4].try_into().unwrap()),
-            <NeonToken as I64x2Backend>::load(self, data[4..6].try_into().unwrap()),
-            <NeonToken as I64x2Backend>::load(self, data[6..8].try_into().unwrap()),
+            <NeonToken as I64x2Ops>::load(self, data[0..2].try_into().unwrap()),
+            <NeonToken as I64x2Ops>::load(self, data[2..4].try_into().unwrap()),
+            <NeonToken as I64x2Ops>::load(self, data[4..6].try_into().unwrap()),
+            <NeonToken as I64x2Ops>::load(self, data[6..8].try_into().unwrap()),
         ]
     }
 
@@ -6746,10 +7212,10 @@ impl I64x8Backend for NeonToken {
         q2.copy_from_slice(&arr[4..6]);
         q3.copy_from_slice(&arr[6..8]);
         [
-            <NeonToken as I64x2Backend>::from_array(self, q0),
-            <NeonToken as I64x2Backend>::from_array(self, q1),
-            <NeonToken as I64x2Backend>::from_array(self, q2),
-            <NeonToken as I64x2Backend>::from_array(self, q3),
+            <NeonToken as I64x2Ops>::from_array(self, q0),
+            <NeonToken as I64x2Ops>::from_array(self, q1),
+            <NeonToken as I64x2Ops>::from_array(self, q2),
+            <NeonToken as I64x2Ops>::from_array(self, q3),
         ]
     }
 
@@ -6758,18 +7224,18 @@ impl I64x8Backend for NeonToken {
         let (o01, o23) = out.split_at_mut(4);
         let (o0, o1) = o01.split_at_mut(2);
         let (o2, o3) = o23.split_at_mut(2);
-        <NeonToken as I64x2Backend>::store(self, repr[0], o0.try_into().unwrap());
-        <NeonToken as I64x2Backend>::store(self, repr[1], o1.try_into().unwrap());
-        <NeonToken as I64x2Backend>::store(self, repr[2], o2.try_into().unwrap());
-        <NeonToken as I64x2Backend>::store(self, repr[3], o3.try_into().unwrap());
+        <NeonToken as I64x2Ops>::store(self, repr[0], o0.try_into().unwrap());
+        <NeonToken as I64x2Ops>::store(self, repr[1], o1.try_into().unwrap());
+        <NeonToken as I64x2Ops>::store(self, repr[2], o2.try_into().unwrap());
+        <NeonToken as I64x2Ops>::store(self, repr[3], o3.try_into().unwrap());
     }
 
     #[inline(always)]
     fn to_array(self, repr: [int64x2_t; 4]) -> [i64; 8] {
-        let a0 = <NeonToken as I64x2Backend>::to_array(self, repr[0]);
-        let a1 = <NeonToken as I64x2Backend>::to_array(self, repr[1]);
-        let a2 = <NeonToken as I64x2Backend>::to_array(self, repr[2]);
-        let a3 = <NeonToken as I64x2Backend>::to_array(self, repr[3]);
+        let a0 = <NeonToken as I64x2Ops>::to_array(self, repr[0]);
+        let a1 = <NeonToken as I64x2Ops>::to_array(self, repr[1]);
+        let a2 = <NeonToken as I64x2Ops>::to_array(self, repr[2]);
+        let a3 = <NeonToken as I64x2Ops>::to_array(self, repr[3]);
         let mut out = [0; 8];
         out[0..2].copy_from_slice(&a0);
         out[2..4].copy_from_slice(&a1);
@@ -6780,112 +7246,112 @@ impl I64x8Backend for NeonToken {
 
     #[inline(always)]
     fn add(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sub(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::sub(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn neg(self, a: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::neg(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::neg(self, a[i]))
     }
 
     #[inline(always)]
     fn min(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::min(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::min(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn max(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::max(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::max(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn abs(self, a: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::abs(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::abs(self, a[i]))
     }
 
     #[inline(always)]
     fn reduce_add(self, a: [int64x2_t; 4]) -> i64 {
-        <NeonToken as I64x2Backend>::reduce_add(self, a[0])
-            .wrapping_add(<NeonToken as I64x2Backend>::reduce_add(self, a[1]))
-            .wrapping_add(<NeonToken as I64x2Backend>::reduce_add(self, a[2]))
-            .wrapping_add(<NeonToken as I64x2Backend>::reduce_add(self, a[3]))
+        <NeonToken as I64x2Ops>::reduce_add(self, a[0])
+            .wrapping_add(<NeonToken as I64x2Ops>::reduce_add(self, a[1]))
+            .wrapping_add(<NeonToken as I64x2Ops>::reduce_add(self, a[2]))
+            .wrapping_add(<NeonToken as I64x2Ops>::reduce_add(self, a[3]))
     }
 
     #[inline(always)]
     fn shl_const<const N: i32>(self, a: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::shl_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::shl_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_arithmetic_const<const N: i32>(self, a: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::shr_arithmetic_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::shr_arithmetic_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_logical_const<const N: i32>(self, a: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     // Reduce the quarters with vector AND/OR first, then ONE lane
     // reduction (fearless_simd's polyfill lesson; branchless).
     #[inline(always)]
     fn all_true(self, a: [int64x2_t; 4]) -> bool {
-        let c01 = <NeonToken as I64x2Backend>::bitand(self, a[0], a[1]);
-        let c23 = <NeonToken as I64x2Backend>::bitand(self, a[2], a[3]);
-        let c = <NeonToken as I64x2Backend>::bitand(self, c01, c23);
-        <NeonToken as I64x2Backend>::all_true(self, c)
+        let c01 = <NeonToken as I64x2Ops>::bitand(self, a[0], a[1]);
+        let c23 = <NeonToken as I64x2Ops>::bitand(self, a[2], a[3]);
+        let c = <NeonToken as I64x2Ops>::bitand(self, c01, c23);
+        <NeonToken as I64x2Ops>::all_true(self, c)
     }
 
     #[inline(always)]
     fn any_true(self, a: [int64x2_t; 4]) -> bool {
-        let c01 = <NeonToken as I64x2Backend>::bitor(self, a[0], a[1]);
-        let c23 = <NeonToken as I64x2Backend>::bitor(self, a[2], a[3]);
-        let c = <NeonToken as I64x2Backend>::bitor(self, c01, c23);
-        <NeonToken as I64x2Backend>::any_true(self, c)
+        let c01 = <NeonToken as I64x2Ops>::bitor(self, a[0], a[1]);
+        let c23 = <NeonToken as I64x2Ops>::bitor(self, a[2], a[3]);
+        let c = <NeonToken as I64x2Ops>::bitor(self, c01, c23);
+        <NeonToken as I64x2Ops>::any_true(self, c)
     }
 
     #[inline(always)]
     fn bitmask(self, a: [int64x2_t; 4]) -> u64 {
-        let q0 = <NeonToken as I64x2Backend>::bitmask(self, a[0]) as u64;
-        let q1 = <NeonToken as I64x2Backend>::bitmask(self, a[1]) as u64;
-        let q2 = <NeonToken as I64x2Backend>::bitmask(self, a[2]) as u64;
-        let q3 = <NeonToken as I64x2Backend>::bitmask(self, a[3]) as u64;
+        let q0 = <NeonToken as I64x2Ops>::bitmask(self, a[0]) as u64;
+        let q1 = <NeonToken as I64x2Ops>::bitmask(self, a[1]) as u64;
+        let q2 = <NeonToken as I64x2Ops>::bitmask(self, a[2]) as u64;
+        let q3 = <NeonToken as I64x2Ops>::bitmask(self, a[3]) as u64;
         q0 | (q1 << 2) | (q2 << 4) | (q3 << 6)
     }
 
     #[inline(always)]
     fn simd_eq(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::simd_eq(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::simd_eq(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ne(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::simd_ne(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::simd_ne(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_lt(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::simd_lt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::simd_lt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_le(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::simd_le(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::simd_le(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_gt(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::simd_gt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::simd_gt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ge(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::simd_ge(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::simd_ge(self, a[i], b[i]))
     }
 
     #[inline(always)]
@@ -6896,55 +7362,55 @@ impl I64x8Backend for NeonToken {
         if_false: [int64x2_t; 4],
     ) -> [int64x2_t; 4] {
         core::array::from_fn(|i| {
-            <NeonToken as I64x2Backend>::blend(self, mask[i], if_true[i], if_false[i])
+            <NeonToken as I64x2Ops>::blend(self, mask[i], if_true[i], if_false[i])
         })
     }
 
     #[inline(always)]
     fn not(self, a: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::not(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::not(self, a[i]))
     }
 
     #[inline(always)]
     fn bitand(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::bitand(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::bitand(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitor(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::bitor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::bitor(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitxor(self, a: [int64x2_t; 4], b: [int64x2_t; 4]) -> [int64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as I64x2Backend>::bitxor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as I64x2Ops>::bitxor(self, a[i], b[i]))
     }
 }
 
 #[cfg(feature = "w512")]
 #[cfg(target_arch = "aarch64")]
-impl U64x8Backend for NeonToken {
+impl U64x8Ops for NeonToken {
     type Repr = [uint64x2_t; 4];
 
     #[inline(always)]
     fn splat(self, v: u64) -> [uint64x2_t; 4] {
-        let q = <NeonToken as U64x2Backend>::splat(self, v);
+        let q = <NeonToken as U64x2Ops>::splat(self, v);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn zero(self) -> [uint64x2_t; 4] {
-        let q = <NeonToken as U64x2Backend>::zero(self);
+        let q = <NeonToken as U64x2Ops>::zero(self);
         [q, q, q, q]
     }
 
     #[inline(always)]
     fn load(self, data: &[u64; 8]) -> [uint64x2_t; 4] {
         [
-            <NeonToken as U64x2Backend>::load(self, data[0..2].try_into().unwrap()),
-            <NeonToken as U64x2Backend>::load(self, data[2..4].try_into().unwrap()),
-            <NeonToken as U64x2Backend>::load(self, data[4..6].try_into().unwrap()),
-            <NeonToken as U64x2Backend>::load(self, data[6..8].try_into().unwrap()),
+            <NeonToken as U64x2Ops>::load(self, data[0..2].try_into().unwrap()),
+            <NeonToken as U64x2Ops>::load(self, data[2..4].try_into().unwrap()),
+            <NeonToken as U64x2Ops>::load(self, data[4..6].try_into().unwrap()),
+            <NeonToken as U64x2Ops>::load(self, data[6..8].try_into().unwrap()),
         ]
     }
 
@@ -6959,10 +7425,10 @@ impl U64x8Backend for NeonToken {
         q2.copy_from_slice(&arr[4..6]);
         q3.copy_from_slice(&arr[6..8]);
         [
-            <NeonToken as U64x2Backend>::from_array(self, q0),
-            <NeonToken as U64x2Backend>::from_array(self, q1),
-            <NeonToken as U64x2Backend>::from_array(self, q2),
-            <NeonToken as U64x2Backend>::from_array(self, q3),
+            <NeonToken as U64x2Ops>::from_array(self, q0),
+            <NeonToken as U64x2Ops>::from_array(self, q1),
+            <NeonToken as U64x2Ops>::from_array(self, q2),
+            <NeonToken as U64x2Ops>::from_array(self, q3),
         ]
     }
 
@@ -6971,18 +7437,18 @@ impl U64x8Backend for NeonToken {
         let (o01, o23) = out.split_at_mut(4);
         let (o0, o1) = o01.split_at_mut(2);
         let (o2, o3) = o23.split_at_mut(2);
-        <NeonToken as U64x2Backend>::store(self, repr[0], o0.try_into().unwrap());
-        <NeonToken as U64x2Backend>::store(self, repr[1], o1.try_into().unwrap());
-        <NeonToken as U64x2Backend>::store(self, repr[2], o2.try_into().unwrap());
-        <NeonToken as U64x2Backend>::store(self, repr[3], o3.try_into().unwrap());
+        <NeonToken as U64x2Ops>::store(self, repr[0], o0.try_into().unwrap());
+        <NeonToken as U64x2Ops>::store(self, repr[1], o1.try_into().unwrap());
+        <NeonToken as U64x2Ops>::store(self, repr[2], o2.try_into().unwrap());
+        <NeonToken as U64x2Ops>::store(self, repr[3], o3.try_into().unwrap());
     }
 
     #[inline(always)]
     fn to_array(self, repr: [uint64x2_t; 4]) -> [u64; 8] {
-        let a0 = <NeonToken as U64x2Backend>::to_array(self, repr[0]);
-        let a1 = <NeonToken as U64x2Backend>::to_array(self, repr[1]);
-        let a2 = <NeonToken as U64x2Backend>::to_array(self, repr[2]);
-        let a3 = <NeonToken as U64x2Backend>::to_array(self, repr[3]);
+        let a0 = <NeonToken as U64x2Ops>::to_array(self, repr[0]);
+        let a1 = <NeonToken as U64x2Ops>::to_array(self, repr[1]);
+        let a2 = <NeonToken as U64x2Ops>::to_array(self, repr[2]);
+        let a3 = <NeonToken as U64x2Ops>::to_array(self, repr[3]);
         let mut out = [0; 8];
         out[0..2].copy_from_slice(&a0);
         out[2..4].copy_from_slice(&a1);
@@ -6993,108 +7459,108 @@ impl U64x8Backend for NeonToken {
 
     #[inline(always)]
     fn add(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::add(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::add(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn sub(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::sub(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::sub(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn neg(self, a: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        let z = <NeonToken as U64x2Backend>::zero(self);
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::sub(self, z, a[i]))
+        let z = <NeonToken as U64x2Ops>::zero(self);
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::sub(self, z, a[i]))
     }
 
     #[inline(always)]
     fn min(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::min(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::min(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn max(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::max(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::max(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn reduce_add(self, a: [uint64x2_t; 4]) -> u64 {
-        <NeonToken as U64x2Backend>::reduce_add(self, a[0])
-            .wrapping_add(<NeonToken as U64x2Backend>::reduce_add(self, a[1]))
-            .wrapping_add(<NeonToken as U64x2Backend>::reduce_add(self, a[2]))
-            .wrapping_add(<NeonToken as U64x2Backend>::reduce_add(self, a[3]))
+        <NeonToken as U64x2Ops>::reduce_add(self, a[0])
+            .wrapping_add(<NeonToken as U64x2Ops>::reduce_add(self, a[1]))
+            .wrapping_add(<NeonToken as U64x2Ops>::reduce_add(self, a[2]))
+            .wrapping_add(<NeonToken as U64x2Ops>::reduce_add(self, a[3]))
     }
 
     #[inline(always)]
     fn shl_const<const N: i32>(self, a: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::shl_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::shl_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_arithmetic_const<const N: i32>(self, a: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     #[inline(always)]
     fn shr_logical_const<const N: i32>(self, a: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::shr_logical_const::<N>(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::shr_logical_const::<N>(self, a[i]))
     }
 
     // Reduce the quarters with vector AND/OR first, then ONE lane
     // reduction (fearless_simd's polyfill lesson; branchless).
     #[inline(always)]
     fn all_true(self, a: [uint64x2_t; 4]) -> bool {
-        let c01 = <NeonToken as U64x2Backend>::bitand(self, a[0], a[1]);
-        let c23 = <NeonToken as U64x2Backend>::bitand(self, a[2], a[3]);
-        let c = <NeonToken as U64x2Backend>::bitand(self, c01, c23);
-        <NeonToken as U64x2Backend>::all_true(self, c)
+        let c01 = <NeonToken as U64x2Ops>::bitand(self, a[0], a[1]);
+        let c23 = <NeonToken as U64x2Ops>::bitand(self, a[2], a[3]);
+        let c = <NeonToken as U64x2Ops>::bitand(self, c01, c23);
+        <NeonToken as U64x2Ops>::all_true(self, c)
     }
 
     #[inline(always)]
     fn any_true(self, a: [uint64x2_t; 4]) -> bool {
-        let c01 = <NeonToken as U64x2Backend>::bitor(self, a[0], a[1]);
-        let c23 = <NeonToken as U64x2Backend>::bitor(self, a[2], a[3]);
-        let c = <NeonToken as U64x2Backend>::bitor(self, c01, c23);
-        <NeonToken as U64x2Backend>::any_true(self, c)
+        let c01 = <NeonToken as U64x2Ops>::bitor(self, a[0], a[1]);
+        let c23 = <NeonToken as U64x2Ops>::bitor(self, a[2], a[3]);
+        let c = <NeonToken as U64x2Ops>::bitor(self, c01, c23);
+        <NeonToken as U64x2Ops>::any_true(self, c)
     }
 
     #[inline(always)]
     fn bitmask(self, a: [uint64x2_t; 4]) -> u64 {
-        let q0 = <NeonToken as U64x2Backend>::bitmask(self, a[0]) as u64;
-        let q1 = <NeonToken as U64x2Backend>::bitmask(self, a[1]) as u64;
-        let q2 = <NeonToken as U64x2Backend>::bitmask(self, a[2]) as u64;
-        let q3 = <NeonToken as U64x2Backend>::bitmask(self, a[3]) as u64;
+        let q0 = <NeonToken as U64x2Ops>::bitmask(self, a[0]) as u64;
+        let q1 = <NeonToken as U64x2Ops>::bitmask(self, a[1]) as u64;
+        let q2 = <NeonToken as U64x2Ops>::bitmask(self, a[2]) as u64;
+        let q3 = <NeonToken as U64x2Ops>::bitmask(self, a[3]) as u64;
         q0 | (q1 << 2) | (q2 << 4) | (q3 << 6)
     }
 
     #[inline(always)]
     fn simd_eq(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::simd_eq(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::simd_eq(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ne(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::simd_ne(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::simd_ne(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_lt(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::simd_lt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::simd_lt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_le(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::simd_le(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::simd_le(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_gt(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::simd_gt(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::simd_gt(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn simd_ge(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::simd_ge(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::simd_ge(self, a[i], b[i]))
     }
 
     #[inline(always)]
@@ -7105,27 +7571,27 @@ impl U64x8Backend for NeonToken {
         if_false: [uint64x2_t; 4],
     ) -> [uint64x2_t; 4] {
         core::array::from_fn(|i| {
-            <NeonToken as U64x2Backend>::blend(self, mask[i], if_true[i], if_false[i])
+            <NeonToken as U64x2Ops>::blend(self, mask[i], if_true[i], if_false[i])
         })
     }
 
     #[inline(always)]
     fn not(self, a: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::not(self, a[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::not(self, a[i]))
     }
 
     #[inline(always)]
     fn bitand(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::bitand(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::bitand(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitor(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::bitor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::bitor(self, a[i], b[i]))
     }
 
     #[inline(always)]
     fn bitxor(self, a: [uint64x2_t; 4], b: [uint64x2_t; 4]) -> [uint64x2_t; 4] {
-        core::array::from_fn(|i| <NeonToken as U64x2Backend>::bitxor(self, a[i], b[i]))
+        core::array::from_fn(|i| <NeonToken as U64x2Ops>::bitxor(self, a[i], b[i]))
     }
 }

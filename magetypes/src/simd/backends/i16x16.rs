@@ -55,6 +55,19 @@ pub trait I16x16Backend: SimdToken + Sealed + Copy + 'static {
     fn sub(self, a: Self::Repr, b: Self::Repr) -> Self::Repr;
     /// Lane-wise multiplication (low 16 bits of product).
     fn mul(self, a: Self::Repr, b: Self::Repr) -> Self::Repr;
+    /// Fixed-point Q15 rounding multiply: `((a * b + 0x4000) >> 15)` per lane.
+    ///
+    /// Exact for all inputs except `(i16::MIN, i16::MIN)`, where x86/Scalar
+    /// wrap to `i16::MIN` and NEON/WASM saturate (or relaxed-select) to `i16::MAX`.
+    #[inline(always)]
+    fn mul_hrs_q15(self, a: Self::Repr, b: Self::Repr) -> Self::Repr {
+        let aa = <Self as I16x16Backend>::to_array(self, a);
+        let bb = <Self as I16x16Backend>::to_array(self, b);
+        <Self as I16x16Backend>::from_array(
+            self,
+            core::array::from_fn(|i| ((aa[i] as i32 * bb[i] as i32 + 0x4000) >> 15) as i16),
+        )
+    }
     /// Lane-wise negation.
     fn neg(self, a: Self::Repr) -> Self::Repr;
 
@@ -182,14 +195,14 @@ pub trait I16x16Backend: SimdToken + Sealed + Copy + 'static {
         <Self as I16x16Backend>::min(self, <Self as I16x16Backend>::max(self, a, lo), hi)
     }
 
-    /// Widen in natural lane order: result[i] = a[i + 0] as i32.
+    /// Widen in natural lane order: `result[i] = a[i + 0] as i32`.
     fn widen_low_i16_to_i32(
         self,
         a: <Self as I16x16Backend>::Repr,
     ) -> <Self as super::I32x8Backend>::Repr
     where
         Self: super::I32x8Backend;
-    /// Widen in natural lane order: result[i] = a[i + 8] as i32.
+    /// Widen in natural lane order: `result[i] = a[i + 8] as i32`.
     fn widen_high_i16_to_i32(
         self,
         a: <Self as I16x16Backend>::Repr,
@@ -220,7 +233,7 @@ pub trait I16x16Backend: SimdToken + Sealed + Copy + 'static {
     ) -> <Self as super::U16x16Backend>::Repr
     where
         Self: super::U16x16Backend;
-    /// Lane k = a[2k]*b[2k] + a[2k+1]*b[2k+1], modulo 2^32.
+    /// `Lane k = a[2k]*b[2k] + a[2k+1]*b[2k+1], modulo 2^32`.
     fn madd_adjacent(
         self,
         a: <Self as I16x16Backend>::Repr,

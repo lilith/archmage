@@ -1,49 +1,93 @@
-//! Token parameter discovery for #[arcane] and #[rite].
-//!
-//! Finds token parameters in function signatures, extracts feature sets,
-//! and diagnoses invalid token types.
+//! Token parameter, conjunction, and capability discovery across function signatures.
 
-use std::borrow::Cow;
-
-use syn::{FnArg, GenericParam, Ident, PatType, Signature, Token, Type, TypeParamBound};
-
-use crate::generated::{
-    token_to_arch, token_to_features, token_to_magetypes_namespace, trait_to_arch,
-    trait_to_features, trait_to_magetypes_namespace,
+use crate::common::{
+    gen_and_token_assertion, gen_concrete_token_assertion, gen_tier_trait_assertion,
+    gen_type_tier_trait_assertion,
 };
+use crate::generated::{
+    canonical_token_to_tier_suffix, token_requires_runtime_probe, token_to_arch, token_to_features,
+    token_to_features_csv, token_to_magetypes_namespace, trait_requires_runtime_probe,
+    trait_to_arch, trait_to_features, trait_to_magetypes_namespace,
+};
+use proc_macro2::TokenStream;
+use quote::{format_ident, quote};
+use std::borrow::Cow;
+use syn::{GenericArgument, Ident, PathArguments, PredicateType, Signature, Type, TypeParamBound};
 
+/// Archmage marker traits that carry no CPU target features of their own.
+pub(crate) const FEATURELESS_TRAIT_NAMES: &[&str] = &[
+    "SimdToken",
+    "SimdLeafToken",
+    "SameArch",
+    "IntoConcreteToken",
+];
+
+/// Find the first featureless archmage marker trait in `trait_names`.
+pub(crate) fn find_featureless_trait(trait_names: &[String]) -> Option<&'static str> {
+    for name in trait_names {
+        if let Some(&hit) = FEATURELESS_TRAIT_NAMES.iter().find(|&&f| f == name) {
+            return Some(hit);
+        }
+    }
+    None
+}
+
+/// What kind of token type a parameter directly has.
+///
+/// Kept for legacy callers (`attune::parent`, `magetypes`) that only inspect a
+/// single parameter's outer shape.
+#[derive(Debug)]
 pub(crate) enum TokenTypeInfo {
-    /// Concrete token type (e.g., `Avx2Token`)
+    /// Concrete token type (e.g., `X64V3Token`, `NeonToken`, `Wasm128Token`).
     Concrete(String),
-    /// impl Trait with the trait names (e.g., `impl HasX64V2`)
+    /// `impl Trait` with one or more trait bounds (e.g., `impl HasX64V2 + HasNeon`).
     ImplTrait(Vec<String>),
-    /// Generic type parameter name (e.g., `T`)
+    /// Bounded generic type parameter (e.g., `T` from `fn foo<T: HasX64V2>(token: T)`).
     Generic(String),
 }
 
-/// Extract token type information from a type.
+fn peel_paren_group(mut ty: &Type) -> &Type {
+    loop {
+        match ty {
+            Type::Paren(p) => ty = &p.elem,
+            Type::Group(g) => ty = &g.elem,
+            _ => return ty,
+        }
+    }
+}
+
+fn extract_traits_from_bounds<'a>(
+    bounds: impl IntoIterator<Item = &'a TypeParamBound>,
+) -> Vec<String> {
+    let mut traits = Vec::new();
+    for bound in bounds {
+        if let TypeParamBound::Trait(trait_bound) = bound
+            && let Some(segment) = trait_bound.path.segments.last()
+        {
+            traits.push(segment.ident.to_string());
+        }
+    }
+    traits
+}
+
+/// Extract token type info from a single parameter type (unwrapping references).
 pub(crate) fn extract_token_type_info(ty: &Type) -> Option<TokenTypeInfo> {
+    let ty = peel_paren_group(ty);
     match ty {
-        Type::Path(type_path) => {
-            // Get the last segment of the path (e.g., "Avx2Token" from "archmage::Avx2Token")
-            type_path.path.segments.last().map(|seg| {
-                let name = seg.ident.to_string();
-                // Check if it's a known concrete token type
-                if token_to_features(&name).is_some() {
-                    TokenTypeInfo::Concrete(name)
-                } else {
-                    // Might be a generic type parameter like `T`
-                    TokenTypeInfo::Generic(name)
-                }
-            })
+        Type::Path(type_path) if type_path.qself.is_none() => {
+            let last = type_path.path.segments.last()?;
+            let name = last.ident.to_string();
+            if last.arguments.is_empty() && token_to_features(&name).is_some() {
+                Some(TokenTypeInfo::Concrete(name))
+            } else if type_path.path.segments.len() == 1 && last.arguments.is_empty() {
+                Some(TokenTypeInfo::Generic(name))
+            } else {
+                None
+            }
         }
-        Type::Reference(type_ref) => {
-            // Handle &Token or &mut Token
-            extract_token_type_info(&type_ref.elem)
-        }
+        Type::Reference(type_ref) => extract_token_type_info(&type_ref.elem),
         Type::ImplTrait(impl_trait) => {
-            // Handle `impl HasX64V2` or `impl HasX64V2 + HasNeon`
-            let traits: Vec<String> = extract_trait_names_from_bounds(&impl_trait.bounds);
+            let traits = extract_traits_from_bounds(&impl_trait.bounds);
             if traits.is_empty() {
                 None
             } else {
@@ -54,290 +98,706 @@ pub(crate) fn extract_token_type_info(ty: &Type) -> Option<TokenTypeInfo> {
     }
 }
 
-/// Extract trait names from type param bounds.
-pub(crate) fn extract_trait_names_from_bounds(
-    bounds: &syn::punctuated::Punctuated<TypeParamBound, Token![+]>,
-) -> Vec<String> {
-    bounds
-        .iter()
-        .filter_map(|bound| {
-            if let TypeParamBound::Trait(trait_bound) = bound {
-                trait_bound
-                    .path
-                    .segments
-                    .last()
-                    .map(|seg| seg.ident.to_string())
-            } else {
-                None
-            }
-        })
-        .collect()
-}
-
-/// Every trait bound on a generic type parameter, from its inline bounds and
-/// from every `where` predicate that names it, in source order.
-///
-/// `fn f<T: HasX64V2>(t: T) where T: HasX64V4` yields both traits, so the
-/// features are the union the signature declares. Returning only the first
-/// bound list, as this once did, gave such a function V2 features and a
-/// `where`-only tier bound behind an inline `T: Copy` no features at all
-/// (issue #122).
+/// Find trait bounds for a generic type parameter in `sig` (both inline and `where` clause).
 pub(crate) fn find_generic_bounds(sig: &Signature, type_name: &str) -> Option<Vec<String>> {
-    let mut traits = Vec::new();
+    let mut bounds = Vec::new();
+
     for param in &sig.generics.params {
-        if let GenericParam::Type(type_param) = param
+        if let syn::GenericParam::Type(type_param) = param
             && type_param.ident == type_name
         {
-            traits.extend(extract_trait_names_from_bounds(&type_param.bounds));
+            bounds.extend(extract_traits_from_bounds(&type_param.bounds));
         }
     }
+
     if let Some(where_clause) = &sig.generics.where_clause {
         for predicate in &where_clause.predicates {
-            if let syn::WherePredicate::Type(pred_type) = predicate
-                && let Type::Path(type_path) = &pred_type.bounded_ty
-                && type_path.path.segments.len() == 1
-                && let Some(seg) = type_path.path.segments.last()
-                && seg.ident == type_name
+            if let syn::WherePredicate::Type(PredicateType {
+                bounded_ty: Type::Path(type_path),
+                bounds: pred_bounds,
+                ..
+            }) = predicate
+                && type_path.qself.is_none()
+                && let Some(ident) = type_path.path.get_ident()
+                && ident == type_name
             {
-                traits.extend(extract_trait_names_from_bounds(&pred_type.bounds));
+                bounds.extend(extract_traits_from_bounds(pred_bounds));
             }
         }
     }
-    if traits.is_empty() {
+
+    if bounds.is_empty() {
         None
     } else {
-        Some(traits)
+        Some(bounds)
     }
 }
 
-/// Convert trait names to features, collecting all features from all traits.
+/// Map a set of trait names to the union of their target features.
+///
+/// Ignores known featureless/std marker traits when combined with archmage
+/// traits, and returns `None` if no known archmage capability trait is present
+/// or if traits from conflicting architectures are mixed.
+#[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn traits_to_features(trait_names: &[String]) -> Option<Cow<'static, [&'static str]>> {
-    // Registry lists are unique (tested); only a union that adds features
-    // needs owned storage. Preserve first-seen order for generated attributes.
-    let mut all_features: Cow<'static, [&'static str]> = Cow::Borrowed(&[]);
+    let known: Vec<&str> = trait_names
+        .iter()
+        .map(String::as_str)
+        .filter(|name| trait_to_features(name).is_some())
+        .collect();
 
-    for trait_name in trait_names {
-        if let Some(features) = trait_to_features(trait_name) {
-            if all_features.is_empty() {
-                all_features = Cow::Borrowed(features);
-                continue;
-            }
-            for &feature in features {
-                if !all_features.contains(&feature) {
-                    all_features.to_mut().push(feature);
+    if known.is_empty() {
+        return None;
+    }
+
+    // Reject conflicting architectures within known traits.
+    let mut arch: Option<&'static str> = None;
+    for name in &known {
+        let a = trait_to_arch(name)?;
+        match arch {
+            Some(prev) if prev != a => return None,
+            None => arch = Some(a),
+            _ => {}
+        }
+    }
+
+    if known.iter().all(|&n| n == known[0])
+        && let Some(features) = trait_to_features(known[0])
+    {
+        return Some(Cow::Borrowed(features));
+    }
+
+    let mut combined: Vec<&'static str> = Vec::new();
+    for name in &known {
+        if let Some(features) = trait_to_features(name) {
+            for &feat in features {
+                if !combined.contains(&feat) {
+                    combined.push(feat);
                 }
             }
         }
     }
 
-    if all_features.is_empty() {
+    if combined.is_empty() {
         None
     } else {
-        Some(all_features)
+        Some(Cow::Owned(combined))
     }
 }
 
-/// Concrete tokens use generated strings; generic bounds may combine feature
-/// sets in arbitrary order, so retain the ordinary join for those.
-pub(crate) fn features_csv(token_name: Option<&str>, features: &[&str]) -> Cow<'static, str> {
-    token_name
-        .and_then(crate::generated::token_to_features_csv)
-        .map(Cow::Borrowed)
-        .unwrap_or_else(|| Cow::Owned(features.join(",")))
+/// Architecture classification of a token proof.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ArchClass {
+    Scalar,
+    Target(&'static str),
 }
 
-/// The archmage tier traits among `trait_names` — i.e. the ones that actually
-/// contributed target features.
-///
-/// `#[arcane]`/`#[rite]` resolve a trait bound **by name**, so on its own a bound
-/// like `impl HasX64V2` proves nothing: a downstream crate can declare its own
-/// trait of that name and receive the tier's `#[target_feature]` with no proof
-/// at all. The emitted code re-states these names through an absolute
-/// `::archmage::` path so rustc checks that the bound really is archmage's.
-/// See `gen_tier_trait_assertion` in `common.rs`.
-pub(crate) fn traits_to_tier_traits(trait_names: &[String]) -> Vec<String> {
-    let mut tiers: Vec<String> = Vec::new();
-    for trait_name in trait_names {
-        if trait_to_features(trait_name).is_some() && !tiers.contains(trait_name) {
-            tiers.push(trait_name.clone());
+impl std::fmt::Display for ArchClass {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ArchClass::Scalar => write!(f, "Scalar"),
+            ArchClass::Target(arch) => write!(f, "{arch}"),
         }
     }
-    tiers
 }
 
-/// Trait names that don't map to any CPU features. These are valid in the type
-/// system but cannot be used as token bounds in `#[arcane]`/`#[rite]` because
-/// the macros need concrete features to generate `#[target_feature]` attributes.
-pub(crate) const FEATURELESS_TRAIT_NAMES: &[&str] = &["SimdToken", "IntoConcreteToken"];
+/// One step projecting from a typed function parameter into a token leaf.
+#[derive(Clone, Debug)]
+pub(crate) enum PlaceStep {
+    Deref,
+    TupleIndex(usize),
+}
 
-/// Check if any trait names are featureless (no CPU feature mapping).
-/// Returns the first featureless trait name found.
-pub(crate) fn find_featureless_trait(trait_names: &[String]) -> Option<&'static str> {
-    for name in trait_names {
-        for &featureless in FEATURELESS_TRAIT_NAMES {
-            if name == featureless {
-                return Some(featureless);
+/// Location of a value-backed proof inside a function parameter.
+#[derive(Clone, Debug)]
+pub(crate) struct ParamPlace {
+    pub(crate) is_receiver: bool,
+    /// Index among typed (`FnArg::Typed`) parameters in `sig.inputs`.
+    pub(crate) param_idx: usize,
+    pub(crate) steps: Vec<PlaceStep>,
+}
+
+impl ParamPlace {
+    /// Render the place expression referencing the normalized parameter binding in `sig`.
+    pub(crate) fn borrow_expr(&self, sig: &Signature) -> Option<TokenStream> {
+        let mut expr = if self.is_receiver {
+            match sig.inputs.first() {
+                Some(syn::FnArg::Receiver(_)) => quote!(self),
+                _ => return None,
+            }
+        } else {
+            let ident = sig
+                .inputs
+                .iter()
+                .filter_map(|arg| match arg {
+                    syn::FnArg::Typed(pt) => Some(pt),
+                    syn::FnArg::Receiver(_) => None,
+                })
+                .nth(self.param_idx)
+                .and_then(|pt| match pt.pat.as_ref() {
+                    syn::Pat::Ident(pi) => Some(pi.ident.clone()),
+                    _ => None,
+                })?;
+            quote!(#ident)
+        };
+
+        let mut wrap_for_postfix = false;
+        for step in &self.steps {
+            match step {
+                PlaceStep::Deref => {
+                    expr = quote!(*#expr);
+                    wrap_for_postfix = true;
+                }
+                PlaceStep::TupleIndex(i) => {
+                    let idx = syn::Index::from(*i);
+                    expr = if wrap_for_postfix {
+                        quote!((#expr).#idx)
+                    } else {
+                        quote!(#expr.#idx)
+                    };
+                    wrap_for_postfix = false;
+                }
+            }
+        }
+        Some(expr)
+    }
+}
+
+/// Compile-time assertion for a trait-bounded proof (`impl Has*` or `T: Has*`).
+#[derive(Clone)]
+pub(crate) enum BoundAssertion {
+    ByRef {
+        place: ParamPlace,
+        traits: Vec<String>,
+    },
+    ByType {
+        ty: Box<Type>,
+        traits: Vec<String>,
+    },
+}
+
+/// Metadata preserved when the entire proof is a single concrete token type.
+#[derive(Clone, Debug)]
+pub(crate) struct SingleConcreteToken {
+    pub(crate) type_name: String,
+    pub(crate) direct_value_param: bool,
+}
+
+/// Complete capability proof extracted from a function signature.
+#[derive(Clone)]
+pub(crate) struct SignatureProofs {
+    /// Primary parameter ident (from first proof param, or `__archmage_token` if wildcard/destructured).
+    pub(crate) primary_ident: Ident,
+    /// Union of required target features, deduplicated in encounter order.
+    pub(crate) features: Vec<&'static str>,
+    /// Target architecture (`Some("x86_64" | "aarch64" | "wasm32")` or `None` for scalar-only).
+    pub(crate) target_arch: Option<&'static str>,
+    /// True when the signature uses `ScalarToken`.
+    pub(crate) is_scalar: bool,
+    /// Combined magetypes namespace (`"v3"`, `"v4"`, `"v4x"`, `"neon"`, `"wasm128"`, `"scalar"`).
+    pub(crate) magetypes_namespace: Option<&'static str>,
+    /// Single concrete token metadata when there is only one simple concrete proof.
+    pub(crate) single_concrete: Option<SingleConcreteToken>,
+    /// Every concrete token leaf `(type_name, stripped_type)` for `__ARCHMAGE_ASSERT_TIER_*`.
+    pub(crate) concrete_assertions: Vec<(String, Type)>,
+    /// Every `And<Base, Extra>` type for `__ARCHMAGE_ASSERT_AND_*`.
+    pub(crate) and_assertions: Vec<Type>,
+    /// Every `impl Has*` or `T: Has*` bound requiring `::archmage::Has*` checking.
+    pub(crate) bound_assertions: Vec<BoundAssertion>,
+    /// Unique concrete leaf token names (for runtime-probe enforcement).
+    pub(crate) all_concrete_names: Vec<String>,
+    /// Unique capability trait names (for runtime-probe enforcement).
+    pub(crate) all_trait_names: Vec<String>,
+    /// Sorted, deduplicated indices among `FnArg::Typed` inputs that contain token proofs.
+    pub(crate) token_param_indices: Vec<usize>,
+}
+
+impl SignatureProofs {
+    /// Tier suffix for single concrete token proofs (preserving `incant!` contextual dispatch).
+    pub(crate) fn single_tier_suffix(&self) -> Option<&'static str> {
+        self.single_concrete
+            .as_ref()
+            .filter(|c| c.direct_value_param)
+            .and_then(|c| canonical_token_to_tier_suffix(&c.type_name))
+    }
+
+    /// Single concrete token type name, if applicable (for `features_csv`).
+    pub(crate) fn single_concrete_name(&self) -> Option<&str> {
+        self.single_concrete.as_ref().map(|c| c.type_name.as_str())
+    }
+
+    /// True if any concrete leaf token or trait bound requires a runtime semantic probe.
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub(crate) fn requires_runtime_probe(&self) -> bool {
+        self.all_concrete_names
+            .iter()
+            .any(|name| token_requires_runtime_probe(name))
+            || self
+                .all_trait_names
+                .iter()
+                .any(|name| trait_requires_runtime_probe(name))
+    }
+
+    /// Re-target parameter-based trait assertions to the `self` receiver when
+    /// proofs were discovered from `_self = ...` rather than a typed parameter.
+    pub(crate) fn mark_receiver_source(&mut self) {
+        for bound in &mut self.bound_assertions {
+            if let BoundAssertion::ByRef { place, .. } = bound {
+                place.is_receiver = true;
             }
         }
     }
-    None
+
+    /// Generate all compile-time tag, `And`, and `::archmage::Has*` assertions for `sig`.
+    pub(crate) fn gen_assertions(&self, sig: &Signature) -> TokenStream {
+        let mut out = TokenStream::new();
+        for and_ty in &self.and_assertions {
+            out.extend(gen_and_token_assertion(and_ty));
+        }
+        for (name, ty) in &self.concrete_assertions {
+            out.extend(gen_concrete_token_assertion(name, ty));
+        }
+        for bound in &self.bound_assertions {
+            match bound {
+                BoundAssertion::ByRef { place, traits } => {
+                    if let Some(borrow_expr) = place.borrow_expr(sig) {
+                        out.extend(gen_tier_trait_assertion(traits, &borrow_expr));
+                    }
+                }
+                BoundAssertion::ByType { ty, traits } => {
+                    out.extend(gen_type_tier_trait_assertion(traits, ty));
+                }
+            }
+        }
+        out
+    }
 }
 
-/// Diagnose why `find_token_param` failed. Returns the name of a featureless
-/// trait if the signature has a parameter bounded by one (e.g., `SimdToken`).
+struct ProofAccumulator {
+    arch: Option<ArchClass>,
+    features: Vec<&'static str>,
+    magetypes_namespace: Option<&'static str>,
+    concrete_assertions: Vec<(String, Type)>,
+    and_assertions: Vec<Type>,
+    bound_assertions: Vec<BoundAssertion>,
+    all_concrete_names: Vec<String>,
+    all_trait_names: Vec<String>,
+    token_param_indices: Vec<usize>,
+    primary_ident: Option<Ident>,
+    first_leaf_had_wrapper: bool,
+    leaf_count: usize,
+}
+
+impl ProofAccumulator {
+    fn new() -> Self {
+        Self {
+            arch: None,
+            features: Vec::new(),
+            magetypes_namespace: None,
+            concrete_assertions: Vec::new(),
+            and_assertions: Vec::new(),
+            bound_assertions: Vec::new(),
+            all_concrete_names: Vec::new(),
+            all_trait_names: Vec::new(),
+            token_param_indices: Vec::new(),
+            primary_ident: None,
+            first_leaf_had_wrapper: false,
+            leaf_count: 0,
+        }
+    }
+
+    fn merge_arch(&mut self, incoming: ArchClass, span_ty: &Type) -> syn::Result<()> {
+        match self.arch {
+            Some(prev) if prev != incoming => Err(syn::Error::new_spanned(
+                span_ty,
+                format!(
+                    "cannot combine SIMD tokens from different architectures ({prev} and {incoming}) in the same function"
+                ),
+            )),
+            None => {
+                self.arch = Some(incoming);
+                Ok(())
+            }
+            _ => Ok(()),
+        }
+    }
+
+    fn merge_features(&mut self, feats: &[&'static str]) {
+        for &feat in feats {
+            if !self.features.contains(&feat) {
+                self.features.push(feat);
+            }
+        }
+    }
+
+    fn merge_namespace(&mut self, next: Option<&'static str>) {
+        self.magetypes_namespace = match (self.magetypes_namespace, next) {
+            (Some("v4x"), _) | (_, Some("v4x")) => Some("v4x"),
+            (Some("v4"), _) | (_, Some("v4")) => Some("v4"),
+            (Some("v3"), _) | (_, Some("v3")) => Some("v3"),
+            (cur, nxt) => cur.or(nxt),
+        };
+    }
+
+    fn push_concrete_name(&mut self, name: &str) {
+        if !self.all_concrete_names.iter().any(|n| n == name) {
+            self.all_concrete_names.push(name.to_string());
+        }
+    }
+
+    fn push_trait_names(&mut self, names: &[String]) {
+        for name in names {
+            if !self.all_trait_names.iter().any(|n| n == name) {
+                self.all_trait_names.push(name.clone());
+            }
+        }
+    }
+}
+
+fn is_and_path(path: &syn::Path) -> Option<(&Type, &Type)> {
+    let last = path.segments.last()?;
+    if last.ident != "And" {
+        return None;
+    }
+    let PathArguments::AngleBracketed(ab) = &last.arguments else {
+        return None;
+    };
+    let mut type_args = ab.args.iter().filter_map(|arg| match arg {
+        GenericArgument::Type(t) => Some(t),
+        _ => None,
+    });
+    let left = type_args.next()?;
+    let right = type_args.next()?;
+    if ab.args.len() != 2 || type_args.next().is_some() {
+        return None;
+    }
+    Some((left, right))
+}
+
+fn is_explicit_archmage_and(path: &syn::Path) -> bool {
+    let segs: Vec<_> = path.segments.iter().map(|s| s.ident.to_string()).collect();
+    matches!(segs.as_slice(), [a, b] if a == "archmage" && b == "And")
+}
+
+fn arch_for_concrete_token(name: &str) -> ArchClass {
+    if name == "ScalarToken" {
+        ArchClass::Scalar
+    } else if let Some(arch) = token_to_arch(name) {
+        ArchClass::Target(arch)
+    } else {
+        ArchClass::Scalar
+    }
+}
+
+fn discover_in_type(
+    ty: &Type,
+    sig: &Signature,
+    param_idx: usize,
+    steps: Vec<PlaceStep>,
+    in_and: bool,
+    acc: &mut ProofAccumulator,
+) -> syn::Result<bool> {
+    let ty = peel_paren_group(ty);
+    match ty {
+        Type::Reference(type_ref) if !in_and => {
+            let mut next_steps = steps;
+            next_steps.push(PlaceStep::Deref);
+            discover_in_type(&type_ref.elem, sig, param_idx, next_steps, false, acc)
+        }
+        Type::Tuple(tuple) if !in_and => {
+            if tuple.elems.is_empty() {
+                return Ok(false);
+            }
+            let mut any_found = false;
+            for (i, elem) in tuple.elems.iter().enumerate() {
+                let mut next_steps = steps.clone();
+                next_steps.push(PlaceStep::TupleIndex(i));
+                any_found |= discover_in_type(elem, sig, param_idx, next_steps, false, acc)?;
+            }
+            Ok(any_found)
+        }
+        Type::Path(type_path) if type_path.qself.is_none() => {
+            let Some(last) = type_path.path.segments.last() else {
+                return Ok(false);
+            };
+
+            if let Some((left_ty, right_ty)) = is_and_path(&type_path.path) {
+                let snapshot = acc.concrete_assertions.len()
+                    + acc.and_assertions.len()
+                    + acc.bound_assertions.len();
+                let left_ok = discover_in_type(left_ty, sig, param_idx, steps.clone(), true, acc)?;
+                let right_ok = discover_in_type(right_ty, sig, param_idx, steps, true, acc)?;
+
+                if left_ok && right_ok {
+                    acc.and_assertions.push(ty.clone());
+                    return Ok(true);
+                }
+                if left_ok || right_ok || in_and || is_explicit_archmage_and(&type_path.path) {
+                    return Err(syn::Error::new_spanned(
+                        ty,
+                        "`archmage::And<Base, Extra>` requires both type arguments to be valid \
+                         archmage tokens or capability-bounded generic tokens",
+                    ));
+                }
+                debug_assert_eq!(
+                    snapshot,
+                    acc.concrete_assertions.len()
+                        + acc.and_assertions.len()
+                        + acc.bound_assertions.len()
+                );
+                return Ok(false);
+            }
+
+            if !last.arguments.is_empty() {
+                return Ok(false);
+            }
+
+            let name = last.ident.to_string();
+            if let Some(features) = token_to_features(&name) {
+                let incoming_arch = arch_for_concrete_token(&name);
+                acc.merge_arch(incoming_arch, ty)?;
+                acc.merge_features(features);
+                acc.merge_namespace(token_to_magetypes_namespace(&name));
+                acc.push_concrete_name(&name);
+                acc.concrete_assertions.push((name, ty.clone()));
+                if acc.leaf_count == 0 {
+                    acc.first_leaf_had_wrapper = !steps.is_empty();
+                }
+                acc.leaf_count += 1;
+                return Ok(true);
+            }
+
+            if type_path.path.segments.len() == 1
+                && let Some(bounds) = find_generic_bounds(sig, &name)
+            {
+                return record_trait_bounds(&bounds, Some(ty), param_idx, steps, in_and, acc, ty);
+            }
+
+            Ok(false)
+        }
+        Type::ImplTrait(impl_trait) if !in_and => {
+            let bounds = extract_traits_from_bounds(&impl_trait.bounds);
+            if bounds.is_empty() {
+                return Ok(false);
+            }
+            record_trait_bounds(&bounds, None, param_idx, steps, false, acc, ty)
+        }
+        _ => Ok(false),
+    }
+}
+
+fn record_trait_bounds(
+    bounds: &[String],
+    generic_ty: Option<&Type>,
+    param_idx: usize,
+    steps: Vec<PlaceStep>,
+    in_and: bool,
+    acc: &mut ProofAccumulator,
+    span_ty: &Type,
+) -> syn::Result<bool> {
+    let arch_traits: Vec<String> = bounds
+        .iter()
+        .filter(|name| trait_to_features(name).is_some())
+        .cloned()
+        .collect();
+
+    if arch_traits.is_empty() {
+        return Ok(false);
+    }
+
+    for trait_name in &arch_traits {
+        let Some(arch) = trait_to_arch(trait_name) else {
+            return Ok(false);
+        };
+        acc.merge_arch(ArchClass::Target(arch), span_ty)?;
+        if let Some(features) = trait_to_features(trait_name) {
+            acc.merge_features(features);
+        }
+        acc.merge_namespace(trait_to_magetypes_namespace(trait_name));
+    }
+
+    acc.push_trait_names(&arch_traits);
+    if !in_and && steps.is_empty() {
+        acc.bound_assertions.push(BoundAssertion::ByRef {
+            place: ParamPlace {
+                is_receiver: false,
+                param_idx,
+                steps,
+            },
+            traits: arch_traits,
+        });
+    } else if let Some(ty) = generic_ty {
+        acc.bound_assertions.push(BoundAssertion::ByType {
+            ty: Box::new(ty.clone()),
+            traits: arch_traits,
+        });
+    } else {
+        acc.bound_assertions.push(BoundAssertion::ByRef {
+            place: ParamPlace {
+                is_receiver: false,
+                param_idx,
+                steps,
+            },
+            traits: arch_traits,
+        });
+    }
+    if acc.leaf_count == 0 {
+        acc.first_leaf_had_wrapper = true;
+    }
+    acc.leaf_count += 1;
+    Ok(true)
+}
+
+/// Discover all SIMD capability proofs in `sig`.
+///
+/// Supports concrete tokens, `&T`/`&mut T`, tuples `(A, B)`, `And<Base, Extra>`,
+/// multi-parameter conjunctions, `impl Has*`, and generic parameters bounded in
+/// inline bounds or `where` clauses. Rejects cross-architecture or scalar+arch
+/// combinations and invalid `And<Base, Extra>` arguments at macro expansion time.
+pub(crate) fn discover_signature_proofs(sig: &Signature) -> syn::Result<Option<SignatureProofs>> {
+    let mut acc = ProofAccumulator::new();
+    let mut typed_idx = 0usize;
+
+    for arg in &sig.inputs {
+        let syn::FnArg::Typed(pat_type) = arg else {
+            continue;
+        };
+        let idx = typed_idx;
+        typed_idx += 1;
+
+        if discover_in_type(&pat_type.ty, sig, idx, Vec::new(), false, &mut acc)? {
+            acc.token_param_indices.push(idx);
+            if acc.primary_ident.is_none() {
+                acc.primary_ident = match pat_type.pat.as_ref() {
+                    syn::Pat::Ident(pat_ident) => Some(pat_ident.ident.clone()),
+                    _ => Some(format_ident!("__archmage_token")),
+                };
+            }
+        }
+    }
+
+    let Some(arch_class) = acc.arch else {
+        return Ok(None);
+    };
+
+    let (is_scalar, target_arch) = match arch_class {
+        ArchClass::Scalar => (true, None),
+        ArchClass::Target(arch) => (false, Some(arch)),
+    };
+
+    let single_concrete = if acc.concrete_assertions.len() == 1
+        && acc.and_assertions.is_empty()
+        && acc.bound_assertions.is_empty()
+        && acc.token_param_indices.len() == 1
+    {
+        Some(SingleConcreteToken {
+            type_name: acc.concrete_assertions[0].0.clone(),
+            direct_value_param: !acc.first_leaf_had_wrapper,
+        })
+    } else {
+        None
+    };
+
+    Ok(Some(SignatureProofs {
+        primary_ident: acc
+            .primary_ident
+            .unwrap_or_else(|| format_ident!("__archmage_token")),
+        features: acc.features,
+        target_arch,
+        is_scalar,
+        magetypes_namespace: acc.magetypes_namespace,
+        single_concrete,
+        concrete_assertions: acc.concrete_assertions,
+        and_assertions: acc.and_assertions,
+        bound_assertions: acc.bound_assertions,
+        all_concrete_names: acc.all_concrete_names,
+        all_trait_names: acc.all_trait_names,
+        token_param_indices: acc.token_param_indices,
+    }))
+}
+
+fn diagnose_featureless_in_type(ty: &Type, sig: &Signature) -> Option<&'static str> {
+    let ty = peel_paren_group(ty);
+    match ty {
+        Type::Reference(type_ref) => diagnose_featureless_in_type(&type_ref.elem, sig),
+        Type::Tuple(tuple) => tuple
+            .elems
+            .iter()
+            .find_map(|elem| diagnose_featureless_in_type(elem, sig)),
+        Type::ImplTrait(impl_trait) => {
+            let names = extract_traits_from_bounds(&impl_trait.bounds);
+            find_featureless_trait(&names)
+        }
+        Type::Path(tp) if tp.qself.is_none() => {
+            if let Some((l, r)) = is_and_path(&tp.path) {
+                return diagnose_featureless_in_type(l, sig)
+                    .or_else(|| diagnose_featureless_in_type(r, sig));
+            }
+            let ident = tp.path.get_ident()?;
+            let name = ident.to_string();
+            let bounds = find_generic_bounds(sig, &name)?;
+            find_featureless_trait(&bounds)
+        }
+        _ => None,
+    }
+}
+
+/// Diagnose why `discover_signature_proofs` found no capability token.
 pub(crate) fn diagnose_featureless_token(sig: &Signature) -> Option<&'static str> {
     for arg in &sig.inputs {
-        if let FnArg::Typed(PatType { ty, .. }) = arg
-            && let Some(info) = extract_token_type_info(ty)
+        if let syn::FnArg::Typed(syn::PatType { ty, .. }) = arg
+            && let Some(hit) = diagnose_featureless_in_type(ty, sig)
         {
-            match &info {
-                TokenTypeInfo::ImplTrait(names) => {
-                    if let Some(name) = find_featureless_trait(names) {
-                        return Some(name);
-                    }
-                }
-                TokenTypeInfo::Generic(type_name) => {
-                    // Check if the type name itself is a featureless trait
-                    // (e.g., `token: SimdToken` used as a bare path)
-                    let as_vec = vec![type_name.clone()];
-                    if let Some(name) = find_featureless_trait(&as_vec) {
-                        return Some(name);
-                    }
-                    // Check generic bounds (e.g., `T: SimdToken`)
-                    if let Some(bounds) = find_generic_bounds(sig, type_name)
-                        && let Some(name) = find_featureless_trait(&bounds)
-                    {
-                        return Some(name);
-                    }
-                }
-                TokenTypeInfo::Concrete(_) => {}
-            }
+            return Some(hit);
         }
     }
     None
 }
 
-/// Result of finding a token parameter in a function signature.
+/// Legacy single-parameter view kept for callers that only query simple token existence.
+#[allow(dead_code)]
 pub(crate) struct TokenParamInfo {
-    /// The parameter identifier (e.g., `token`)
-    pub ident: Ident,
-    /// Target features to enable (e.g., `["avx2", "fma"]`)
-    pub features: Cow<'static, [&'static str]>,
-    /// Target architecture (Some for concrete tokens, None for traits/generics)
-    pub target_arch: Option<&'static str>,
-    /// Concrete token type name (Some for concrete tokens, None for traits/generics)
-    pub token_type_name: Option<String>,
-    /// Magetypes width namespace (e.g., "v3", "neon", "wasm128")
-    pub magetypes_namespace: Option<&'static str>,
-    /// Full type from the function signature (for const tier tag assertion).
-    /// Set for concrete token types, None for trait/generic bounds.
-    pub token_type: Option<Type>,
-    /// The archmage tier traits the features were derived from. Empty for a
-    /// concrete token (which is checked by its tier-tag const instead); one or
-    /// more names for a trait or generic bound, which the emitted code
-    /// re-states through `::archmage::` so a same-named local trait cannot
-    /// stand in for archmage's.
-    pub tier_traits: Vec<String>,
+    pub(crate) ident: Ident,
+    pub(crate) features: Cow<'static, [&'static str]>,
+    pub(crate) target_arch: Option<&'static str>,
+    pub(crate) token_type_name: Option<String>,
+    pub(crate) magetypes_namespace: Option<&'static str>,
+    pub(crate) token_type: Option<Type>,
+    pub(crate) tier_traits: Vec<String>,
 }
 
-/// Resolve magetypes namespace from a list of trait names.
-/// Returns the first matching namespace found.
-pub(crate) fn traits_to_magetypes_namespace(trait_names: &[String]) -> Option<&'static str> {
-    for name in trait_names {
-        if let Some(ns) = trait_to_magetypes_namespace(name) {
-            return Some(ns);
-        }
-    }
-    None
-}
-
-/// Given trait bound names, return the first matching target architecture.
-pub(crate) fn traits_to_arch(trait_names: &[String]) -> Option<&'static str> {
-    for name in trait_names {
-        if let Some(arch) = trait_to_arch(name) {
-            return Some(arch);
-        }
-    }
-    None
-}
-
-/// Find the first token parameter in a function signature.
+/// Find the token parameter in a function signature (delegates to `discover_signature_proofs`).
+#[allow(dead_code)]
 pub(crate) fn find_token_param(sig: &Signature) -> Option<TokenParamInfo> {
-    for arg in &sig.inputs {
-        match arg {
-            FnArg::Receiver(_) => {
-                // A receiver is never the token. Methods are supported: the
-                // sibling expansion keeps `self`, and the nested expansion
-                // lowers it to `_self` (see `common::nested_self_param`).
-                // See the module docs for the workaround.
-                continue;
-            }
-            FnArg::Typed(PatType { pat, ty, .. }) => {
-                if let Some(info) = extract_token_type_info(ty) {
-                    let (features, arch, token_name, mage_ns, full_type, tier_traits) = match info {
-                        TokenTypeInfo::Concrete(ref name) => {
-                            let features = token_to_features(name).map(Cow::Borrowed);
-                            let arch = token_to_arch(name);
-                            let ns = token_to_magetypes_namespace(name);
-                            // Clone the full Type for const tier tag assertion.
-                            // This preserves any path prefix (e.g., `my_crate::X64V3Token`)
-                            // so the assertion resolves through re-exports.
-                            let full_type = Some(ty.as_ref().clone());
-                            (
-                                features,
-                                arch,
-                                Some(name.clone()),
-                                ns,
-                                full_type,
-                                Vec::new(),
-                            )
-                        }
-                        TokenTypeInfo::ImplTrait(ref trait_names) => {
-                            let ns = traits_to_magetypes_namespace(trait_names);
-                            let arch = traits_to_arch(trait_names);
-                            let tiers = traits_to_tier_traits(trait_names);
-                            (traits_to_features(trait_names), arch, None, ns, None, tiers)
-                        }
-                        TokenTypeInfo::Generic(type_name) => {
-                            // Look up the generic parameter's bounds
-                            let bounds = find_generic_bounds(sig, &type_name);
-                            let features = bounds.as_ref().and_then(|t| traits_to_features(t));
-                            let ns = bounds
-                                .as_ref()
-                                .and_then(|t| traits_to_magetypes_namespace(t));
-                            let arch = bounds.as_ref().and_then(|t| traits_to_arch(t));
-                            let tiers = bounds
-                                .as_ref()
-                                .map(|t| traits_to_tier_traits(t))
-                                .unwrap_or_default();
-                            (features, arch, None, ns, None, tiers)
-                        }
-                    };
-
-                    if let Some(features) = features {
-                        // Extract parameter name (or synthesize one for wildcard `_`)
-                        let ident = match pat.as_ref() {
-                            syn::Pat::Ident(pat_ident) => Some(pat_ident.ident.clone()),
-                            syn::Pat::Wild(w) => {
-                                Some(Ident::new("__archmage_token", w.underscore_token.span))
-                            }
-                            _ => None,
-                        };
-                        if let Some(ident) = ident {
-                            return Some(TokenParamInfo {
-                                ident,
-                                features,
-                                target_arch: arch,
-                                token_type_name: token_name,
-                                magetypes_namespace: mage_ns,
-                                token_type: full_type,
-                                tier_traits,
-                            });
-                        }
-                    }
-                }
-            }
+    let Ok(Some(proofs)) = discover_signature_proofs(sig) else {
+        return None;
+    };
+    let (token_type_name, token_type) = match proofs.concrete_assertions.first() {
+        Some((name, ty))
+            if proofs.and_assertions.is_empty() && proofs.bound_assertions.is_empty() =>
+        {
+            (Some(name.clone()), Some(ty.clone()))
         }
+        _ => (None, None),
+    };
+    let tier_traits = proofs.all_trait_names.clone();
+    Some(TokenParamInfo {
+        ident: proofs.primary_ident,
+        features: Cow::Owned(proofs.features),
+        target_arch: proofs.target_arch,
+        token_type_name,
+        magetypes_namespace: proofs.magetypes_namespace,
+        token_type,
+        tier_traits,
+    })
+}
+
+/// Build the comma-separated `#[target_feature(enable = ...)]` string.
+pub(crate) fn features_csv(token_name: Option<&str>, features: &[&str]) -> Cow<'static, str> {
+    if let Some(name) = token_name
+        && let Some(csv) = token_to_features_csv(name)
+    {
+        return Cow::Borrowed(csv);
     }
-    None
+    Cow::Owned(features.join(","))
 }

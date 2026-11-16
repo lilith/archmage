@@ -1,0 +1,5 @@
+error: cannot combine SIMD tokens from different architectures (x86_64 and aarch64) in the same function
+ --> tests/compile_fail/cross_arch_arcane.rs:2:40
+  |
+2 | fn cross(_a: archmage::X64V3Token, _b: archmage::NeonToken) {}
+  |                                        ^^^^^^^^^^^^^^^^^^^

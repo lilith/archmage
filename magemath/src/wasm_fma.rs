@@ -10,11 +10,11 @@ use core::arch::wasm32::{self as w, v128};
 
 // Pow chooses one complete graph after this check; no probe in its Horner loop.
 pub(crate) fn powf_f32_fuses() -> bool {
-    #[cfg(target_feature = "relaxed-simd")]
+    #[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
     {
         relaxed_probe::fuses_f32()
     }
-    #[cfg(not(target_feature = "relaxed-simd"))]
+    #[cfg(not(all(target_feature = "simd128", target_feature = "relaxed-simd")))]
     {
         false
     }
@@ -22,59 +22,59 @@ pub(crate) fn powf_f32_fuses() -> bool {
 
 // Canonical HIGHP uses binary64 intermediates; screen that operator separately.
 pub(crate) fn powf_f64_fuses() -> bool {
-    #[cfg(target_feature = "relaxed-simd")]
+    #[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
     {
         relaxed_probe::fuses_f64()
     }
-    #[cfg(not(target_feature = "relaxed-simd"))]
+    #[cfg(not(all(target_feature = "simd128", target_feature = "relaxed-simd")))]
     {
         false
     }
 }
 
-#[cfg(not(target_feature = "relaxed-simd"))]
+#[cfg(not(all(target_feature = "simd128", target_feature = "relaxed-simd")))]
 #[archmage::rite]
 pub(crate) fn madd_f32x4(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
     w::f32x4_add(w::f32x4_mul(a, b), c)
 }
 
-#[cfg(not(target_feature = "relaxed-simd"))]
+#[cfg(not(all(target_feature = "simd128", target_feature = "relaxed-simd")))]
 #[archmage::rite]
 pub(crate) fn msub_f32x4(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
     w::f32x4_sub(w::f32x4_mul(a, b), c)
 }
 
-#[cfg(not(target_feature = "relaxed-simd"))]
+#[cfg(not(all(target_feature = "simd128", target_feature = "relaxed-simd")))]
 #[archmage::rite]
 pub(crate) fn madd_f64x2(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
     w::f64x2_add(w::f64x2_mul(a, b), c)
 }
 
-#[cfg(not(target_feature = "relaxed-simd"))]
+#[cfg(not(all(target_feature = "simd128", target_feature = "relaxed-simd")))]
 #[archmage::rite]
 pub(crate) fn msub_f64x2(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
     w::f64x2_sub(w::f64x2_mul(a, b), c)
 }
 
-#[cfg(target_feature = "relaxed-simd")]
+#[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
 #[archmage::rite]
 pub(crate) fn madd_f32x4(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
     w::f32x4_relaxed_madd(a, b, c)
 }
 
-#[cfg(target_feature = "relaxed-simd")]
+#[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
 #[archmage::rite]
 pub(crate) fn msub_f32x4(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
     w::f32x4_relaxed_madd(a, b, w::f32x4_neg(c))
 }
 
-#[cfg(target_feature = "relaxed-simd")]
+#[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
 #[archmage::rite]
 pub(crate) fn madd_f64x2(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
     w::f64x2_relaxed_madd(a, b, c)
 }
 
-#[cfg(target_feature = "relaxed-simd")]
+#[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
 #[archmage::rite]
 pub(crate) fn msub_f64x2(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
     w::f64x2_relaxed_madd(a, b, w::f64x2_neg(c))
@@ -90,7 +90,7 @@ pub(crate) fn msub_f64x2(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v12
 /// probe call, f32x4 chains took 3.2x and streams 2.0x the time of this form
 /// on a fusing engine; the call-free form matches plain software on engines
 /// that round twice (`benchmarks/soft_fma_simd_2026-10-24.md`).
-#[cfg(target_feature = "relaxed-simd")]
+#[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
 mod relaxed_probe {
     use core::arch::wasm32 as w;
     use core::hint::black_box;
@@ -102,19 +102,19 @@ mod relaxed_probe {
 
     #[inline(always)]
     pub(crate) fn fuses_f32() -> bool {
-        let state = F32.load(Ordering::Relaxed);
+        let state = F32.load(Ordering::Acquire);
         state == 2 || (state == 0 && store(&F32, probe_f32()))
     }
 
     #[inline(always)]
     pub(crate) fn fuses_f64() -> bool {
-        let state = F64.load(Ordering::Relaxed);
+        let state = F64.load(Ordering::Acquire);
         state == 2 || (state == 0 && store(&F64, probe_f64()))
     }
 
     #[inline(always)]
     fn store(cache: &AtomicU8, fused: bool) -> bool {
-        cache.store(if fused { 2 } else { 1 }, Ordering::Relaxed);
+        cache.store(if fused { 2 } else { 1 }, Ordering::Release);
         fused
     }
 
@@ -126,6 +126,8 @@ mod relaxed_probe {
         let c = w::f32x4_splat(black_box(-(1.0 + 1.0 / 2048.0)));
         let r = w::f32x4_relaxed_madd(x, x, c);
         w::f32x4_extract_lane::<0>(r) == 1.0 / 16_777_216.0
+            && w::f32x4_extract_lane::<1>(r) == 1.0 / 16_777_216.0
+            && w::f32x4_extract_lane::<2>(r) == 1.0 / 16_777_216.0
             && w::f32x4_extract_lane::<3>(r) == 1.0 / 16_777_216.0
     }
 
@@ -142,7 +144,7 @@ mod relaxed_probe {
 
 #[archmage::rite]
 pub(crate) fn fused_f32x4(token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
-    #[cfg(target_feature = "relaxed-simd")]
+    #[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
     if relaxed_probe::fuses_f32() {
         return w::f32x4_relaxed_madd(a, b, c);
     }
@@ -193,28 +195,29 @@ pub(crate) fn powf_soft_f32x4(token: Wasm128Token, a: v128, b: v128, c: v128) ->
 }
 
 #[archmage::rite]
-pub(crate) fn fused_f64x2(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
-    #[cfg(target_feature = "relaxed-simd")]
+pub(crate) fn fused_f64x2(token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
+    #[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
     if relaxed_probe::fuses_f64() {
         return w::f64x2_relaxed_madd(a, b, c);
     }
-    #[cfg(target_feature = "relaxed-simd")]
-    return soft_f64x2(a, b, c);
-    #[cfg(not(target_feature = "relaxed-simd"))]
-    soft_f64x2_inline(a, b, c)
+    #[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
+    return soft_f64x2(token, a, b, c);
+    #[cfg(not(all(target_feature = "simd128", target_feature = "relaxed-simd")))]
+    soft_f64x2_inline(token, a, b, c)
 }
 
 /// With relaxed SIMD the software path sits behind one call, so a fusing
 /// engine's loop holds one call site instead of the exact path's per-lane
 /// calls (`v128` arguments and results travel in registers).
-#[cfg(target_feature = "relaxed-simd")]
+#[cfg(all(target_feature = "simd128", target_feature = "relaxed-simd"))]
 #[inline(never)]
-fn soft_f64x2(a: v128, b: v128, c: v128) -> v128 {
-    soft_f64x2_inline(a, b, c)
+fn soft_f64x2(token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
+    soft_f64x2_inline(token, a, b, c)
 }
 
+#[cfg(target_feature = "simd128")]
 #[inline(always)]
-fn soft_f64x2_inline(a: v128, b: v128, c: v128) -> v128 {
+fn soft_f64x2_inline(_token: Wasm128Token, a: v128, b: v128, c: v128) -> v128 {
     let lanes = |v: v128| [w::f64x2_extract_lane::<0>(v), w::f64x2_extract_lane::<1>(v)];
     let [lo, hi] = crate::soft_fma::fma_lanes(lanes(a), lanes(b), lanes(c));
     w::f64x2(lo, hi)
@@ -224,7 +227,12 @@ fn soft_f64x2_inline(a: v128, b: v128, c: v128) -> v128 {
 /// `ARCHMAGE_EXPECT_RELAXED_FUSION` per runner (`yes` with host FMA, `no` with
 /// `cranelift-has-fma=false`); fused and software results are bit-identical,
 /// so the arithmetic tests cannot tell which branch ran.
-#[cfg(all(test, feature = "std", target_feature = "relaxed-simd"))]
+#[cfg(all(
+    test,
+    feature = "std",
+    target_feature = "simd128",
+    target_feature = "relaxed-simd"
+))]
 mod tests {
     #[test]
     fn relaxed_probe_matches_engine() {

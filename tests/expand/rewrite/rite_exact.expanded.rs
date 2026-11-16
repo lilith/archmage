@@ -20,6 +20,7 @@ fn inner_scalar(_t: ScalarToken, x: f32) -> f32 {
 )]
 #[inline]
 fn outer(token: X64V3Token, x: f32) -> f32 {
+    let _: () = <X64V3Token>::__ARCHMAGE_ASSERT_TIER_F38B284B;
     inner_v3(token, x)
 }
 fn main() {}

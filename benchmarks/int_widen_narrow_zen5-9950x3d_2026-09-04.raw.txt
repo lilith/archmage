@@ -362,7 +362,7 @@
   ╰─ _      22.5 ±0.1µs  [22.5–22.5]µs   
 [zenbench] calibration: int=0.19ns/iter mem_bw=87.0GiB/s mem_lat=9.5ns
 [zenbench] timer resolution: 10ns, loop overhead: 0.19ns/iter, TSC: 4.300 ticks/ns (invariant)
-[zenbench] results → /tmp/zenbench/zenbench-1788480379-168793.txt
+[zenbench] results → <scratch>/zenbench/zenbench-1788480379-168793.txt
 
   zenbench  1788480379-168793
   git: 228cb52f38db2e696ed9bc3585005cf827ae00e9
@@ -772,7 +772,7 @@
   ╰─ _      22.8 ±0.1µs  [22.7–22.8]µs   
 [zenbench] calibration: int=0.19ns/iter mem_bw=95.8GiB/s mem_lat=9.1ns
 [zenbench] timer resolution: 10ns, loop overhead: 0.19ns/iter, TSC: 4.300 ticks/ns (invariant)
-[zenbench] results → /tmp/zenbench/zenbench-1788480444-182391.txt
+[zenbench] results → <scratch>/zenbench/zenbench-1788480444-182391.txt
 
   zenbench  1788480444-182391
   git: 228cb52f38db2e696ed9bc3585005cf827ae00e9

@@ -45,7 +45,7 @@ For reuse across kernels, see the complete
 `#[inline(always)]` can help that helper inline, but it cannot replace the
 `#[magetypes]` entry context. For direct intrinsics, use `#[arcane(import_intrinsics)]`
 at the boundary and `#[rite(import_intrinsics)]` for matched helpers; the
-[intrinsics browser](https://imazen.github.io/archmage/intrinsics/) lists the
+[intrinsics browser](https://lilith.github.io/archmage/intrinsics/) lists the
 reference-based memory operations.
 
 A token is proof of the required features, not a runtime allocation. A fixed

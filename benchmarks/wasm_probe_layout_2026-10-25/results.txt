@@ -1,4 +1,4 @@
-# 2026-10-25T08:51:03Z dev (Ryzen 9 9950X3D), wasmtime 40.0.1 (918e5dc77 2026-01-07), archmage working copy lqurtpkupukm
+# 2026-10-25T08:51:03Z Zen 5 (Ryzen 9 9950X3D), wasmtime 40.0.1 (918e5dc77 2026-01-07), archmage working copy lqurtpkupukm
 === wasmtime run 
 probe fuses: true
 chain (1024 dependent steps)

@@ -30,13 +30,13 @@ mod highp_scalar;
 #[cfg(any(
     target_arch = "x86_64",
     target_arch = "aarch64",
-    target_arch = "wasm32"
+    all(target_arch = "wasm32", target_feature = "simd128")
 ))]
 mod highp_simd;
 mod std_probe;
 #[cfg(test)]
 mod tests;
-#[cfg(target_arch = "wasm32")]
+#[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
 mod wasm;
 
 mod options;
@@ -130,7 +130,7 @@ pub fn try_powf_array_runtime<const N: usize>(
 }
 
 #[inline(always)]
-pub(crate) fn try_powf_token_runtime<T: archmage::SimdToken, const N: usize>(
+pub(crate) fn try_powf_token_runtime<T: magetypes::simd::MagetypesToken, const N: usize>(
     token: T,
     bases: [f32; N],
     exponent: f32,

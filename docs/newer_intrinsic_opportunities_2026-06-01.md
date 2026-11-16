@@ -230,13 +230,8 @@ source edits with zero gating risk.
 ## Provenance
 
 - stdarch source: stable rustc 1.95.0 toolchain, paths cited inline.
-- magetypes: `~/work/archmage/magetypes/src/simd/` (read-only; primary tree had
-  an unrelated in-progress f16-conversion change from another session — not
-  touched; this doc was written in an isolated `jj workspace` checked out from
-  clean `main@origin` 4bc2a957).
-- jxl-encoder-simd: `~/work/zen/jxl-encoder/jxl-encoder-simd/src/`.
-- zenpredict: `~/work/zen/zenanalyze/zenpredict/src/inference.rs`.
-- Survey log: `/tmp/intrinsic_opportunity_survey_2026-06-01.log`.
+- magetypes: `magetypes/src/simd/` (inspected on isolated clean baseline commit `4bc2a957`).
+- jxl-encoder-simd / zenanalyze (`zenpredict`): inspected at local sibling checkouts during survey.
 - No perf runs, no code changes, no cloud. Stability verified from source, not
   docs or memory. Symbols not located on stable (any `sve`, `avxvnni`) are
   marked as such rather than guessed.

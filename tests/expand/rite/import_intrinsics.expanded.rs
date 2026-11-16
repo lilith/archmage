@@ -4,6 +4,7 @@ use archmage::{rite, X64V3Token};
 )]
 #[inline]
 fn helper(token: X64V3Token, a: &[f32; 8], b: &[f32; 8]) -> [f32; 8] {
+    let _: () = <X64V3Token>::__ARCHMAGE_ASSERT_TIER_F38B284B;
     #[allow(unused_imports)]
     use archmage::intrinsics::x86_64::*;
     let va = _mm256_loadu_ps(a);

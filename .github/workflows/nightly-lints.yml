@@ -1,8 +1,7 @@
 name: Nightly lints
 
-# Early warning for lints and rustc warnings that will reach stable: the same
-# warning sweep CI runs (xtask/warning_sweep.py, every target/feature/CPU
-# configuration plus the strict-lint consumer crate), on the nightly toolchain.
+# Early warning for lints and rustc warnings that will reach stable: checks every
+# target/feature configuration on the nightly toolchain (`just warnings`).
 # It is not part of CI: a nightly-only lint must not block pushes. A failing
 # run opens (or updates) a `nightly-lints` issue; a green run closes it.
 
@@ -38,7 +37,13 @@ jobs:
         run: rustc --version && cargo clippy --version
 
       - name: Sweep
-        run: python3 -B xtask/warning_sweep.py
+        run: |
+          cargo clippy --workspace --all-targets --features "std avx512" -- -D warnings
+          cargo clippy -p archmage --all-targets --no-default-features -- -D warnings
+          for target in i686-unknown-linux-gnu aarch64-unknown-linux-gnu wasm32-wasip1 wasm32-unknown-unknown armv7-unknown-linux-gnueabihf; do
+            cargo clippy -p archmage --target "$target" -- -D warnings
+            cargo clippy -p magetypes --target "$target" -- -D warnings
+          done
 
   report:
     name: Report

@@ -2,52 +2,351 @@
 
 use proc_macro2::Ident;
 use quote::{ToTokens, format_ident, quote};
-use syn::{Attribute, GenericParam, Signature, Type, parse::ParseStream, token};
+use syn::{
+    Attribute, GenericParam, PathArguments, QSelf, Signature, Type,
+    parse::{Parse, ParseStream},
+    visit_mut::VisitMut,
+};
 
-/// A function parsed with the body left as an opaque TokenStream.
-///
-/// Only the signature is fully parsed into an AST — the body tokens are collected
-/// without building any AST nodes (no expressions, statements, or patterns parsed).
-/// Parsing cost therefore scales with the signature rather than a body AST.
-#[derive(Clone)]
-pub(crate) struct LightFn {
-    pub attrs: Vec<Attribute>,
-    pub vis: syn::Visibility,
-    pub sig: Signature,
-    pub brace_token: token::Brace,
-    pub body: proc_macro2::TokenStream,
+/// Reject function shapes that cannot safely carry `#[target_feature]`.
+pub(crate) fn validate_item_fn(item: &syn::ItemFn, macro_name: &str) -> syn::Result<()> {
+    if item.sig.constness.is_some() {
+        return Err(syn::Error::new_spanned(
+            &item.sig,
+            format!(
+                "#[{macro_name}] cannot be used on a `const fn` \
+                 (`#[target_feature]` functions cannot be const-evaluated)"
+            ),
+        ));
+    }
+    if item.sig.asyncness.is_some() {
+        return Err(syn::Error::new_spanned(
+            &item.sig,
+            format!(
+                "#[{macro_name}] cannot be used on an `async fn` \
+                 (`#[target_feature]` is incompatible with async state machines)"
+            ),
+        ));
+    }
+    if item.sig.variadic.is_some() {
+        return Err(syn::Error::new_spanned(
+            &item.sig,
+            format!("#[{macro_name}] cannot be used on a variadic function"),
+        ));
+    }
+    if let Some(attr) = item.attrs.iter().find(|a| is_target_feature_attr(a)) {
+        return Err(syn::Error::new_spanned(
+            attr,
+            format!(
+                "#[{macro_name}] generates `#[target_feature]` from the token/tier; \
+                 remove the manual `#[target_feature]` attribute"
+            ),
+        ));
+    }
+    Ok(())
 }
 
-impl syn::parse::Parse for LightFn {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let attrs = input.call(Attribute::parse_outer)?;
-        let vis: syn::Visibility = input.parse()?;
-        let sig: Signature = input.parse()?;
-        let content;
-        let brace_token = syn::braced!(content in input);
-        let body: proc_macro2::TokenStream = content.parse()?;
-        Ok(LightFn {
-            attrs,
-            vis,
-            sig,
-            brace_token,
-            body,
-        })
+fn is_target_feature_attr(attr: &Attribute) -> bool {
+    if attr
+        .path()
+        .segments
+        .last()
+        .is_some_and(|seg| seg.ident == "target_feature")
+    {
+        return true;
+    }
+    if attr.path().is_ident("cfg_attr")
+        && let syn::Meta::List(list) = &attr.meta
+    {
+        return tokens_contain_ident(&list.tokens, &["target_feature"]);
+    }
+    false
+}
+
+/// Replace all occurrences of the `Token` placeholder in a parsed function AST.
+/// Preserves bare `Token` dispatch markers inside `incant!` / `dispatch_variant!`
+/// argument lists while substituting `Token` in generic arguments and paths.
+pub(crate) fn specialize_item_fn(
+    item: &mut syn::ItemFn,
+    token: &proc_macro2::TokenStream,
+) -> syn::Result<()> {
+    let token_path: syn::Path = syn::parse2(token.clone())?;
+    let mut visitor = SpecializeTokenVisitor {
+        token_path,
+        token_tokens: token,
+    };
+    visitor.visit_item_fn_mut(item);
+    Ok(())
+}
+
+struct SpecializeTokenVisitor<'a> {
+    token_path: syn::Path,
+    token_tokens: &'a proc_macro2::TokenStream,
+}
+
+impl SpecializeTokenVisitor<'_> {
+    fn rewrite_path(&self, path: &mut syn::Path) {
+        if path.leading_colon.is_none()
+            && let Some(first) = path.segments.first()
+            && first.ident == "Token"
+            && first.arguments.is_empty()
+        {
+            let span = first.ident.span();
+            let rest: Vec<_> = path.segments.iter().skip(1).cloned().collect();
+            let mut replacement = self.token_path.clone();
+            if let Some(last) = replacement.segments.last_mut() {
+                last.ident.set_span(span);
+            }
+            path.leading_colon = replacement.leading_colon;
+            path.segments = replacement.segments;
+            for seg in rest {
+                path.segments.push(seg);
+            }
+        }
     }
 }
 
-impl LightFn {
-    /// Substitute the family placeholder without printing and reparsing the
-    /// entire function. Only syntax that contains `Token` needs to be parsed
-    /// again; the body stays opaque, including macro argument markers.
-    pub(crate) fn specialize_token(&mut self, token: &proc_macro2::TokenStream) -> syn::Result<()> {
-        for attr in &mut self.attrs {
-            specialize_syntax(&mut attr.meta, token)?;
+impl VisitMut for SpecializeTokenVisitor<'_> {
+    fn visit_attribute_mut(&mut self, attr: &mut Attribute) {
+        let tokens = attr.to_token_stream();
+        if tokens_contain_ident(&tokens, &["Token"]) {
+            let rewritten = replace_ident_in_tokens(tokens, "Token", self.token_tokens);
+            if let Ok(parsed) = syn::parse::Parser::parse2(Attribute::parse_outer, rewritten)
+                && let Some(first) = parsed.into_iter().next()
+            {
+                *attr = first;
+            }
         }
-        specialize_syntax(&mut self.vis, token)?;
-        specialize_syntax(&mut self.sig, token)?;
-        self.body = replace_ident_in_tokens(std::mem::take(&mut self.body), "Token", token);
-        Ok(())
+    }
+
+    fn visit_path_mut(&mut self, path: &mut syn::Path) {
+        syn::visit_mut::visit_path_mut(self, path);
+        self.rewrite_path(path);
+    }
+
+    fn visit_macro_mut(&mut self, mac: &mut syn::Macro) {
+        let tokens = std::mem::take(&mut mac.tokens);
+        if mac
+            .path
+            .segments
+            .last()
+            .is_some_and(|s| s.ident == "incant" || s.ident == "dispatch_variant")
+        {
+            mac.tokens = rewrite_incant_macro_tokens(tokens, "Token", self.token_tokens);
+        } else if tokens_contain_ident(&tokens, &["Token"]) {
+            mac.tokens = replace_ident_in_tokens(tokens, "Token", self.token_tokens);
+        } else {
+            mac.tokens = tokens;
+        }
+    }
+}
+
+fn rewrite_incant_macro_tokens(
+    tokens: proc_macro2::TokenStream,
+    target: &str,
+    replacement: &proc_macro2::TokenStream,
+) -> proc_macro2::TokenStream {
+    let parser = |input: ParseStream<'_>| -> syn::Result<proc_macro2::TokenStream> {
+        let path: syn::Path = input.parse()?;
+        let args;
+        syn::parenthesized!(args in input);
+        let args = args.parse_terminated(syn::Expr::parse, syn::Token![,])?;
+        let rest: proc_macro2::TokenStream = input.parse()?;
+        let path = replace_ident_in_tokens(path.to_token_stream(), target, replacement);
+        let args = args.iter().map(|arg| {
+            if matches!(arg, syn::Expr::Path(p) if p.qself.is_none() && p.path.is_ident("Token")) {
+                arg.to_token_stream()
+            } else {
+                replace_ident_in_tokens(arg.to_token_stream(), target, replacement)
+            }
+        });
+        let rest = replace_ident_in_tokens(rest, target, replacement);
+        Ok(quote! { #path(#(#args),*) #rest })
+    };
+    use syn::parse::Parser;
+    parser
+        .parse2(tokens.clone())
+        .unwrap_or_else(|_| replace_ident_in_tokens(tokens, target, replacement))
+}
+
+/// Substitute `Self` (type) and optionally `self` (value -> `_self`) throughout a
+/// function's AST while respecting nested `impl`/`trait`/`mod` boundaries and
+/// nested `fn` receiver scopes.
+pub(crate) fn replace_self_in_item_fn(
+    item: &mut syn::ItemFn,
+    self_ty: &Type,
+    self_ident: Option<&Ident>,
+) {
+    let mut replacer = SelfReplacer {
+        self_ty,
+        self_ident,
+        replace_value: self_ident.is_some(),
+    };
+    replacer.visit_item_fn_mut_outer(item);
+}
+
+struct SelfReplacer<'a> {
+    self_ty: &'a Type,
+    self_ident: Option<&'a Ident>,
+    replace_value: bool,
+}
+
+impl SelfReplacer<'_> {
+    fn visit_item_fn_mut_outer(&mut self, item: &mut syn::ItemFn) {
+        self.visit_signature_mut(&mut item.sig);
+        self.visit_block_mut(&mut item.block);
+    }
+
+    fn rewrite_self_path(
+        &self,
+        qself: &mut Option<QSelf>,
+        path: &mut syn::Path,
+        expr_pos: bool,
+    ) -> bool {
+        if qself.is_some()
+            || path.leading_colon.is_some()
+            || !path
+                .segments
+                .first()
+                .is_some_and(|s| s.ident == "Self" && s.arguments.is_empty())
+        {
+            return false;
+        }
+        if let Type::Path(rtp) = self.self_ty
+            && rtp.qself.is_none()
+        {
+            let rest: Vec<_> = path.segments.iter().skip(1).cloned().collect();
+            path.leading_colon = rtp.path.leading_colon;
+            path.segments = rtp.path.segments.clone();
+            if expr_pos {
+                for seg in &mut path.segments {
+                    if let PathArguments::AngleBracketed(ab) = &mut seg.arguments {
+                        ab.colon2_token = Some(Default::default());
+                    }
+                }
+            }
+            for seg in rest {
+                path.segments.push(seg);
+            }
+            return true;
+        }
+        if path.segments.len() > 1 {
+            let rest: Vec<_> = path.segments.iter().skip(1).cloned().collect();
+            *qself = Some(QSelf {
+                lt_token: Default::default(),
+                ty: Box::new(self.self_ty.clone()),
+                position: 0,
+                as_token: None,
+                gt_token: Default::default(),
+            });
+            path.leading_colon = Some(Default::default());
+            path.segments = rest.into_iter().collect();
+            return true;
+        }
+        false
+    }
+}
+
+impl VisitMut for SelfReplacer<'_> {
+    fn visit_item_impl_mut(&mut self, _: &mut syn::ItemImpl) {
+        // Nested impl introduces its own Self and self bindings.
+    }
+
+    fn visit_item_trait_mut(&mut self, _: &mut syn::ItemTrait) {
+        // Nested trait introduces its own Self binding.
+    }
+
+    fn visit_item_mod_mut(&mut self, _: &mut syn::ItemMod) {
+        // Nested mod is a separate scope.
+    }
+
+    fn visit_item_fn_mut(&mut self, item: &mut syn::ItemFn) {
+        // Nested free/inner fn cannot capture outer `self` value, though it
+        // still sees enclosing `Self` if inside an impl block.
+        let prev = self.replace_value;
+        self.replace_value = false;
+        syn::visit_mut::visit_item_fn_mut(self, item);
+        self.replace_value = prev;
+    }
+
+    fn visit_type_mut(&mut self, ty: &mut Type) {
+        syn::visit_mut::visit_type_mut(self, ty);
+        if let Type::Path(tp) = ty
+            && tp.qself.is_none()
+            && tp.path.leading_colon.is_none()
+            && tp
+                .path
+                .segments
+                .first()
+                .is_some_and(|s| s.ident == "Self" && s.arguments.is_empty())
+        {
+            if tp.path.segments.len() == 1 {
+                *ty = self.self_ty.clone();
+            } else {
+                self.rewrite_self_path(&mut tp.qself, &mut tp.path, false);
+            }
+        }
+    }
+
+    fn visit_expr_mut(&mut self, expr: &mut syn::Expr) {
+        syn::visit_mut::visit_expr_mut(self, expr);
+        match expr {
+            syn::Expr::Path(ep) => {
+                if self.replace_value
+                    && ep.qself.is_none()
+                    && ep.path.leading_colon.is_none()
+                    && ep.path.segments.len() == 1
+                    && ep.path.segments[0].ident == "self"
+                    && ep.path.segments[0].arguments.is_empty()
+                    && let Some(target_ident) = self.self_ident
+                {
+                    let span = ep.path.segments[0].ident.span();
+                    let mut replacement = target_ident.clone();
+                    replacement.set_span(span);
+                    ep.path.segments[0].ident = replacement;
+                    return;
+                }
+                self.rewrite_self_path(&mut ep.qself, &mut ep.path, true);
+            }
+            syn::Expr::Struct(es) => {
+                let mut qself = None;
+                self.rewrite_self_path(&mut qself, &mut es.path, true);
+            }
+            _ => {}
+        }
+    }
+
+    fn visit_pat_mut(&mut self, pat: &mut syn::Pat) {
+        syn::visit_mut::visit_pat_mut(self, pat);
+        match pat {
+            syn::Pat::Path(pp) => {
+                self.rewrite_self_path(&mut pp.qself, &mut pp.path, true);
+            }
+            syn::Pat::Struct(ps) => {
+                let mut qself = None;
+                self.rewrite_self_path(&mut qself, &mut ps.path, true);
+            }
+            syn::Pat::TupleStruct(pts) => {
+                let mut qself = None;
+                self.rewrite_self_path(&mut qself, &mut pts.path, true);
+            }
+            _ => {}
+        }
+    }
+
+    fn visit_macro_mut(&mut self, mac: &mut syn::Macro) {
+        let tokens = std::mem::take(&mut mac.tokens);
+        if tokens_contain_ident(&tokens, &["self", "Self"]) {
+            let mut out = replace_self_in_tokens(tokens, self.self_ty);
+            if self.replace_value
+                && let Some(target_ident) = self.self_ident
+            {
+                out = replace_self_value_in_tokens(out, target_ident);
+            }
+            mac.tokens = out;
+        } else {
+            mac.tokens = tokens;
+        }
     }
 }
 
@@ -62,19 +361,6 @@ pub(crate) fn specialize_syntax<T: syn::parse::Parse + ToTokens>(
         *syntax = syn::parse2(replace_ident_in_tokens(original, "Token", token))?;
     }
     Ok(())
-}
-
-impl ToTokens for LightFn {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        for attr in &self.attrs {
-            attr.to_tokens(tokens);
-        }
-        self.vis.to_tokens(tokens);
-        self.sig.to_tokens(tokens);
-        self.brace_token.surround(tokens, |tokens| {
-            self.body.to_tokens(tokens);
-        });
-    }
 }
 
 /// Filter out `#[inline]`, `#[inline(always)]`, `#[inline(never)]` from attributes.
@@ -137,14 +423,44 @@ pub(crate) fn gen_cfg_guard(
     target_arch: Option<&str>,
     cfg_feature: Option<&str>,
 ) -> proc_macro2::TokenStream {
-    match (target_arch, cfg_feature) {
-        (Some(arch), Some(feat)) => {
-            quote! { #[cfg(all(target_arch = #arch, feature = #feat))] }
+    gen_target_cfg_guard::<&str>(target_arch, cfg_feature, &[])
+}
+
+/// Generate a cfg guard combining `target_arch`, WASM compile-time
+/// `target_feature` predicates (since WebAssembly validates the whole module at
+/// load time and has no runtime instruction-set detection), and an optional
+/// Cargo `feature` gate.
+pub(crate) fn gen_target_cfg_guard<S: AsRef<str>>(
+    target_arch: Option<&str>,
+    cfg_feature: Option<&str>,
+    target_features: &[S],
+) -> proc_macro2::TokenStream {
+    let mut preds = Vec::new();
+    if let Some(arch) = target_arch {
+        preds.push(quote! { target_arch = #arch });
+        if arch == "wasm32" {
+            for tf in target_features {
+                let tf = tf.as_ref();
+                preds.push(quote! { target_feature = #tf });
+            }
         }
-        (Some(arch), None) => quote! { #[cfg(target_arch = #arch)] },
-        (None, Some(feat)) => quote! { #[cfg(feature = #feat)] },
-        (None, None) => quote! {},
     }
+    if let Some(feat) = cfg_feature {
+        preds.push(quote! { feature = #feat });
+    }
+    match preds.as_slice() {
+        [] => quote! {},
+        [only] => quote! { #[cfg(#only)] },
+        many => quote! { #[cfg(all(#(#many),*))] },
+    }
+}
+
+/// Required target features for a registered tier name (used for WASM compile-time
+/// `cfg(target_feature = ...)` gating).
+pub(crate) fn tier_wasm_features(tier_name: &str) -> &'static [&'static str] {
+    crate::generated::tier_to_canonical_token(tier_name)
+        .and_then(crate::generated::token_to_features)
+        .unwrap_or(&[])
 }
 
 /// Drop from `attrs` any `#[cfg]` equal to the guard the macro emits on both
@@ -495,9 +811,58 @@ pub(crate) fn suffix_path(path: &syn::Path, suffix: &str) -> syn::Path {
 ///
 /// Returns nothing for a concrete token (`tier_traits` empty) — that path keeps
 /// its cheaper const assertion.
-pub(crate) fn gen_tier_trait_assertion(
+/// Returns `true` if `ty` contains an `impl Trait` position anywhere inside it,
+/// which Rust forbids in `let pat: ty = ...;` annotations.
+pub(crate) fn contains_impl_trait(ty: &Type) -> bool {
+    match ty {
+        Type::ImplTrait(_) => true,
+        Type::Reference(r) => contains_impl_trait(&r.elem),
+        Type::Ptr(p) => contains_impl_trait(&p.elem),
+        Type::Tuple(t) => t.elems.iter().any(contains_impl_trait),
+        Type::Array(a) => contains_impl_trait(&a.elem),
+        Type::Slice(s) => contains_impl_trait(&s.elem),
+        Type::Paren(p) => contains_impl_trait(&p.elem),
+        Type::Group(g) => contains_impl_trait(&g.elem),
+        Type::Path(p) => p.path.segments.iter().any(|seg| match &seg.arguments {
+            syn::PathArguments::AngleBracketed(ab) => ab.args.iter().any(|arg| {
+                matches!(arg, syn::GenericArgument::Type(inner) if contains_impl_trait(inner))
+            }),
+            syn::PathArguments::Parenthesized(pa) => {
+                pa.inputs.iter().any(|arg| contains_impl_trait(&arg.ty))
+                    || matches!(&pa.output, syn::ReturnType::Type(_, out) if contains_impl_trait(out))
+            }
+            syn::PathArguments::None => false,
+        }),
+        _ => false,
+    }
+}
+
+/// Emit the compile-time tag assertion for a concrete token type.
+pub(crate) fn gen_concrete_token_assertion(
+    token_name: &str,
+    ty: &Type,
+) -> proc_macro2::TokenStream {
+    if let Some(expected_tag) = crate::generated::expected_tier_tag(token_name) {
+        let assertion = format_ident!("__ARCHMAGE_ASSERT_TIER_{:08X}", expected_tag);
+        quote! { let _: () = <#ty>::#assertion; }
+    } else {
+        quote! {}
+    }
+}
+
+/// Emit the compile-time tag assertion for `archmage::And<Base, Extra>`.
+pub(crate) fn gen_and_token_assertion(ty: &Type) -> proc_macro2::TokenStream {
+    let assertion = format_ident!(
+        "__ARCHMAGE_ASSERT_AND_{:08X}",
+        crate::generated::AND_ASSERT_TAG
+    );
+    quote! { let _: () = <#ty>::#assertion; }
+}
+
+/// Emit a compile-time verification for a tier-trait-bounded value parameter.
+pub(crate) fn gen_tier_trait_assertion<T: ToTokens>(
     tier_traits: &[String],
-    token_ident: &Ident,
+    borrow_target: &T,
 ) -> proc_macro2::TokenStream {
     if tier_traits.is_empty() {
         return quote! {};
@@ -510,7 +875,29 @@ pub(crate) fn gen_tier_trait_assertion(
         {
             #[inline(always)]
             const fn __archmage_assert_tier_trait<__T: ?Sized #(#bounds)*>(_: &__T) {}
-            __archmage_assert_tier_trait(&#token_ident);
+            __archmage_assert_tier_trait(&#borrow_target);
+        }
+    }
+}
+
+/// Emit a compile-time verification for a bounded generic type parameter `T`
+/// when it is checked directly by type (for example inside `And<Base, T>`).
+pub(crate) fn gen_type_tier_trait_assertion(
+    tier_traits: &[String],
+    ty: &Type,
+) -> proc_macro2::TokenStream {
+    if tier_traits.is_empty() {
+        return quote! {};
+    }
+    let bounds = tier_traits.iter().map(|name| {
+        let ident = format_ident!("{}", name);
+        quote! { + ::archmage::#ident }
+    });
+    quote! {
+        {
+            #[inline(always)]
+            const fn __archmage_assert_tier_trait<__T: ?Sized #(#bounds)*>() {}
+            __archmage_assert_tier_trait::<#ty>();
         }
     }
 }
@@ -640,6 +1027,20 @@ pub(crate) fn missing_token_error(
 /// nothing). `(a, b): (T, U)` becomes `__archmage_arg_1: (T, U)` plus
 /// `let (a, b): (T, U) = __archmage_arg_1;`. The type annotation is left off
 /// when the type is `impl Trait`, which a `let` cannot name.
+/// True iff `pat` is a plain identifier with no `ref`, `mut`, or `@ subpat` modifiers.
+pub(crate) fn is_plain_ident(pat: &syn::Pat) -> bool {
+    matches!(
+        pat,
+        syn::Pat::Ident(p)
+            if p.by_ref.is_none() && p.mutability.is_none() && p.subpat.is_none()
+    )
+}
+
+/// Replace any non-plain-identifier parameter patterns (`_: T`, `(a, b): (T, U)`,
+/// `ref x: T`, `mut x: T`, `x @ pat: T`) with generated identifiers
+/// (`__archmage_arg_0`, `__archmage_arg_1`, ...) so the parameter can be
+/// forwarded by name, and return the statements that re-bind the original
+/// pattern inside the body.
 pub(crate) fn rename_non_ident_params(sig: &mut Signature) -> Vec<proc_macro2::TokenStream> {
     let mut rebinds = Vec::new();
     let mut counter = 0u32;
@@ -647,7 +1048,7 @@ pub(crate) fn rename_non_ident_params(sig: &mut Signature) -> Vec<proc_macro2::T
         let syn::FnArg::Typed(pat_type) = arg else {
             continue;
         };
-        if matches!(pat_type.pat.as_ref(), syn::Pat::Ident(_)) {
+        if is_plain_ident(pat_type.pat.as_ref()) {
             continue;
         }
         let generated = format_ident!("__archmage_arg_{}", counter);
@@ -655,7 +1056,7 @@ pub(crate) fn rename_non_ident_params(sig: &mut Signature) -> Vec<proc_macro2::T
         let original_pat = pat_type.pat.clone();
         let ty = &pat_type.ty;
         if !matches!(original_pat.as_ref(), syn::Pat::Wild(_)) {
-            rebinds.push(if matches!(ty.as_ref(), Type::ImplTrait(_)) {
+            rebinds.push(if contains_impl_trait(ty) {
                 quote! { let #original_pat = #generated; }
             } else {
                 quote! { let #original_pat: #ty = #generated; }
@@ -710,31 +1111,110 @@ pub(crate) fn rename_wildcard_token(sig: &mut Signature) -> Option<Ident> {
             inputs: std::iter::once(syn::FnArg::Typed(pat_type.clone())).collect(),
             ..template.clone()
         };
-        let Some(info) = crate::token_discovery::find_token_param(&probe) else {
+        let Ok(Some(proofs)) = crate::token_discovery::discover_signature_proofs(&probe) else {
             continue;
         };
+        let ident = proofs.primary_ident;
         *pat_type.pat = syn::Pat::Ident(syn::PatIdent {
             attrs: vec![],
             by_ref: None,
             mutability: None,
-            ident: info.ident.clone(),
+            ident: ident.clone(),
             subpat: None,
         });
-        return Some(info.ident);
+        return Some(ident);
     }
     None
 }
 
-/// Prepend statements to a function body.
-pub(crate) fn prepend_to_body(
-    body: &mut proc_macro2::TokenStream,
-    prefix: proc_macro2::TokenStream,
-) {
+/// Normalize non-plain parameter patterns for single-function emitters
+/// (`#[rite]`, `wasm32` `#[arcane]`, `ScalarToken` `#[arcane]`) on the
+/// parameters indexed in `param_indices`, so bound assertions can borrow or
+/// project them safely before restoring the author's bindings inside the body.
+///
+/// Single wildcard token parameters (`_: X64V3Token`) still become `__archmage_token`
+/// (with no extra rebind) to match historical single-token snapshots.
+pub(crate) fn normalize_single_fn_token_params(
+    sig: &mut Signature,
+    param_indices: &[usize],
+) -> Vec<proc_macro2::TokenStream> {
+    let mut rebinds = Vec::new();
+    let mut typed_idx = 0usize;
+    let mut counter = 0u32;
+    let single_wildcard = param_indices.len() == 1
+        && sig
+            .inputs
+            .iter()
+            .filter_map(|arg| match arg {
+                syn::FnArg::Typed(pt) => Some(pt),
+                syn::FnArg::Receiver(_) => None,
+            })
+            .nth(param_indices[0])
+            .is_some_and(|pt| matches!(pt.pat.as_ref(), syn::Pat::Wild(_)));
+
+    for arg in &mut sig.inputs {
+        let syn::FnArg::Typed(pat_type) = arg else {
+            continue;
+        };
+        let idx = typed_idx;
+        typed_idx += 1;
+        if !param_indices.contains(&idx) || is_plain_ident(pat_type.pat.as_ref()) {
+            continue;
+        }
+        let generated = if single_wildcard && matches!(pat_type.pat.as_ref(), syn::Pat::Wild(_)) {
+            format_ident!("__archmage_token")
+        } else {
+            let ident = format_ident!("__archmage_arg_{}", counter);
+            counter += 1;
+            ident
+        };
+        let original_pat = pat_type.pat.clone();
+        let ty = &pat_type.ty;
+        if !matches!(original_pat.as_ref(), syn::Pat::Wild(_)) {
+            rebinds.push(if contains_impl_trait(ty) {
+                quote! { let #original_pat = #generated; }
+            } else {
+                quote! { let #original_pat: #ty = #generated; }
+            });
+        }
+        *pat_type.pat = syn::Pat::Ident(syn::PatIdent {
+            attrs: vec![],
+            by_ref: None,
+            mutability: None,
+            ident: generated,
+            subpat: None,
+        });
+    }
+    rebinds
+}
+
+/// Prepend statements to a function body block.
+pub(crate) fn prepend_to_block(block: &mut syn::Block, prefix: proc_macro2::TokenStream) {
     if prefix.is_empty() {
         return;
     }
-    let original = std::mem::take(body);
-    *body = quote! { #prefix #original };
+    let stmts: Vec<syn::Stmt> = syn::parse2::<syn::Block>(quote! { { #prefix } })
+        .map(|b| b.stmts)
+        .unwrap_or_else(|_| vec![syn::Stmt::Item(syn::Item::Verbatim(prefix))]);
+    let existing = std::mem::take(&mut block.stmts);
+    block.stmts = stmts;
+    block.stmts.extend(existing);
+}
+
+/// Extract the statement tokens inside a `syn::Block` (without outer braces).
+pub(crate) fn block_inner_tokens(block: &syn::Block) -> proc_macro2::TokenStream {
+    let stmts = &block.stmts;
+    quote! { #(#stmts)* }
+}
+
+/// Replace the statements inside a `syn::Block` by parsing `inner` within braces.
+pub(crate) fn set_block_inner_tokens(
+    block: &mut syn::Block,
+    inner: proc_macro2::TokenStream,
+) -> syn::Result<()> {
+    let parsed: syn::Block = syn::parse2(quote! { { #inner } })?;
+    block.stmts = parsed.stmts;
+    Ok(())
 }
 
 /// The `_self` parameter a nested function takes in place of a receiver,
@@ -800,66 +1280,6 @@ pub(crate) fn replace_self_value_in_tokens(
         }
     }
     result
-}
-
-/// The identifiers of every parameter whose type is a token (concrete, trait
-/// bound or bounded generic), in signature order.
-pub(crate) fn token_param_idents(sig: &Signature) -> Vec<String> {
-    let mut out = Vec::new();
-    for arg in &sig.inputs {
-        let syn::FnArg::Typed(syn::PatType { pat, ty, .. }) = arg else {
-            continue;
-        };
-        let Some(info) = crate::token_discovery::extract_token_type_info(ty) else {
-            continue;
-        };
-        let is_token = match &info {
-            crate::token_discovery::TokenTypeInfo::Concrete(_) => true,
-            crate::token_discovery::TokenTypeInfo::ImplTrait(names) => {
-                crate::token_discovery::traits_to_features(names).is_some()
-            }
-            crate::token_discovery::TokenTypeInfo::Generic(name) => {
-                crate::token_discovery::find_generic_bounds(sig, name)
-                    .and_then(|b| crate::token_discovery::traits_to_features(&b))
-                    .is_some()
-            }
-        };
-        if is_token {
-            out.push(match pat.as_ref() {
-                syn::Pat::Ident(p) => p.ident.to_string(),
-                _ => "_".to_string(),
-            });
-        }
-    }
-    out
-}
-
-/// The error for a signature with more than one token parameter: the macros
-/// take their features from one token, and picking the first silently was
-/// the surprising rule that issue #122 reports.
-pub(crate) fn multiple_tokens_error(
-    sig: &Signature,
-    macro_name: &str,
-    idents: &[String],
-) -> proc_macro2::TokenStream {
-    let list = idents
-        .iter()
-        .map(|i| format!("`{i}`"))
-        .collect::<Vec<_>>()
-        .join(", ");
-    let hint = if macro_name == "rite" {
-        "name the tier instead: `#[rite(v3)]`, or keep one token parameter"
-    } else {
-        "keep the strongest token as the parameter and derive the weaker ones inside \
-         the body with its extractors (`token.v3()`, `token.v2()`), or split the \
-         function so each part takes one token"
-    };
-    let msg = format!(
-        "#[{macro_name}] found {} token parameters ({list}) and takes its CPU features \
-         from only one. {hint}.",
-        idents.len()
-    );
-    syn::Error::new_spanned(sig, msg).to_compile_error()
 }
 
 #[cfg(test)]

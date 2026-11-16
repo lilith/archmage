@@ -20,7 +20,7 @@ and assume the polyfill will establish the feature context.
 In a gain kernel and a sum kernel written at 4, 8 and 16 lanes, each polyfilled
 operation compiled to its native operations and nothing else. No AVX2 or NEON
 loop touches the stack or moves a vector between registers
-([assembly results](https://github.com/imazen/archmage/blob/main/benchmarks/polyfill_asm_2026-10-06.md), rustc 1.99.0; instruction counts, no timings):
+([assembly results](https://github.com/lilith/archmage/blob/main/benchmarks/polyfill_asm_2026-10-06.md), rustc 1.99.0; instruction counts, no timings):
 
 | Target | Kernel | `f32x4` | `f32x8` | `f32x16` |
 |---|---|---|---|---|
@@ -30,7 +30,7 @@ loop touches the stack or moves a vector between registers
 | NEON | sum | 4 / 4 | 5 / 8 | 9 / 16 |
 
 Each cell is instructions in the main loop / floats per iteration. Instruction
-counts are not times. [Timed](https://github.com/imazen/archmage/blob/main/benchmarks/polyfill_timing_2026-10-06.md) on a Neoverse-N1 and on Zen 5:
+counts are not times. [Timed](https://github.com/lilith/archmage/blob/main/benchmarks/polyfill_timing_2026-10-06.md) on a Neoverse-N1 and on Zen 5:
 
 - **A sum ran faster with the wider type**, because each part keeps its own
   accumulator. Summing 8,192 floats on the Neoverse-N1 took 1.45 µs with

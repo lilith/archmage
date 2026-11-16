@@ -4,6 +4,7 @@ use archmage::magetypes;
 )]
 #[inline]
 fn helper_v3(_t: archmage::X64V3Token, x: f32) -> f32 {
+    let _: () = <archmage::X64V3Token>::__ARCHMAGE_ASSERT_TIER_F38B284B;
     #[allow(unused_imports)]
     use archmage::intrinsics::x86_64::*;
     x * x

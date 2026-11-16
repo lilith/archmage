@@ -21,7 +21,7 @@ reference. Inputs whose reference is zero, subnormal or infinite as an f32 are
 skipped. "differ" counts inputs where the two backends return different bits;
 "max diff" is the largest difference between them, in ULP of the reference.
 
-Run: `~/work/zen/scripts/run-heavy --mem 8G -- ./target/release/precision-final`
+Run: `./target/release/precision-final`
 (28 threads, 24 s).
 
 ## Results: midp
@@ -154,8 +154,8 @@ name = "precision-final"
 path = "src/main.rs"
 
 [dependencies]
-archmage = { path = "/home/lilith/work/archmage" }
-magetypes = { path = "/home/lilith/work/archmage/magetypes" }
+archmage = { path = "<workspace>" }
+magetypes = { path = "<workspace>/magetypes" }
 
 [profile.release]
 codegen-units = 1

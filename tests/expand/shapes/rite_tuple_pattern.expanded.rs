@@ -4,6 +4,7 @@ use archmage::prelude::*;
 )]
 #[inline]
 fn probe((lo, hi): (f32, f32), token: X64V3Token, x: f32) -> f32 {
+    let _: () = <X64V3Token>::__ARCHMAGE_ASSERT_TIER_F38B284B;
     let _ = token;
     lo + hi + x
 }

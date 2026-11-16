@@ -3,7 +3,7 @@ use super::PowfOptions;
 #[cfg(any(
     target_arch = "x86_64",
     target_arch = "aarch64",
-    target_arch = "wasm32"
+    all(target_arch = "wasm32", target_feature = "simd128")
 ))]
 use super::highp_simd;
 use super::{PowfError, dispatch::Plan, graph, highp, highp_scalar};
@@ -53,7 +53,7 @@ fn run<const IN_CONTEXT: bool, const OPTIONS: u32, const N: usize>(
                 neon::<OPTIONS, N>(t, bases, n)
             }
         }
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
         Plan::Wasm(t, true) => {
             if IN_CONTEXT {
                 highp_simd::packed2::<archmage::Wasm128Token, OPTIONS, N>(t, bases, n)
@@ -92,7 +92,7 @@ fn scalar<
 #[cfg(any(
     target_arch = "x86_64",
     target_arch = "aarch64",
-    target_arch = "wasm32"
+    all(target_arch = "wasm32", target_feature = "simd128")
 ))]
 macro_rules! entry {
     ($name:ident,$token:ident,$packed:ident) => {
@@ -114,13 +114,13 @@ entry!(v4, X64V4Token, wide);
 entry!(v4x, X64V4xToken, wide);
 #[cfg(target_arch = "aarch64")]
 entry!(neon, NeonToken, packed2);
-#[cfg(target_arch = "wasm32")]
+#[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
 entry!(wasm, Wasm128Token, packed2);
 
 // The direct form inlines into an already capable vector caller. Automatic
 // upgrades enter one arcane boundary for the complete graph instead.
 #[inline(always)]
-pub(super) fn for_token<T: archmage::SimdToken, const OPTIONS: u32, const N: usize>(
+pub(super) fn for_token<T: magetypes::simd::MagetypesToken, const OPTIONS: u32, const N: usize>(
     t: T,
     bases: [f32; N],
     n: f32,

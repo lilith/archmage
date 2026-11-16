@@ -182,18 +182,18 @@ kernels using Instant, 20 ms warmup per case, batches calibrated to 1 ms,
 saved. JIT and process startup are excluded; host resource monitoring is
 provided by the outer run wrapper, not a WASI guest resource gate.
 
-Heavy jobs ran serially. Linux commands used `run-heavy`; these are its complete
+Heavy jobs ran serially. Linux runs reported these
 resource-summary lines for the final measurement commands, not per-kernel
 allocation measurements:
 
 ```text
-intel-full-driver.log: run-heavy: done rc=0 404s | peak-RSS 0.02GiB | min-avail 23806MiB | peak-load 4.92
-zen5-driver.log: run-heavy: done rc=0 310s | peak-RSS 0.22GiB | min-avail 37951MiB | peak-load 2.95
-arm-n1-driver.log: run-heavy: done rc=0 55s | peak-RSS 0.03GiB | min-avail 29796MiB | peak-load 1.42
-arm-n1-edge-driver.log: run-heavy: done rc=0 143s | peak-RSS 0.03GiB | min-avail 29384MiB | peak-load 6.55
-wasm-matrix-driver.log: run-heavy: done rc=0 153s | peak-RSS 0.04GiB | min-avail 25234MiB | peak-load 3.56
-mac-m4-driver.log: run-heavy: done rc=0 58s | peak-RSS 0.01GiB | min-avail 24212MiB | peak-load 1.35
-mac-m4-edge-driver.log: run-heavy: done rc=0 124s | peak-RSS 0.01GiB | min-avail 25989MiB | peak-load 1.04
+intel-full-driver.log: run summary: rc=0 404s | peak-RSS 0.02GiB | min-avail 23806MiB | peak-load 4.92
+zen5-driver.log: run summary: rc=0 310s | peak-RSS 0.22GiB | min-avail 37951MiB | peak-load 2.95
+arm-n1-driver.log: run summary: rc=0 55s | peak-RSS 0.03GiB | min-avail 29796MiB | peak-load 1.42
+arm-n1-edge-driver.log: run summary: rc=0 143s | peak-RSS 0.03GiB | min-avail 29384MiB | peak-load 6.55
+wasm-matrix-driver.log: run summary: rc=0 153s | peak-RSS 0.04GiB | min-avail 25234MiB | peak-load 3.56
+mac-m4-driver.log: run summary: rc=0 58s | peak-RSS 0.01GiB | min-avail 24212MiB | peak-load 1.35
+mac-m4-edge-driver.log: run summary: rc=0 124s | peak-RSS 0.01GiB | min-avail 25989MiB | peak-load 1.04
 ```
 
 For Mac, that wrapper monitors only the Linux SSH coordinator. The native Mac
@@ -205,7 +205,7 @@ The post-benchmark local `just ci` command returned success (156 s,
 `peak-RSS 1.27GiB`, `min-avail 23561MiB`, `peak-load 7.30`), but it explicitly
 skipped Miri and cross-platform checks because their tooling was unavailable
 in that invocation. It is not a complete release gate. The preceding main
-commit's [remote Miri job](https://github.com/imazen/archmage/actions/runs/38247453244)
+commit's [remote Miri job](https://github.com/lilith/archmage/actions/runs/38247453244)
 failed in libm's x86 CPUID inline assembly reached by scalar portable FMA.
 The benchmark's native ARM and WASM runs are separate from those skipped
 repository-wide checks. No test expectation or skip list was changed here.
@@ -213,8 +213,8 @@ repository-wide checks. No test expectation or skip list was changed here.
 ## Reproduction and retained artifacts
 
 The experimental harness stays outside main, as required by release discipline.
-The durable artifact directory is `/mnt/v/output/archmage/fma_isa_2026-10-12/`
-on `dev`. It contains the standalone experiment's source/history, both source
+The durable artifact directory is `<archive>/fma_isa_2026-10-12/`
+in external archive. It contains the standalone experiment's source/history, both source
 snapshots, locked dependencies, binaries, disassembly, complete logs, and
 `results/comparison.csv`. `results/SHA256SUMS.json` hashes the raw logs/results
 and binaries. The root `ARCHIVE_SHA256SUMS.json` checks the complete archive

@@ -42,7 +42,7 @@ supply every magetypes backend implementation for that token type.
 
 ## Construct from an existing feature context
 
-Repository addition after 0.9.28: `from_context()` uses a target-feature function
+`from_context()` uses a target-feature function
 as the constructor. Rust requires a caller with matching or superset features:
 
 ```rust

@@ -11,7 +11,11 @@ use archmage::prelude::*;
 /// Uses raw core::arch intrinsics (unsafe for memory, safe for values).
 #[cfg(target_arch = "x86_64")]
 #[arcane]
-pub fn v4_add_values(_token: X64V4Token, a: core::arch::x86_64::__m512, b: core::arch::x86_64::__m512) -> core::arch::x86_64::__m512 {
+pub fn v4_add_values(
+    _token: X64V4Token,
+    a: core::arch::x86_64::__m512,
+    b: core::arch::x86_64::__m512,
+) -> core::arch::x86_64::__m512 {
     core::arch::x86_64::_mm512_add_ps(a, b)
 }
 

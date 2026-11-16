@@ -18,7 +18,7 @@ Hosts and commands (no `-Ctarget-cpu=native`), both with rustc 1.99.0
 (b940084d7 2026-09-28):
 
 - AMD Ryzen 9 9950X3D, Linux 7.0.0-34-generic.
-  Run 1: `~/work/zen/scripts/run-heavy --mem 16G -- cargo bench -p magetypes --bench mul_add_cost --features avx512`.
+  Run 1: `cargo bench -p magetypes --bench mul_add_cost --features avx512`.
   Run 2: the same with `RUSTFLAGS="--cfg mul_add_cost_redraw"` and a separate
   target directory, which inserts a padding function and redraws code placement.
 - Apple M4 Pro, macOS 27.0. Two runs of

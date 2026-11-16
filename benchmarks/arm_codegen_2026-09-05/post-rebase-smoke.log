@@ -1,12 +1,12 @@
-   Compiling archmage-macros v0.9.29 (/Users/lilith/work/archmage/archmage-macros)
-   Compiling archmage v0.9.29 (/Users/lilith/work/archmage)
-   Compiling magetypes v0.9.29 (/Users/lilith/work/archmage/magetypes)
+   Compiling archmage-macros v0.9.29 (<workspace>/archmage-macros)
+   Compiling archmage v0.9.29 (<workspace>)
+   Compiling magetypes v0.9.29 (<workspace>/magetypes)
     Finished `bench` profile [optimized] target(s) in 3.67s
      Running benches/generic_vs_concrete.rs (target/release/deps/generic_vs_concrete-98ed66230db5d2c2)
 ARM add-green: all variants passed alignment/tail parity checks
 [zenbench] calibration: int=0.40ns/iter mem_bw=86.5GiB/s mem_lat=7.7ns
 [zenbench] timer resolution: 41ns, loop overhead: 0.42ns/iter, TSC: 1.000 ticks/ns (invariant)
-[zenbench] results → /Users/lilith/tmp/zenbench/zenbench-1788669915-d992.txt
+[zenbench] results → <scratch>/zenbench/zenbench-1788669915-d992.txt
 
 ═══════════════════════════════════════════════════════════════
   zenbench  1788669915-d992

@@ -53,7 +53,7 @@ core, no — it made it faster in both directions.
 - **f64 on Neoverse-N1 (or any server ARM) is NOT measured.** Given the f32
   result there, exact f64 being *slower* on that class of core is plausible.
   Nobody should quote a number for it until it is run — re-run this bench on the
-  Hetzner `arm-big` box to fill the gap.
+  ARM64 Neoverse-N1 server to fill the gap.
 - zenbench reported "0 rounds" (the criterion-compat path does not run the
   interleaved round-robin), same as the Neoverse f32 report. Per-bench spreads
   were tight (±mad ≤ 0.1 µs, CI within ~3%), and the two arms were run

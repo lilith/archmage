@@ -1,7 +1,7 @@
 # Archmage & Magetypes Documentation
 # Built with Zola + Goyo theme
 
-base_url = "https://imazen.github.io/archmage"
+base_url = "https://lilith.github.io/archmage"
 title = "Archmage"
 description = "Safe SIMD via capability tokens for Rust"
 
@@ -41,16 +41,16 @@ nav = [
     { name = "Archmage", url = "/archmage", type = "url", icon = "fa-solid fa-hat-wizard" },
     { name = "docs.rs", url = "https://docs.rs/archmage", type = "url", icon = "fa-solid fa-book" },
     { name = "Magetypes", url = "/magetypes", type = "url", icon = "fa-solid fa-shapes" },
-    { name = "Intrinsics", url = "https://imazen.github.io/archmage/intrinsics/", type = "url", icon = "fa-solid fa-magnifying-glass" },
+    { name = "Intrinsics", url = "https://lilith.github.io/archmage/intrinsics/", type = "url", icon = "fa-solid fa-magnifying-glass" },
     { name = "Links", type = "dropdown", icon = "fa-solid fa-link", members = [
-        { name = "GitHub", url = "https://github.com/imazen/archmage", type = "url", icon = "fa-brands fa-github" },
+        { name = "GitHub", url = "https://github.com/lilith/archmage", type = "url", icon = "fa-brands fa-github" },
         { name = "crates.io", url = "https://crates.io/crates/archmage", type = "url", icon = "fa-solid fa-cube" },
     ] },
 ]
 
 # Edit this page Configuration
-edit_url = "https://github.com/imazen/archmage/edit/main/docs/site"
-issue_url = "https://github.com/imazen/archmage/issues"
+edit_url = "https://github.com/lilith/archmage/edit/main/docs/site"
+issue_url = "https://github.com/lilith/archmage/issues"
 
 # Logo
 [extra.logo]

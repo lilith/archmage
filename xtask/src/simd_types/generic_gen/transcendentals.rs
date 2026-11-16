@@ -62,7 +62,7 @@ pub(super) fn gen_transcendentals(
             ///
             /// Uses rational polynomial approximation on the mantissa.
             /// Result is undefined for x <= 0.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_log2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_log2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn log2_lowp(self) -> Self {{
                 const P0: f32 = -1.850_383_3e-6;
@@ -92,7 +92,7 @@ pub(super) fn gen_transcendentals(
             }}
 
             /// Low-precision base-2 logarithm, no edge case handling.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_log2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_log2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn log2_lowp_unchecked(self) -> Self {{
                 self.log2_lowp()
@@ -100,7 +100,7 @@ pub(super) fn gen_transcendentals(
 
             /// Low-precision base-2 exponential: relative error at most 0.56% for x up
             /// to 127.99 and 1.23% above, where the input is clamped to 127.99.
-            #[deprecated(since = "0.9.32", note = "use magemath::expf::try_exp2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::expf::try_exp2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn exp2_lowp(self) -> Self {{
                 const C0: f32 = 1.0;
@@ -124,56 +124,56 @@ pub(super) fn gen_transcendentals(
             }}
 
             /// Low-precision base-2 exponential, no edge case handling.
-            #[deprecated(since = "0.9.32", note = "use magemath::expf::try_exp2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::expf::try_exp2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn exp2_lowp_unchecked(self) -> Self {{
                 self.exp2_lowp()
             }}
 
             /// Low-precision natural logarithm.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_ln_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_ln_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn ln_lowp(self) -> Self {{
                 self.log2_lowp() * splat_f32::<T>(self.1,core::f32::consts::LN_2)
             }}
 
             /// Low-precision natural logarithm, no edge case handling.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_ln_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_ln_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn ln_lowp_unchecked(self) -> Self {{
                 self.ln_lowp()
             }}
 
             /// Low-precision natural exponential.
-            #[deprecated(since = "0.9.32", note = "use magemath::expf::try_exp_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::expf::try_exp_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn exp_lowp(self) -> Self {{
                 (self * splat_f32::<T>(self.1,core::f32::consts::LOG2_E)).exp2_lowp()
             }}
 
             /// Low-precision natural exponential, no edge case handling.
-            #[deprecated(since = "0.9.32", note = "use magemath::expf::try_exp_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::expf::try_exp_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn exp_lowp_unchecked(self) -> Self {{
                 self.exp_lowp()
             }}
 
             /// Low-precision base-10 logarithm.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_log10_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_log10_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn log10_lowp(self) -> Self {{
                 self.log2_lowp() * splat_f32::<T>(self.1,core::f32::consts::LN_2 / core::f32::consts::LN_10)
             }}
 
             /// Low-precision base-10 logarithm, no edge case handling.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_log10_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_log10_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn log10_lowp_unchecked(self) -> Self {{
                 self.log10_lowp()
             }}
 
             /// Low-precision power function: `self^n`. Returns 0 for zero input.
-            #[deprecated(since = "0.9.32", note = "use magemath::powf::try_powf_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::powf::try_powf_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn pow_lowp(self, n: f32) -> Self {{
                 let result = (self.log2_lowp() * splat_f32::<T>(self.1,n)).exp2_lowp();
@@ -183,7 +183,7 @@ pub(super) fn gen_transcendentals(
             }}
 
             /// Low-precision power function, no edge case handling.
-            #[deprecated(since = "0.9.32", note = "use magemath::powf::try_powf_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::powf::try_powf_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn pow_lowp_unchecked(self, n: f32) -> Self {{
                 self.pow_lowp(n)
@@ -195,7 +195,7 @@ pub(super) fn gen_transcendentals(
             ///
             /// Uses (a-1)/(a+1) transform with odd polynomial evaluation.
             /// Result is undefined for x <= 0.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_log2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_log2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn log2_midp_unchecked(self) -> Self {{
                 const SQRT2_OVER_2: u32 = 0x3f35_04f3;
@@ -232,7 +232,7 @@ pub(super) fn gen_transcendentals(
             /// Mid-precision base-2 logarithm with edge case handling.
             ///
             /// Returns -inf for 0, NaN for negative values, +inf for +inf.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_log2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_log2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn log2_midp(self) -> Self {{
                 let result = self.log2_midp_unchecked();
@@ -253,7 +253,7 @@ pub(super) fn gen_transcendentals(
             /// Same as [`log2_midp`](Self::log2_midp). Subnormal inputs are **not**
             /// handled: they return about -127 (for 1e-42 the true value is -139.5).
             /// Queued for removal.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_log2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_log2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn log2_midp_precise(self) -> Self {{
                 self.log2_midp()
@@ -264,7 +264,7 @@ pub(super) fn gen_transcendentals(
             ///
             /// Uses round-to-nearest splitting to keep |frac| <= 0.5, giving
             /// ~1000x less polynomial truncation error than floor-based splitting.
-            #[deprecated(since = "0.9.32", note = "use magemath::expf::try_exp2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::expf::try_exp2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn exp2_midp_unchecked(self) -> Self {{
                 const C0: f32 = 1.0;
@@ -301,7 +301,7 @@ pub(super) fn gen_transcendentals(
             /// At most 1.9 ULP for x below 127.5 and up to 134.1 ULP in [127.5, 128).
             /// Returns 0 for x < -126 (denormal results can't be constructed),
             /// inf for x >= 128.
-            #[deprecated(since = "0.9.32", note = "use magemath::expf::try_exp2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::expf::try_exp2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn exp2_midp(self) -> Self {{
                 let underflow_limit = splat_f32::<T>(self.1,-126.0);
@@ -323,21 +323,21 @@ pub(super) fn gen_transcendentals(
 
             /// Same as [`exp2_midp`](Self::exp2_midp), which covers every input:
             /// a subnormal input is just close to zero. Queued for removal.
-            #[deprecated(since = "0.9.32", note = "use magemath::expf::try_exp2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::expf::try_exp2_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn exp2_midp_precise(self) -> Self {{
                 self.exp2_midp()
             }}
 
             /// Mid-precision natural logarithm (at most 4.1 ULP).
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_ln_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_ln_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn ln_midp(self) -> Self {{
                 self.log2_midp() * splat_f32::<T>(self.1,core::f32::consts::LN_2)
             }}
 
             /// Mid-precision natural logarithm, no edge case handling.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_ln_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_ln_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn ln_midp_unchecked(self) -> Self {{
                 self.log2_midp_unchecked() * splat_f32::<T>(self.1,core::f32::consts::LN_2)
@@ -346,7 +346,7 @@ pub(super) fn gen_transcendentals(
             /// Same as [`ln_midp`](Self::ln_midp). Subnormal inputs are **not**
             /// handled: they return about -88 (for 1e-42 the true value is -96.7).
             /// Queued for removal.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_ln_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_ln_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn ln_midp_precise(self) -> Self {{
                 self.ln_midp()
@@ -358,14 +358,14 @@ pub(super) fn gen_transcendentals(
             /// with |x|: at most 2.0 ULP for |x| <= 1, 8.2 ULP for |x| <= 10,
             /// 31.3 ULP for |x| <= 40, 64.1 ULP over [-87, 88.5] and 197.1 ULP above
             /// 88.5, where the product nears 128 (see `exp2_midp`).
-            #[deprecated(since = "0.9.32", note = "use magemath::expf::try_exp_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::expf::try_exp_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn exp_midp(self) -> Self {{
                 (self * splat_f32::<T>(self.1,core::f32::consts::LOG2_E)).exp2_midp()
             }}
 
             /// Mid-precision natural exponential, no edge case handling.
-            #[deprecated(since = "0.9.32", note = "use magemath::expf::try_exp_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::expf::try_exp_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn exp_midp_unchecked(self) -> Self {{
                 (self * splat_f32::<T>(self.1,core::f32::consts::LOG2_E)).exp2_midp_unchecked()
@@ -373,7 +373,7 @@ pub(super) fn gen_transcendentals(
 
             /// Same as [`exp_midp`](Self::exp_midp), which covers every input:
             /// a subnormal input is just close to zero. Queued for removal.
-            #[deprecated(since = "0.9.32", note = "use magemath::expf::try_exp_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::expf::try_exp_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn exp_midp_precise(self) -> Self {{
                 self.exp_midp()
@@ -410,14 +410,14 @@ pub(super) fn gen_transcendentals(
             }}
 
             /// Mid-precision base-10 logarithm (at most 4.5 ULP).
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_log10_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_log10_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn log10_midp(self) -> Self {{
                 self.log2_midp() * splat_f32::<T>(self.1,core::f32::consts::LN_2 / core::f32::consts::LN_10)
             }}
 
             /// Mid-precision base-10 logarithm, no edge case handling.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_log10_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_log10_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn log10_midp_unchecked(self) -> Self {{
                 self.log2_midp_unchecked()
@@ -427,7 +427,7 @@ pub(super) fn gen_transcendentals(
             /// Same as [`log10_midp`](Self::log10_midp). Subnormal inputs are **not**
             /// handled: they return about -38.2 (for 1e-42 the true value is -42.0).
             /// Queued for removal.
-            #[deprecated(since = "0.9.32", note = "use magemath::logf::try_log10_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::logf::try_log10_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn log10_midp_precise(self) -> Self {{
                 self.log10_midp()
@@ -438,14 +438,14 @@ pub(super) fn gen_transcendentals(
             /// Computed as `exp2(n * log2(self))`, so the error grows with
             /// |n * log2(self)|. Measured for n = 2.4: at most 27.8 ULP (mean 3.7) on
             /// [2^-8, 2^8], 64.8 ULP on [2^-20, 2^20] and 144.9 ULP on [2^-50, 2^50].
-            #[deprecated(since = "0.9.32", note = "use magemath::powf::try_powf_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::powf::try_powf_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn pow_midp(self, n: f32) -> Self {{
                 (self.log2_midp() * splat_f32::<T>(self.1,n)).exp2_midp()
             }}
 
             /// Mid-precision power function, no edge case handling.
-            #[deprecated(since = "0.9.32", note = "use magemath::powf::try_powf_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::powf::try_powf_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn pow_midp_unchecked(self, n: f32) -> Self {{
                 (self.log2_midp_unchecked() * splat_f32::<T>(self.1,n)).exp2_midp_unchecked()
@@ -454,7 +454,7 @@ pub(super) fn gen_transcendentals(
             /// Same as [`pow_midp`](Self::pow_midp). Subnormal inputs are **not**
             /// handled: `pow_midp_precise(1e-42, 0.5)` returns about 7.7e-20, not
             /// 1.0e-21. Queued for removal.
-            #[deprecated(since = "0.9.32", note = "use magemath::powf::try_powf_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
+            #[deprecated(since = "0.10.0", note = "use magemath::powf::try_powf_f32x{lanes}_with with explicit options and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn pow_midp_precise(self, n: f32) -> Self {{
                 self.pow_midp(n)
@@ -474,6 +474,7 @@ pub(super) fn gen_transcendentals(
             ///
             /// Returns ±0 for ±0 input. Does not handle denormals or infinity — use
             /// `cbrt_midp_precise` for those.
+            #[deprecated(since = "0.10.0", note = "use magemath::cbrtf::try_cbrt_f32x{lanes}_with with CbrtfOptions::PORTABLE_LOWP and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn cbrt_lowp(self) -> Self {{
                 const MAGIC: u32 = 0x2a50_8c2d;
@@ -515,6 +516,7 @@ pub(super) fn gen_transcendentals(
             /// overflow an intermediate and return NaN (±inf for a few just above
             /// the limit), and denormals and infinity are not handled: use
             /// `cbrt_midp_precise` for those.
+            #[deprecated(since = "0.10.0", note = "use magemath::cbrtf::try_cbrt_f32x{lanes}_with with CbrtfOptions::PORTABLE_MIDP and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn cbrt_midp(self) -> Self {{
                 const MAGIC: u32 = 0x2a50_8c2d;
@@ -549,6 +551,7 @@ pub(super) fn gen_transcendentals(
             /// Wraps `cbrt_midp()`: denormals are scaled up first, magnitudes from
             /// 1e36 up run on x/8 with the result doubled so the Halley step cannot
             /// overflow, and ±0 and ±inf return themselves.
+            #[deprecated(since = "0.10.0", note = "use magemath::cbrtf::try_cbrt_f32x{lanes}_with with CbrtfOptions::PORTABLE_MIDP_FULL and the caller token; see docs/MAGEMATH-MIGRATION.md")]
             #[inline(always)]
             pub fn cbrt_midp_precise(self) -> Self {{
                 let zero = splat_f32::<T>(self.1,0.0);
@@ -669,6 +672,7 @@ pub(super) fn gen_mod_rs(all_types: &[SimdType]) -> String {
         .iter()
         .map(|name| format!("{name}_impl"))
         .collect();
+    w512_mods.push("block_ops_f32x16".to_string());
     w512_mods.push("transcendentals_f32x16".to_string());
     w512_mods.sort();
     for mod_name in &w512_mods {

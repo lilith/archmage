@@ -461,6 +461,20 @@ fn generate_float_backend_trait(ty: &W512Type) -> String {
             /// Lane-wise maximum.
             fn max(self, a: Self::Repr, b: Self::Repr) -> Self::Repr;
 
+            /// Fast single-instruction lane-wise minimum (NaN and `-0.0`/`+0.0`
+            /// tie-breaking are unspecified). Defaults to [`min`](Self::min).
+            #[inline(always)]
+            fn min_fast(self, a: Self::Repr, b: Self::Repr) -> Self::Repr {{
+                <Self as {trait_name}>::min(self, a, b)
+            }}
+
+            /// Fast single-instruction lane-wise maximum (NaN and `-0.0`/`+0.0`
+            /// tie-breaking are unspecified). Defaults to [`max`](Self::max).
+            #[inline(always)]
+            fn max_fast(self, a: Self::Repr, b: Self::Repr) -> Self::Repr {{
+                <Self as {trait_name}>::max(self, a, b)
+            }}
+
             /// Square root.
             fn sqrt(self, a: Self::Repr) -> Self::Repr;
 
@@ -543,7 +557,7 @@ fn generate_float_backend_trait(ty: &W512Type) -> String {
             #[inline(always)]
             fn rcp_approx(self, a: Self::Repr) -> Self::Repr {{ a }}
 
-            /// Fast reciprocal square root approximation — see [`rcp_approx`].
+            /// Fast reciprocal square root approximation — see [`Self::rcp_approx`].
             #[inline(always)]
             fn rsqrt_approx(self, a: Self::Repr) -> Self::Repr {{ a }}
 
@@ -563,24 +577,87 @@ fn generate_float_backend_trait(ty: &W512Type) -> String {
 
             // ====== Default implementations ======
 
-            /// Clamp values between lo and hi.
+        /// Clamp values between lo and hi.
+        #[inline(always)]
+        fn clamp(self, a: Self::Repr, lo: Self::Repr, hi: Self::Repr) -> Self::Repr {{
+            <Self as {trait_name}>::min(self, <Self as {trait_name}>::max(self, a, lo), hi)
+        }}
+
+        /// Precise reciprocal — defaults to delegating to rcp_approx.
+        /// Every shipped backend overrides with exact IEEE division.
+        #[inline(always)]
+        fn recip(self, a: Self::Repr) -> Self::Repr {{ Self::rcp_approx(self, a) }}
+
+        /// Precise reciprocal square root — see [`Self::recip`].
+        #[inline(always)]
+        fn rsqrt(self, a: Self::Repr) -> Self::Repr {{ Self::rsqrt_approx(self, a) }}
+        {f32_block_ops_trait}
+    }}
+"#,
+    name = ty.name(),
+    f32_block_ops_trait = if elem == "f32" {
+        formatdoc! {r#"
+
+            // ====== Pixel pack (f32 only) ======
+
+            /// Round-to-nearest-even then saturate each lane to `u8` (`0..=255`).
+            ///
+            /// Default body is scalar; `x86` V3/V4 and `aarch64` backends override
+            /// with native cvt+pack sequences.
             #[inline(always)]
-            fn clamp(self, a: Self::Repr, lo: Self::Repr, hi: Self::Repr) -> Self::Repr {{
-                <Self as {trait_name}>::min(self, <Self as {trait_name}>::max(self, a, lo), hi)
+            fn to_u8_bytes(self, a: Self::Repr) -> [u8; 16] {{
+                let arr = <Self as F32x16Backend>::to_array(self, a);
+                core::array::from_fn(|i| crate::nostd_math::roundevenf(arr[i]).clamp(0.0, 255.0) as u8)
             }}
 
-            /// Precise reciprocal — defaults to delegating to rcp_approx.
-            /// Every shipped backend overrides with exact IEEE division.
+            /// Round/clamp 4 planar channels and interleave into RGBA bytes
+            /// (16 pixels = 64 bytes).
             #[inline(always)]
-            fn recip(self, a: Self::Repr) -> Self::Repr {{ Self::rcp_approx(self, a) }}
+            fn store_rgba_bytes(self, r: Self::Repr, g: Self::Repr, b: Self::Repr, a: Self::Repr) -> [u8; 64] {{
+                let rb = <Self as F32x16Backend>::to_u8_bytes(self, r);
+                let gb = <Self as F32x16Backend>::to_u8_bytes(self, g);
+                let bb = <Self as F32x16Backend>::to_u8_bytes(self, b);
+                let ab = <Self as F32x16Backend>::to_u8_bytes(self, a);
+                let mut out = [0u8; 64];
+                let mut i = 0;
+                while i < 16 {{
+                    out[i * 4] = rb[i];
+                    out[i * 4 + 1] = gb[i];
+                    out[i * 4 + 2] = bb[i];
+                    out[i * 4 + 3] = ab[i];
+                    i += 1;
+                }}
+                out
+            }}
 
-            /// Precise reciprocal square root — see [`recip`].
+            // ====== Full-width matrix transposes (f32x16 only) ======
+
+            /// Transpose two independent 8x8 f32 blocks stored in 8 rows of 16
+            /// (lanes `0..8` and lanes `8..16` transposed independently).
             #[inline(always)]
-            fn rsqrt(self, a: Self::Repr) -> Self::Repr {{ Self::rsqrt_approx(self, a) }}
+            fn transpose_dual_8x8_repr(self, rows: [Self::Repr; 8]) -> [Self::Repr; 8] {{
+                let r: [[f32; 16]; 8] =
+                    core::array::from_fn(|i| <Self as F32x16Backend>::to_array(self, rows[i]));
+                core::array::from_fn(|i| {{
+                    let out: [f32; 16] =
+                        core::array::from_fn(|k| if k < 8 {{ r[k][i] }} else {{ r[k - 8][i + 8] }});
+                    <Self as F32x16Backend>::from_array(self, out)
+                }})
+            }}
 
-        }}
-    "#,
-        name = ty.name(),
+            /// Transpose 16 row vectors of a 16x16 f32 matrix.
+            #[inline(always)]
+            fn transpose_16x16_repr(self, rows: [Self::Repr; 16]) -> [Self::Repr; 16] {{
+                let r: [[f32; 16]; 16] =
+                    core::array::from_fn(|i| <Self as F32x16Backend>::to_array(self, rows[i]));
+                core::array::from_fn(|i| {{
+                    <Self as F32x16Backend>::from_array(self, core::array::from_fn(|j| r[j][i]))
+                }})
+            }}
+        "#}
+    } else {
+        String::new()
+    },
     }
 }
 
@@ -608,7 +685,24 @@ fn generate_int_backend_trait(ty: &W512Type) -> String {
     let new_ops_decls = w512_new_ops_trait_decls(ty);
 
     // mul only for 16-bit and 32-bit
-    let mul_section = if ty.elem_bits == 16 || ty.elem_bits == 32 {
+    let mul_section = if ty.elem == "i16" {
+        formatdoc! {r#"
+
+            /// Lane-wise multiplication (low bits of product).
+            fn mul(self, a: Self::Repr, b: Self::Repr) -> Self::Repr;
+
+            /// Fixed-point Q15 rounding multiply: `((a * b + 0x4000) >> 15)` per lane.
+            #[inline(always)]
+            fn mul_hrs_q15(self, a: Self::Repr, b: Self::Repr) -> Self::Repr {{
+                let aa = <Self as {trait_name}>::to_array(self, a);
+                let bb = <Self as {trait_name}>::to_array(self, b);
+                <Self as {trait_name}>::from_array(
+                    self,
+                    core::array::from_fn(|i| ((aa[i] as i32 * bb[i] as i32 + 0x4000) >> 15) as i16),
+                )
+            }}
+        "#}
+    } else if ty.elem_bits == 16 || ty.elem_bits == 32 {
         formatdoc! {r#"
 
             /// Lane-wise multiplication (low bits of product).
@@ -1198,7 +1292,18 @@ fn generate_scalar_int_impl(ty: &W512Type) -> String {
     let array = ty.array_type();
     let zero_lit = ty.zero_lit();
 
-    let mul_impl = if ty.elem_bits == 16 || ty.elem_bits == 32 {
+    let mul_impl = if ty.elem == "i16" {
+        formatdoc! {r#"
+
+            #[inline(always)]
+            fn mul(self, a: {array}, b: {array}) -> {array} {{ core::array::from_fn(|i| a[i].wrapping_mul(b[i])) }}
+
+            #[inline(always)]
+            fn mul_hrs_q15(self, a: {array}, b: {array}) -> {array} {{
+                core::array::from_fn(|i| ((a[i] as i32 * b[i] as i32 + 0x4000) >> 15) as i16)
+            }}
+        "#}
+    } else if ty.elem_bits == 16 || ty.elem_bits == 32 {
         formatdoc! {r#"
 
             #[inline(always)]
@@ -1548,6 +1653,18 @@ fn generate_v3_polyfill_impl(ty: &W512Type) -> String {
                 ]
             }}
         "#});
+        if ty.elem == "i16" {
+            code.push_str(&formatdoc! {r#"
+
+            #[inline(always)]
+            fn mul_hrs_q15(self, a: {v3_repr}, b: {v3_repr}) -> {v3_repr} {{
+                [
+                    <archmage::X64V3Token as {half_trait}>::mul_hrs_q15(self, a[0], b[0]),
+                    <archmage::X64V3Token as {half_trait}>::mul_hrs_q15(self, a[1], b[1]),
+                ]
+            }}
+            "#});
+        }
     }
 
     // neg: signed delegates to half backend, unsigned uses sub(zero, a)
@@ -1723,6 +1840,74 @@ fn generate_v3_polyfill_impl(ty: &W512Type) -> String {
                 ]
             }}
         "#});
+        if elem == "f32" {
+            code.push_str(&indoc::indoc! {r#"
+
+                #[inline(always)]
+                fn to_u8_bytes(self, a: [__m256; 2]) -> [u8; 16] {
+                    let lo = <archmage::X64V3Token as F32x8Backend>::to_u8_bytes(self, a[0]);
+                    let hi = <archmage::X64V3Token as F32x8Backend>::to_u8_bytes(self, a[1]);
+                    crate::simd_storage::cast([lo, hi])
+                }
+
+                #[inline(always)]
+                fn store_rgba_bytes(
+                    self,
+                    r: [__m256; 2],
+                    g: [__m256; 2],
+                    b: [__m256; 2],
+                    a: [__m256; 2],
+                ) -> [u8; 64] {
+                    let lo = <archmage::X64V3Token as F32x8Backend>::store_rgba_bytes(
+                        self, r[0], g[0], b[0], a[0],
+                    );
+                    let hi = <archmage::X64V3Token as F32x8Backend>::store_rgba_bytes(
+                        self, r[1], g[1], b[1], a[1],
+                    );
+                    crate::simd_storage::cast([lo, hi])
+                }
+
+                #[inline(always)]
+                fn transpose_dual_8x8_repr(self, rows: [[__m256; 2]; 8]) -> [[__m256; 2]; 8] {
+                    let lo = <archmage::X64V3Token as F32x8Backend>::transpose_8x8_repr(
+                        self,
+                        core::array::from_fn(|i| rows[i][0]),
+                    );
+                    let hi = <archmage::X64V3Token as F32x8Backend>::transpose_8x8_repr(
+                        self,
+                        core::array::from_fn(|i| rows[i][1]),
+                    );
+                    core::array::from_fn(|i| [lo[i], hi[i]])
+                }
+
+                #[inline(always)]
+                fn transpose_16x16_repr(self, rows: [[__m256; 2]; 16]) -> [[__m256; 2]; 16] {
+                    let tl = <archmage::X64V3Token as F32x8Backend>::transpose_8x8_repr(
+                        self,
+                        core::array::from_fn(|i| rows[i][0]),
+                    );
+                    let tr = <archmage::X64V3Token as F32x8Backend>::transpose_8x8_repr(
+                        self,
+                        core::array::from_fn(|i| rows[i][1]),
+                    );
+                    let bl = <archmage::X64V3Token as F32x8Backend>::transpose_8x8_repr(
+                        self,
+                        core::array::from_fn(|i| rows[i + 8][0]),
+                    );
+                    let br = <archmage::X64V3Token as F32x8Backend>::transpose_8x8_repr(
+                        self,
+                        core::array::from_fn(|i| rows[i + 8][1]),
+                    );
+                    core::array::from_fn(|i| {
+                        if i < 8 {
+                            [tl[i], bl[i]]
+                        } else {
+                            [tr[i - 8], br[i - 8]]
+                        }
+                    })
+                }
+            "#});
+        }
     } else {
         // Integer-specific: abs (signed only), reduce, shifts, boolean
         if ty.is_signed() {
@@ -2067,6 +2252,15 @@ fn generate_4way_polyfill_impl(
                 core::array::from_fn(|i| <archmage::{token} as {quarter_trait}>::mul(self, a[i], b[i]))
             }}
         "#});
+        if ty.elem == "i16" {
+            code.push_str(&formatdoc! {r#"
+
+            #[inline(always)]
+            fn mul_hrs_q15(self, a: {repr}, b: {repr}) -> {repr} {{
+                core::array::from_fn(|i| <archmage::{token} as {quarter_trait}>::mul_hrs_q15(self, a[i], b[i]))
+            }}
+            "#});
+        }
     }
 
     // neg: signed delegates to quarter backend, unsigned uses sub(zero, a)
@@ -2103,6 +2297,20 @@ fn generate_4way_polyfill_impl(
     "#});
 
     if ty.is_float() {
+        if token == "Wasm128Token" {
+            code.push_str(&formatdoc! {r#"
+
+            #[inline(always)]
+            fn min_fast(self, a: {repr}, b: {repr}) -> {repr} {{
+                core::array::from_fn(|i| <archmage::{token} as {quarter_trait}>::min_fast(self, a[i], b[i]))
+            }}
+
+            #[inline(always)]
+            fn max_fast(self, a: {repr}, b: {repr}) -> {repr} {{
+                core::array::from_fn(|i| <archmage::{token} as {quarter_trait}>::max_fast(self, a[i], b[i]))
+            }}
+            "#});
+        }
         code.push_str(&formatdoc! {r#"
 
             #[inline(always)]
@@ -2211,6 +2419,42 @@ fn generate_4way_polyfill_impl(
                 if m01 > m23 {{ m01 }} else {{ m23 }}
             }}
         "#});
+        if elem == "f32" {
+            code.push_str(&formatdoc! {r#"
+
+                #[inline(always)]
+                fn to_u8_bytes(self, a: {repr}) -> [u8; 16] {{
+                    let b0 = <archmage::{token} as {quarter_trait}>::to_u8_bytes(self, a[0]);
+                    let b1 = <archmage::{token} as {quarter_trait}>::to_u8_bytes(self, a[1]);
+                    let b2 = <archmage::{token} as {quarter_trait}>::to_u8_bytes(self, a[2]);
+                    let b3 = <archmage::{token} as {quarter_trait}>::to_u8_bytes(self, a[3]);
+                    crate::simd_storage::cast([b0, b1, b2, b3])
+                }}
+
+                #[inline(always)]
+                fn store_rgba_bytes(
+                    self,
+                    r: {repr},
+                    g: {repr},
+                    b: {repr},
+                    a: {repr},
+                ) -> [u8; 64] {{
+                    let p0 = <archmage::{token} as {quarter_trait}>::store_rgba_bytes(
+                        self, r[0], g[0], b[0], a[0],
+                    );
+                    let p1 = <archmage::{token} as {quarter_trait}>::store_rgba_bytes(
+                        self, r[1], g[1], b[1], a[1],
+                    );
+                    let p2 = <archmage::{token} as {quarter_trait}>::store_rgba_bytes(
+                        self, r[2], g[2], b[2], a[2],
+                    );
+                    let p3 = <archmage::{token} as {quarter_trait}>::store_rgba_bytes(
+                        self, r[3], g[3], b[3], a[3],
+                    );
+                    crate::simd_storage::cast([p0, p1, p2, p3])
+                }}
+            "#});
+        }
     } else {
         // Integer: abs, reduce, shifts, boolean
         if ty.is_signed() {
@@ -2659,8 +2903,122 @@ fn generate_x86_v4_float_impl_for_token(ty: &W512Type, token: &str) -> String {
             fn bitxor(self, a: {inner}, b: {inner}) -> {inner} {{
                 _mm512_xor_{s}(a, b)
             }}
+            {f32_v4_block_ops}
         }}
-    "#}
+    "#,
+        f32_v4_block_ops = if elem == "f32" {
+            formatdoc! {r#"
+
+                {arcane}
+                fn to_u8_bytes(self, a: __m512) -> [u8; 16] {{
+                    // Clamp negatives and NaNs to 0 before cvtps so signed
+                    // inputs never produce bit-31 negatives that vpmovusdb
+                    // would treat as >= 2^31 and saturate to 255; +overflow
+                    // and +Inf produce 0x8000_0000 which vpmovusdb saturates
+                    // cleanly to 255.
+                    let non_neg = _mm512_max_ps(a, _mm512_setzero_ps());
+                    let i32s = _mm512_cvtps_epi32(non_neg);
+                    crate::simd_storage::cast(_mm512_cvtusepi32_epi8(i32s))
+                }}
+
+                {arcane}
+                fn store_rgba_bytes(
+                    self,
+                    r: __m512,
+                    g: __m512,
+                    b: __m512,
+                    a: __m512,
+                ) -> [u8; 64] {{
+                    let zero = _mm512_setzero_ps();
+                    let rb = _mm512_cvtusepi32_epi8(_mm512_cvtps_epi32(_mm512_max_ps(r, zero)));
+                    let gb = _mm512_cvtusepi32_epi8(_mm512_cvtps_epi32(_mm512_max_ps(g, zero)));
+                    let bb = _mm512_cvtusepi32_epi8(_mm512_cvtps_epi32(_mm512_max_ps(b, zero)));
+                    let ab = _mm512_cvtusepi32_epi8(_mm512_cvtps_epi32(_mm512_max_ps(a, zero)));
+                    let rg_lo = _mm_unpacklo_epi8(rb, gb);
+                    let rg_hi = _mm_unpackhi_epi8(rb, gb);
+                    let ba_lo = _mm_unpacklo_epi8(bb, ab);
+                    let ba_hi = _mm_unpackhi_epi8(bb, ab);
+                    let p0: [u8; 16] = crate::simd_storage::cast(_mm_unpacklo_epi16(rg_lo, ba_lo));
+                    let p1: [u8; 16] = crate::simd_storage::cast(_mm_unpackhi_epi16(rg_lo, ba_lo));
+                    let p2: [u8; 16] = crate::simd_storage::cast(_mm_unpacklo_epi16(rg_hi, ba_hi));
+                    let p3: [u8; 16] = crate::simd_storage::cast(_mm_unpackhi_epi16(rg_hi, ba_hi));
+                    crate::simd_storage::cast([p0, p1, p2, p3])
+                }}
+
+                {arcane}
+                fn transpose_dual_8x8_repr(self, rows: [__m512; 8]) -> [__m512; 8] {{
+                    let t0 = _mm512_unpacklo_ps(rows[0], rows[1]);
+                    let t1 = _mm512_unpackhi_ps(rows[0], rows[1]);
+                    let t2 = _mm512_unpacklo_ps(rows[2], rows[3]);
+                    let t3 = _mm512_unpackhi_ps(rows[2], rows[3]);
+                    let t4 = _mm512_unpacklo_ps(rows[4], rows[5]);
+                    let t5 = _mm512_unpackhi_ps(rows[4], rows[5]);
+                    let t6 = _mm512_unpacklo_ps(rows[6], rows[7]);
+                    let t7 = _mm512_unpackhi_ps(rows[6], rows[7]);
+                    let s0 = _mm512_shuffle_ps::<0x44>(t0, t2);
+                    let s1 = _mm512_shuffle_ps::<0xEE>(t0, t2);
+                    let s2 = _mm512_shuffle_ps::<0x44>(t1, t3);
+                    let s3 = _mm512_shuffle_ps::<0xEE>(t1, t3);
+                    let s4 = _mm512_shuffle_ps::<0x44>(t4, t6);
+                    let s5 = _mm512_shuffle_ps::<0xEE>(t4, t6);
+                    let s6 = _mm512_shuffle_ps::<0x44>(t5, t7);
+                    let s7 = _mm512_shuffle_ps::<0xEE>(t5, t7);
+                    let lo_idx: __m512i = crate::simd_storage::cast([
+                        0i32, 1, 2, 3, 16, 17, 18, 19, 8, 9, 10, 11, 24, 25, 26, 27,
+                    ]);
+                    let hi_idx: __m512i = crate::simd_storage::cast([
+                        4i32, 5, 6, 7, 20, 21, 22, 23, 12, 13, 14, 15, 28, 29, 30, 31,
+                    ]);
+                    [
+                        _mm512_permutex2var_ps(s0, lo_idx, s4),
+                        _mm512_permutex2var_ps(s1, lo_idx, s5),
+                        _mm512_permutex2var_ps(s2, lo_idx, s6),
+                        _mm512_permutex2var_ps(s3, lo_idx, s7),
+                        _mm512_permutex2var_ps(s0, hi_idx, s4),
+                        _mm512_permutex2var_ps(s1, hi_idx, s5),
+                        _mm512_permutex2var_ps(s2, hi_idx, s6),
+                        _mm512_permutex2var_ps(s3, hi_idx, s7),
+                    ]
+                }}
+
+                {arcane}
+                fn transpose_16x16_repr(self, rows: [__m512; 16]) -> [__m512; 16] {{
+                    let top = <archmage::X64V4Token as F32x16Backend>::transpose_dual_8x8_repr(
+                        self,
+                        [
+                            rows[0], rows[1], rows[2], rows[3], rows[4], rows[5], rows[6], rows[7],
+                        ],
+                    );
+                    let bot = <archmage::X64V4Token as F32x16Backend>::transpose_dual_8x8_repr(
+                        self,
+                        [
+                            rows[8], rows[9], rows[10], rows[11], rows[12], rows[13], rows[14], rows[15],
+                        ],
+                    );
+                    [
+                        _mm512_shuffle_f32x4::<0x44>(top[0], bot[0]),
+                        _mm512_shuffle_f32x4::<0x44>(top[1], bot[1]),
+                        _mm512_shuffle_f32x4::<0x44>(top[2], bot[2]),
+                        _mm512_shuffle_f32x4::<0x44>(top[3], bot[3]),
+                        _mm512_shuffle_f32x4::<0x44>(top[4], bot[4]),
+                        _mm512_shuffle_f32x4::<0x44>(top[5], bot[5]),
+                        _mm512_shuffle_f32x4::<0x44>(top[6], bot[6]),
+                        _mm512_shuffle_f32x4::<0x44>(top[7], bot[7]),
+                        _mm512_shuffle_f32x4::<0xEE>(top[0], bot[0]),
+                        _mm512_shuffle_f32x4::<0xEE>(top[1], bot[1]),
+                        _mm512_shuffle_f32x4::<0xEE>(top[2], bot[2]),
+                        _mm512_shuffle_f32x4::<0xEE>(top[3], bot[3]),
+                        _mm512_shuffle_f32x4::<0xEE>(top[4], bot[4]),
+                        _mm512_shuffle_f32x4::<0xEE>(top[5], bot[5]),
+                        _mm512_shuffle_f32x4::<0xEE>(top[6], bot[6]),
+                        _mm512_shuffle_f32x4::<0xEE>(top[7], bot[7]),
+                    ]
+                }}
+            "#}
+        } else {
+            String::new()
+        },
+    }
 }
 
 /// Generate V4 native implementation for a W512 integer type.
@@ -2718,7 +3076,20 @@ fn generate_x86_v4_int_impl_for_token(ty: &W512Type, token: &str) -> String {
     };
 
     // mul
-    let mul_impl = if ty.has_native_avx512_mul() {
+    let mul_impl = if ty.elem == "i16" {
+        formatdoc! {r#"
+
+            {arcane}
+            fn mul(self, a: __m512i, b: __m512i) -> __m512i {{
+                _mm512_mullo_{epi}(a, b)
+            }}
+
+            {arcane}
+            fn mul_hrs_q15(self, a: __m512i, b: __m512i) -> __m512i {{
+                _mm512_mulhrs_epi16(a, b)
+            }}
+        "#}
+    } else if ty.has_native_avx512_mul() {
         formatdoc! {r#"
 
             {arcane}
@@ -3030,14 +3401,10 @@ fn generate_x86_v4_w512_impls_for_token(types: &[W512Type], token: &str) -> Stri
     code
 }
 
-/// Generate all V4 native AVX-512 W512 implementations (X64V4Token only).
+/// Generate all V4 native AVX-512 W512 implementations (`X64V4Token` only;
+/// `X64V4xToken` and subtiers delegate via `backends/sealed.rs` + `impls/delegated.rs`).
 pub(super) fn generate_x86_v4_w512_impls(types: &[W512Type]) -> String {
     generate_x86_v4_w512_impls_for_token(types, "X64V4Token")
-}
-
-/// Generate all Modern native AVX-512 W512 implementations (X64V4xToken).
-pub(super) fn generate_x86_modern_w512_impls(types: &[W512Type]) -> String {
-    generate_x86_v4_w512_impls_for_token(types, "X64V4xToken")
 }
 
 // ============================================================================
@@ -3089,24 +3456,46 @@ pub(super) fn generate_popcnt_backend_traits(types: &[W512Type]) -> String {
 
 /// Generate popcnt extension impl for X64V4xToken.
 fn generate_popcnt_impl(ty: &W512Type) -> String {
-    let arcane = super::backend_syntax::arcane("X64V4xToken");
+    let trait_name = ty.trait_name();
     let name = ty.name();
     let epi = ty.x86_arith_suffix();
 
     formatdoc! {r#"
         #[cfg(target_arch = "x86_64")]
-        impl {name}PopcntBackend for archmage::X64V4xToken {{
-            {arcane}
+        impl<T> crate::simd::backends::{name}PopcntBackend for T
+        where
+            T: archmage::SimdToken
+                + crate::simd::backends::{trait_name}<Repr = __m512i>
+                + archmage::caps::X64Caps<
+                    V1 = archmage::caps::Yes,
+                    V2 = archmage::caps::Yes,
+                    Crypto128 = archmage::caps::Yes,
+                    V3 = archmage::caps::Yes,
+                    VpclmulVaes = archmage::caps::Yes,
+                    Gfni = archmage::caps::Yes,
+                    V4 = archmage::caps::Yes,
+                    V4x = archmage::caps::Yes,
+                >,
+        {{
+            #[inline(always)]
             fn popcnt(self, a: __m512i) -> __m512i {{
-                _mm512_popcnt_{epi}(a)
+                #[archmage::arcane]
+                fn inner(_token: archmage::X64V4xToken, a: __m512i) -> __m512i {{
+                    _mm512_popcnt_{epi}(a)
+                }}
+                inner(archmage::caps::extract_v4x(self), a)
             }}
         }}
     "#}
 }
 
-/// Generate all popcnt extension impls for Modern token.
+/// Generate all popcnt extension impls for Modern token / capability supersets.
 pub(super) fn generate_popcnt_impls(types: &[W512Type]) -> String {
-    let mut code = String::new();
+    let mut code = String::from(
+        "\n// ============================================================================\n\
+         // X64V4xToken — extension: popcnt (VPOPCNTDQ + BITALG)\n\
+         // ============================================================================\n\n",
+    );
     for ty in types {
         if !ty.is_float() {
             code.push_str(&generate_popcnt_impl(ty));

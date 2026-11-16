@@ -113,7 +113,7 @@ soundness checks passed. Existing WASM warnings and the documentation test's
 preexisting ignored panic case were not changed.
 
 The validation used Rust 1.99.0 and Wasmtime 49.0.2 on the same host as the
-measurements above. Representative resource reports from `run-heavy`:
+measurements above. Representative resource reports:
 
 ```text
 native fused tests: rc=0 3s | peak-RSS 0.47GiB | min-avail 25927MiB | peak-load 0.44
@@ -140,6 +140,6 @@ Independent WAT probe: rc=0 1s | peak-RSS 0.02GiB | min-avail 26193MiB | peak-lo
 ```
 
 Raw outputs, binaries, exact commands, source-generating scripts, and SHA256
-manifest are archived on dev at `/mnt/v/output/archmage/fma_relaxed_review_2026-10-12/`.
+manifest are archived on Zen 5 at `<archive>/fma_relaxed_review_2026-10-12/`.
 The timing CSV accompanies this report. These results cover Wasmtime on one
 CPU; browsers and other engines have not been measured here.

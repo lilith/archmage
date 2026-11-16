@@ -4,6 +4,7 @@ use archmage::{rite, X64V3Token};
 )]
 #[inline]
 fn helper(token: X64V3Token, a: f32) -> f32 {
+    let _: () = <X64V3Token>::__ARCHMAGE_ASSERT_TIER_F38B284B;
     a * 2.0
 }
 fn main() {}

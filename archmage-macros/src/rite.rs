@@ -12,7 +12,6 @@ use syn::{
 use crate::common::*;
 use crate::engine::feature::FeatureContext;
 use crate::generated::tier_to_canonical_token;
-use crate::token_discovery::*;
 
 #[derive(Default)]
 pub(crate) struct RiteArgs {
@@ -166,7 +165,10 @@ impl Parse for RiteArgs {
 }
 
 /// Implementation for the `#[rite]` macro.
-pub(crate) fn rite_impl(input_fn: LightFn, args: RiteArgs) -> TokenStream {
+pub(crate) fn rite_impl(input_fn: syn::ItemFn, args: RiteArgs) -> TokenStream {
+    if let Err(err) = validate_item_fn(&input_fn, "rite") {
+        return err.to_compile_error();
+    }
     // Multi-tier mode: generate suffixed variants for each tier
     if args.tier_tokens.len() > 1 {
         return rite_multi_tier_impl(input_fn, &args);
@@ -176,38 +178,31 @@ pub(crate) fn rite_impl(input_fn: LightFn, args: RiteArgs) -> TokenStream {
 }
 
 /// Generate a single `#[rite]` function (single tier or token-param mode).
-pub(crate) fn rite_single_impl(mut input_fn: LightFn, args: RiteArgs) -> TokenStream {
-    // Resolve features: either from tier name or from token parameter
+pub(crate) fn rite_single_impl(input_fn: syn::ItemFn, args: RiteArgs) -> TokenStream {
     let tier = if let Some(tier_token) = args.tier_tokens.first() {
-        // Tier specified directly (e.g., #[rite(v3)]) — no token param needed.
+        // Tier specified directly (e.g., #[rite(v3)]) — no token param needed,
+        // though any token parameter in the signature will still be verified.
         FeatureContext::from_tier_token(tier_token)
             .expect("tier_to_canonical_token returned invalid token name")
     } else {
-        // Only wildcard proof parameters need names for assertions and calls.
-        rename_wildcard_token(&mut input_fn.sig);
-        match find_token_param(&input_fn.sig) {
-            Some(info) => FeatureContext::from_token_param(info),
-            None => {
+        let proofs = match crate::token_discovery::discover_signature_proofs(&input_fn.sig) {
+            Ok(Some(proofs)) => proofs,
+            Ok(None) => {
                 return missing_token_error(
                     &input_fn.sig,
                     "rite",
                     " or a tier name. Supported forms:\n\
                      - Tier name: `#[rite(v3)]`, `#[rite(neon)]`\n\
                      - Multi-tier: `#[rite(v3, v4, neon)]` (generates suffixed variants)\n\
-                     - Concrete: `token: X64V3Token`\n\
+                     - Concrete: `token: X64V3Token` or `And<X64V3Token, X64GfniToken>`\n\
                      - impl Trait: `token: impl HasX64V2`\n\
                      - Generic: `fn foo<T: HasX64V2>(token: T, ...)`",
                 );
             }
-        }
+            Err(err) => return err.to_compile_error(),
+        };
+        FeatureContext::from_signature_proofs(proofs)
     };
-    // In token-param mode one token decides the features (see #122).
-    if tier.token_ident.is_some() {
-        let token_params = token_param_idents(&input_fn.sig);
-        if token_params.len() > 1 {
-            return multiple_tokens_error(&input_fn.sig, "rite", &token_params);
-        }
-    }
     match crate::engine::feature::emit(input_fn, &args.shared, None, false, tier) {
         Ok(tokens) => tokens,
         Err(err) => err,
@@ -215,14 +210,10 @@ pub(crate) fn rite_single_impl(mut input_fn: LightFn, args: RiteArgs) -> TokenSt
 }
 
 /// Generate multiple suffixed `#[rite]` variants for multi-tier mode.
-///
-/// `#[rite(v3, v4, neon)]` on `fn process(...)` generates:
-/// - `fn process_v3(...)` with `#[target_feature(enable = "avx2,fma,...")]`
-/// - `fn process_v4(...)` with `#[target_feature(enable = "avx512f,...")]`
-/// - `fn process_neon(...)` with `#[target_feature(enable = "neon")]`
-///
-/// Each variant is cfg-gated to its architecture and gets `#[inline]`.
-pub(crate) fn rite_multi_tier_impl(input_fn: LightFn, args: &RiteArgs) -> TokenStream {
+pub(crate) fn rite_multi_tier_impl(input_fn: syn::ItemFn, args: &RiteArgs) -> TokenStream {
+    if let Err(err) = validate_item_fn(&input_fn, "rite") {
+        return err.to_compile_error();
+    }
     let fn_name = &input_fn.sig.ident;
     let mut variants = TokenStream::new();
 
@@ -240,15 +231,6 @@ pub(crate) fn rite_multi_tier_impl(input_fn: LightFn, args: &RiteArgs) -> TokenS
         let mut variant_fn = input_fn.clone();
         variant_fn.sig.ident = format_ident!("{}_{}", fn_name, suffix);
 
-        // A multi-tier variant may still carry a token parameter; the rewrite
-        // threads it through nested incant! calls when it does.
-        let tier = match find_token_param(&variant_fn.sig) {
-            Some(info) => FeatureContext {
-                token_ident: Some(info.ident),
-                ..tier
-            },
-            None => tier,
-        };
         match crate::engine::feature::emit(variant_fn, &args.shared, None, false, tier) {
             Ok(tokens) => variants.extend(tokens),
             Err(err) => return err,
@@ -340,5 +322,58 @@ mod tests {
     #[test]
     fn underscore_prefix_accepted() {
         assert_eq!(parse("_v3, -_scalar").tier_tokens, vec!["X64V3Token"]);
+    }
+
+    #[test]
+    fn rite_rejects_safe_tokenless_wasm128_relaxed_fma() {
+        let single_args: RiteArgs = syn::parse_str("wasm128_relaxed_fma").unwrap();
+        let single_fn: syn::ItemFn = syn::parse_quote!(
+            fn kernel(x: f32) -> f32 {
+                x
+            }
+        );
+        let single_out = rite_impl(single_fn, single_args).to_string();
+        assert!(
+            single_out.contains("requires a runtime fusion probe"),
+            "{single_out}"
+        );
+
+        let multi_args: RiteArgs = syn::parse_str("wasm128, wasm128_relaxed_fma").unwrap();
+        let multi_fn: syn::ItemFn = syn::parse_quote!(
+            fn kernel(x: f32) -> f32 {
+                x
+            }
+        );
+        let multi_out = rite_multi_tier_impl(multi_fn, &multi_args).to_string();
+        assert!(
+            multi_out.contains("requires a runtime fusion probe"),
+            "{multi_out}"
+        );
+
+        let token_args: RiteArgs = syn::parse_str("wasm128_relaxed_fma").unwrap();
+        let with_token: syn::ItemFn = syn::parse_quote!(
+            fn kernel(_token: Wasm128RelaxedFmaToken, x: f32) -> f32 {
+                x
+            }
+        );
+        let ok_out = rite_impl(with_token, token_args).to_string();
+        assert!(
+            !ok_out.contains("compile_error")
+                && !ok_out.contains("requires a runtime fusion probe"),
+            "{ok_out}"
+        );
+
+        let unsafe_args: RiteArgs = syn::parse_str("wasm128_relaxed_fma").unwrap();
+        let unsafe_fn: syn::ItemFn = syn::parse_quote!(
+            unsafe fn kernel(x: f32) -> f32 {
+                x
+            }
+        );
+        let unsafe_ok = rite_impl(unsafe_fn, unsafe_args).to_string();
+        assert!(
+            !unsafe_ok.contains("compile_error")
+                && !unsafe_ok.contains("requires a runtime fusion probe"),
+            "{unsafe_ok}"
+        );
     }
 }

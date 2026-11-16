@@ -71,6 +71,20 @@ pub trait F64x2Backend: SimdToken + Sealed + Copy + 'static {
     /// Lane-wise maximum.
     fn max(self, a: Self::Repr, b: Self::Repr) -> Self::Repr;
 
+    /// Fast single-instruction lane-wise minimum (NaN and `-0.0`/`+0.0`
+    /// tie-breaking are unspecified). Defaults to [`min`](Self::min).
+    #[inline(always)]
+    fn min_fast(self, a: Self::Repr, b: Self::Repr) -> Self::Repr {
+        <Self as F64x2Backend>::min(self, a, b)
+    }
+
+    /// Fast single-instruction lane-wise maximum (NaN and `-0.0`/`+0.0`
+    /// tie-breaking are unspecified). Defaults to [`max`](Self::max).
+    #[inline(always)]
+    fn max_fast(self, a: Self::Repr, b: Self::Repr) -> Self::Repr {
+        <Self as F64x2Backend>::max(self, a, b)
+    }
+
     /// Square root.
     fn sqrt(self, a: Self::Repr) -> Self::Repr;
 
@@ -161,9 +175,9 @@ pub trait F64x2Backend: SimdToken + Sealed + Copy + 'static {
     }
 
     /// Fast reciprocal square root approximation: backend-dependent
-    /// (x86 ~12-bit, ARM ~8-bit, WASM full). [`rsqrt`] is full f32 everywhere.
+    /// (x86 ~12-bit, ARM ~8-bit, WASM full). [`Self::rsqrt`] is full f32 everywhere.
     ///
-    /// See [`rcp_approx`] for default-body rationale.
+    /// See [`Self::rcp_approx`] for default-body rationale.
     #[inline(always)]
     fn rsqrt_approx(self, a: Self::Repr) -> Self::Repr {
         a
@@ -192,7 +206,7 @@ pub trait F64x2Backend: SimdToken + Sealed + Copy + 'static {
     }
 
     /// Working-tier reciprocal — defaults to delegating to
-    /// [`rcp_approx`] (which itself defaults to identity), so every
+    /// [`Self::rcp_approx`] (which itself defaults to identity), so every
     /// backend MUST override. Contract: <= 4 ULP by the backend's
     /// fastest conforming path (estimate + Newton on x86/NEON f32,
     /// exact division elsewhere); rails are per-backend and may be
@@ -203,7 +217,7 @@ pub trait F64x2Backend: SimdToken + Sealed + Copy + 'static {
         Self::rcp_approx(self, a)
     }
 
-    /// Working-tier reciprocal square root — see [`recip`] for the
+    /// Working-tier reciprocal square root — see [`Self::recip`] for the
     /// contract shape.
     #[inline(always)]
     fn rsqrt(self, a: Self::Repr) -> Self::Repr {

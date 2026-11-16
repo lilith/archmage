@@ -2,12 +2,12 @@
 # run 1: plain build. run 2: RUSTFLAGS="--cfg mul_add_cost_redraw" (layout redraw).
 
 ## run 1
-run-heavy: mem-cap=16G (cgroup, hard) jobs=28/32 avail=49214MiB :: cargo bench -p magetypes --bench mul_add_cost --features avx512
+bench env: mem-cap=16G (cgroup, hard) jobs=28/32 avail=49214MiB :: cargo bench -p magetypes --bench mul_add_cost --features avx512
     Finished `bench` profile [optimized] target(s) in 0.02s
      Running benches/mul_add_cost.rs (target/release/deps/mul_add_cost-88244bb7de3f9003)
 [zenbench] calibration: int=0.17ns/iter mem_bw=107.6GiB/s mem_lat=8.8ns
 [zenbench] timer resolution: 10ns, loop overhead: 0.18ns/iter, TSC: 4.300 ticks/ns (invariant)
-[zenbench] results → /tmp/zenbench/zenbench-1791240773-23670f.txt
+[zenbench] results → <scratch>/zenbench/zenbench-1791240773-23670f.txt
 
 ═══════════════════════════════════════════════════════════════
   zenbench  1791240773-23670f
@@ -123,16 +123,16 @@ run-heavy: mem-cap=16G (cgroup, hard) jobs=28/32 avail=49214MiB :: cargo bench -
   total: 190.5s  (138 noisy rounds)
 ═══════════════════════════════════════════════════════════════
   filter: cargo bench -- --group=NAME  format: --format=llm|csv|md|json
-run-heavy: done rc=0 191s | peak-RSS 0.10GiB | min-avail 48906MiB | peak-load 4.69
+run summary: rc=0 191s | peak-RSS 0.10GiB | min-avail 48906MiB | peak-load 4.69
 rc=0
 
 ## run 2 (layout redraw)
-run-heavy: mem-cap=20G (cgroup, hard) jobs=28/32 avail=49172MiB :: cargo bench -p magetypes --bench mul_add_cost --features avx512
+bench env: mem-cap=20G (cgroup, hard) jobs=28/32 avail=49172MiB :: cargo bench -p magetypes --bench mul_add_cost --features avx512
     Finished `bench` profile [optimized] target(s) in 4.81s
-     Running benches/mul_add_cost.rs (/home/lilith/tmp/archmage-redraw-target/release/deps/mul_add_cost-7e0929801a831e99)
+     Running benches/mul_add_cost.rs (<scratch>/target/release/deps/mul_add_cost-7e0929801a831e99)
 [zenbench] calibration: int=0.18ns/iter mem_bw=108.3GiB/s mem_lat=9.5ns
 [zenbench] timer resolution: 10ns, loop overhead: 0.18ns/iter, TSC: 4.300 ticks/ns (invariant)
-[zenbench] results → /tmp/zenbench/zenbench-1791240999-23cd4b.txt
+[zenbench] results → <scratch>/zenbench/zenbench-1791240999-23cd4b.txt
 
 ═══════════════════════════════════════════════════════════════
   zenbench  1791240999-23cd4b
@@ -247,5 +247,5 @@ run-heavy: mem-cap=20G (cgroup, hard) jobs=28/32 avail=49172MiB :: cargo bench -
   total: 187.9s  (123 noisy rounds)
 ═══════════════════════════════════════════════════════════════
   filter: cargo bench -- --group=NAME  format: --format=llm|csv|md|json
-run-heavy: done rc=0 193s | peak-RSS 0.40GiB | min-avail 48424MiB | peak-load 5.06
+run summary: rc=0 193s | peak-RSS 0.40GiB | min-avail 48424MiB | peak-load 5.06
 rc=0

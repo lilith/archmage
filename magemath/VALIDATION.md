@@ -49,26 +49,16 @@ not claimed for this final correction. The moved log1p fixture retains the
 MPFR256-rounded `log1p(0.5)` bits `0x3ecf991f` instead of using Miri's approximate
 std-math shim as its oracle.
 
-Final driver-Clippy, formatting and strict-WASM resource-wrapper record:
-
-```text
-run-heavy: done rc=0 5s | peak-RSS 0.45GiB | min-avail 41743MiB | peak-load 1.13
-```
-
-This is a validation resource record, not a math-kernel speed comparison.
-Current logs are preserved in `magemath-public-boundary-2026-11-10` under the
-local/mirrored output roots named below, with a source archive and SHA-256 index.
+Final driver-Clippy, formatting and strict-WASM check completed cleanly (`rc=0`).
+Historical benchmark/archive runs are external to git.
 
 ## Earlier evidence and limits
 
-The earlier extraction retained unpublished configured modules in Magetypes.
-Its native M6 and strict-WASM runs, compatibility follow-up and source archives
-remain preserved under `magemath-migration-2026-11-10` and
-`magemath-migration-2026-11-10-followup`, beneath
-`/mnt/v/output/archmage` and `/mnt/tower/output/archmage`. They describe their
-recorded source revisions and are not presented as new runs of this correction.
+The earlier extraction retained unpublished configured modules in Magetypes;
+historical prototype artifacts are outside git and describe their recorded
+source revisions rather than new runs of this correction.
 
-The [ownership compile study](https://github.com/imazen/archmage/blob/1662daa4d14f/benchmarks/expf_logf_audit/MAGEMATH-LAYER.md)
+The [ownership compile study](https://github.com/lilith/archmage/blob/1662daa4d14f/benchmarks/expf_logf_audit/MAGEMATH-LAYER.md)
 is separate evidence, with its own implementations and source identities.
 No compile-time or runtime ratio is projected from that prototype onto the final
 crate boundary. Historical benchmark harnesses must be replayed at their recorded

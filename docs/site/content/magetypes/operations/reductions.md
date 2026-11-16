@@ -36,7 +36,7 @@ Whether a fused multiply-add or a separate multiply and add runs faster
 depends on where the loop's dependency chain runs. Measured on V3 code
 (`f32x8`, `f64x4`, scalar `f64`), interleaved in one binary on an Intel Core
 Ultra 7 265K and an AMD Ryzen 9 7900X; ratios are separate time ÷ fused time
-([record](https://github.com/imazen/archmage/blob/main/benchmarks/fused_vs_separate_2026-10-25.md)):
+([record](https://github.com/lilith/archmage/blob/main/benchmarks/fused_vs_separate_2026-10-25.md)):
 
 | Loop shape | Example | Separate ÷ fused | Faster |
 |---|---|---:|---|

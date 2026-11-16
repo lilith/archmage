@@ -1,0 +1,5 @@
+error: #[attune] cannot be used on a variadic function
+ --> tests/compile_fail/variadic_attune.rs:2:1
+  |
+2 | unsafe extern "C" fn illegal(_t: archmage::X64V3Token, _: ...) {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

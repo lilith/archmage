@@ -23,15 +23,18 @@ loads, unchecked indices, or aliasing mutable references.
 |---|---|
 | Concrete token such as `X64V3Token` | Uses that token's feature set |
 | Recognized tier bound such as `T: HasX64V2` | Uses the declared bound's feature set, not a stronger caller's extra features |
+| `And<Base, Extra>`, tuples `(A, B)`, multiple params, multiple `Has*` bounds | Composes same-architecture capability proofs; cross-architecture or scalar+SIMD mixes fail to compile |
 | `import_intrinsics` | Imports the matching combined intrinsic namespace |
 | `in_impl` | Associated function without a receiver in an inherent impl: the wrapper calls `Self::` |
 | `in_trait` (alias `nested`) | Trait implementation: the feature-enabled function nests inside the method |
 | `_self = Type` | Receiver type for `in_trait`; the body's `self` and `Self` are rewritten for the nested function |
-| `suppress_const_test` | Opts out of the extra compile-time token-trait check; not a routine application option |
 
 The ordinary expansion uses a sibling feature function and an outer wrapper.
-Rust generics and where clauses are forwarded. Exactly one parameter is the
-token; two are a compile error. Methods need the receiver rules in
+Rust generics and where clauses are forwarded. Token parameters, tuples,
+`And<Base, Extra>` conjunctions, and `Has*` trait bounds from the same
+architecture compose their target features unconditionally, while mixing distinct
+architectures (or `ScalarToken` with a SIMD token) fails to compile. Methods need
+the receiver rules in
 [methods](@/archmage/advanced/methods.md): a sibling cannot be added to a trait
 implementation unless it is a declared trait member, so use `in_trait` there,
 and a receiver-less associated function needs `in_impl`.

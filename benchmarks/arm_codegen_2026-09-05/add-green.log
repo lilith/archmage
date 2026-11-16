@@ -1,10 +1,10 @@
-   Compiling magetypes v0.9.29 (/Users/lilith/work/archmage/magetypes)
+   Compiling magetypes v0.9.29 (<workspace>/magetypes)
     Finished `bench` profile [optimized] target(s) in 0.27s
      Running benches/generic_vs_concrete.rs (target/release/deps/generic_vs_concrete-98ed66230db5d2c2)
 ARM add-green: all variants passed alignment/tail parity checks
 [zenbench] calibration: int=0.40ns/iter mem_bw=79.7GiB/s mem_lat=7.8ns
 [zenbench] timer resolution: 41ns, loop overhead: 0.42ns/iter, TSC: 1.000 ticks/ns (invariant)
-[zenbench] results → /Users/lilith/tmp/zenbench/zenbench-1788659635-a8f6.txt
+[zenbench] results → <scratch>/zenbench/zenbench-1788659635-a8f6.txt
 
 ═══════════════════════════════════════════════════════════════
   zenbench  1788659635-a8f6

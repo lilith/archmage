@@ -11,6 +11,7 @@ impl Compute for Engine {
     )]
     #[inline]
     fn compute(&self, token: X64V3Token, x: f32) -> f32 {
+        let _: () = <X64V3Token>::__ARCHMAGE_ASSERT_TIER_F38B284B;
         x * self.factor
     }
 }

@@ -19,14 +19,14 @@ rerun.
 - Current main: `49ae6ae8` (`git archive`), same harness (`fma_isa.rs`), same
   lockfile versions (libm 0.2.16, zenbench 0.1.10), Rust 1.99.0, release,
   `codegen-units=1`, `avx512` enabled.
-- AMD Ryzen 9 9950X3D, pinned to CPU 2, under `run-heavy` (`peak-RSS 0.14GiB`,
+- AMD Ryzen 9 9950X3D, pinned to CPU 2, in serialized benchmark runs (`peak-RSS 0.14GiB`,
   `min-avail 42894MiB`, `peak-load 2.27`, 182 s).
 - Commands: `python3 run.py zen5-x86 x86 --isas v3,v4 --cpu 2` and
   `python3 run.py zen5-v3 v3 --isas v3,v4 --cpu 2`; normal scenario only, three
   alternating passes per revision. Ratios are medians of three process medians,
   current / published (above 1 is slower).
-- Raw logs, CSV and both current binaries: `/mnt/v/output/archmage/fma_recheck_2026-10-24/`
-  on `dev` (`comparison.csv` SHA-256 `0a8ba96e…`).
+- Raw logs, CSV and both current binaries: `<archive>/fma_recheck_2026-10-24/`
+  in external archive (`comparison.csv` SHA-256 `0a8ba96e…`).
 
 ## Results
 
@@ -50,31 +50,31 @@ enclosing function's target features.
 
 Native vector types compile to identical instructions in both baseline
 binaries (normalized `objdump` of the V3/V4 stream kernels); only their
-addresses moved. On dev the baseline-build native streams nevertheless ran
+addresses moved. On Zen 5 the baseline-build native streams nevertheless ran
 4–9% slower on main in every process, including the `a * b + c` and bare
 `mul_add` controls, and the same held with every function and loop aligned to
-64 bytes. dev was shared with other agents (peak load 4.23), so those
+64 bytes. Zen 5 host was shared with other agents (peak load 4.23), so those
 native-row ratios are not attributed to the change; the quiet-host rerun below
 shows no native difference.
 
-## Quiet-host rerun: i265 and r7900x
+## Quiet-host rerun: core-ultra-265k and zen4
 
 Same comparison on two otherwise idle hosts, in parallel, with a five-minute
 harness (`quick.py`): six groups (scalar f32x8/f64x4, V3 f32x8/f64x4, scalar
-inside a V3 function f32x8/f64x4, plus V4 f32x16 on r7900x), three forms
+inside a V3 function f32x8/f64x4, plus V4 f32x16 on zen4), three forms
 (`a * b + c`, `mul_add`, `mul_add_portable`), shortened rounds, ten
 alternating passes per build. Each process records CPU use on every core except
-the pinned one and its SMT sibling; the maximum was 4.8% on i265 and 2.7% on
-r7900x, and no run was excluded. Builds: baseline x86-64, the same with
+the pinned one and its SMT sibling; the maximum was 4.8% on core-ultra-265k and 2.7% on
+zen4, and no run was excluded. Builds: baseline x86-64, the same with
 `-Cllvm-args=-align-all-functions=6 -Cllvm-args=-align-loops=64`, and
 `-Ctarget-cpu=x86-64-v3`, each for published `e2dbab66` and main `49ae6ae8`.
 
-- i265: Intel Core Ultra 7 265K, pinned to P-core 2, 177 s.
-- r7900x: AMD Ryzen 9 7900X (Zen 4, AVX-512 double-pumped), pinned to CPU 2, 261 s.
+- core-ultra-265k: Intel Core Ultra 7 265K, pinned to P-core 2, 177 s.
+- zen4: AMD Ryzen 9 7900X (Zen 4, AVX-512 double-pumped), pinned to CPU 2, 261 s.
 
 Current / published, median of ten process medians, baseline build:
 
-| Case | i265 | r7900x |
+| Case | core-ultra-265k | zen4 |
 |---|---:|---:|
 | scalar f32x8 stream | 1.21× | 1.10× |
 | scalar f32x8 chain | 2.35× | 0.99× |
@@ -84,17 +84,17 @@ Current / published, median of ten process medians, baseline build:
 | scalar f32x8 inside V3, chain | 3.39× | 2.98× |
 | scalar f64x4 inside V3, stream | 7.38× | 6.32× |
 | scalar f64x4 inside V3, chain | 7.18× | 6.52× |
-| native V3 (and V4 on r7900x), all forms | 0.99–1.01× | see below |
+| native V3 (and V4 on zen4), all forms | 0.99–1.01× | see below |
 | global x86-64-v3, all cases | 0.99–1.03× | see below |
 
 All software-path rows above have non-overlapping process ranges. The aligned
-build's ratios stay within 2.2% of the baseline build's on every i265 row and
-on six of eight r7900x rows; r7900x scalar f32x8 chain moves from 0.99× to
+build's ratios stay within 2.2% of the baseline build's on every core-ultra-265k row and
+on six of eight zen4 rows; zen4 scalar f32x8 chain moves from 0.99× to
 0.92× and scalar f64x4 chain from 4.25× to 4.05×. Code placement shifts those
 two by a few percent but does not explain the regression.
 
-On i265 every native and global-V3 row is 0.99–1.03× with overlapping ranges.
-On r7900x the native stream rows are multimodal per process: the same binary
+On core-ultra-265k every native and global-V3 row is 0.99–1.03× with overlapping ranges.
+On zen4 the native stream rows are multimodal per process: the same binary
 lands on discrete levels (for V3 f64x4 `a * b + c`: 766, 1015, 1260 or 1504 ns),
 in both revisions, so their ratios (0.81–1.26×, all overlapping) reflect which
 levels each side drew, not the code. Chains, which touch no memory, are
@@ -103,6 +103,6 @@ levels each side drew, not the code. Chains, which touch no memory, are
 Not covered by the quiet rerun: randomized inputs (measured only on the shared
 dev host, where they changed software-path ratios by at most 4%), ARM, and WASM.
 
-Data: `/mnt/v/output/archmage/fma_recheck_2026-10-24/quick/{i265,r7900x}/` on
+Data: `<archive>/fma_recheck_2026-10-24/quick/{core-ultra-265k,zen4}/` on
 `dev` (`summary.txt` SHA-256 `34e14b37…` and `bc32f819…`), binaries in
 `artifacts-quick/` with `SHA256SUMS.quick`.

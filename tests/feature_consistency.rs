@@ -10,9 +10,6 @@
 //! tests verify that X64* tokens are stubs on non-x86_64 targets (including
 //! 32-bit x86). Run on i686 to verify:
 //!   cross test --target i686-unknown-linux-gnu --test feature_consistency
-// Checks that the deprecated `Avx2FmaToken` alias is the same type as X64V3Token.
-#![allow(deprecated)]
-
 use archmage::SimdToken;
 use archmage::*;
 
@@ -120,6 +117,88 @@ mod x86_64_tests {
         }
     }
 
+    #[rustversion::since(1.94)]
+    #[archmage::attune(wrap)]
+    fn exec_vnni2_fp16(_token: X64V3Vnni2Token) {
+        use core::arch::x86_64::*;
+        let fp16_bits: [u16; 16] = [
+            0x3C00, 0x4000, // 1.0, 2.0
+            0x4200, 0x4400, // 3.0, 4.0
+            0x4500, 0x4600, // 5.0, 6.0
+            0x4700, 0x4800, // 7.0, 8.0
+            0xBC00, 0xC000, // -1.0, -2.0
+            0x3C00, 0x4000, 0x4200, 0x4400, 0x0000, 0x4500,
+        ];
+        // SAFETY: valid aligned __m256h on stack; AVX-NE-CONVERT is proven by token.
+        let fp16_vec: __m256h = unsafe { core::mem::transmute(fp16_bits) };
+        let even_fp16 = unsafe { _mm256_cvtneeph_ps(&fp16_vec) };
+        let even_fp16_arr: [f32; 8] = unsafe { core::mem::transmute(even_fp16) };
+        assert_eq!(even_fp16_arr, [1.0, 3.0, 5.0, 7.0, -1.0, 1.0, 3.0, 0.0]);
+    }
+
+    #[rustversion::before(1.94)]
+    fn exec_vnni2_fp16(_token: X64V3Vnni2Token) {}
+
+    /// If X64V3Vnni2Token is available, AVX-VNNI-INT8, AVX-IFMA, AVX-NE-CONVERT, ADX, and SHA work.
+    #[test]
+    fn x64v3_vnni2_instructions_work_when_token_available() {
+        if let Some(token) = X64V3Vnni2Token::summon() {
+            #[allow(unused_unsafe)]
+            #[archmage::attune(wrap)]
+            fn exec(_token: X64V3Vnni2Token) {
+                use core::arch::x86_64::*;
+                let ones = _mm256_set1_epi8(1);
+                let dp = _mm256_dpbssd_epi32(_mm256_setzero_si256(), ones, ones);
+                assert_eq!(_mm256_extract_epi32::<0>(dp), 4);
+
+                let zero = _mm256_setzero_si256();
+                let two = _mm256_set1_epi64x(2);
+                let three = _mm256_set1_epi64x(3);
+                let ifma = _mm256_madd52lo_avx_epu64(zero, two, three);
+                assert_eq!(_mm256_extract_epi64::<0>(ifma), 6);
+
+                let f32s = _mm256_set_ps(-4.0, 3.0, -2.0, 1.0, 4.0, 3.0, 2.0, 1.0);
+                let bf16s = _mm256_cvtneps_avx_pbh(f32s);
+                // SAFETY: transmute between 128-bit SIMD vector and [u16; 8] for inspection.
+                let bf16_bits: [u16; 8] = unsafe { core::mem::transmute(bf16s) };
+                assert_eq!(bf16_bits[0], 0x3F80); // 1.0 in BF16
+                assert_eq!(bf16_bits[7], 0xC080); // -4.0 in BF16
+
+                // SAFETY: [u16; 16] has identical layout to __m256bh and pointer is aligned for stack read.
+                let pairs: __m256bh = unsafe {
+                    core::mem::transmute([
+                        0x3F80u16, 0x4000, // even=1.0, odd=2.0
+                        0x4040, 0x4080, // even=3.0, odd=4.0
+                        0x40A0, 0x40C0, // even=5.0, odd=6.0
+                        0x40E0, 0x4100, // even=7.0, odd=8.0
+                        0xC000, 0xC040, // even=-2.0, odd=-3.0
+                        0x3F80, 0x4000, 0x4040, 0x4080, 0x0000, 0xBF80,
+                    ])
+                };
+                // SAFETY: `pairs` is a valid stack __m256bh, and AVX-NE-CONVERT is proven by token.
+                let evens = unsafe { _mm256_cvtneebf16_ps(&pairs) };
+                // SAFETY: transmute __m256 to [f32; 8] for assertion.
+                let even_arr: [f32; 8] = unsafe { core::mem::transmute(evens) };
+                assert_eq!(even_arr, [1.0, 3.0, 5.0, 7.0, -2.0, 1.0, 3.0, 0.0]);
+
+                let odds = unsafe { _mm256_cvtneobf16_ps(&pairs) };
+                let odd_arr: [f32; 8] = unsafe { core::mem::transmute(odds) };
+                assert_eq!(odd_arr, [2.0, 4.0, 6.0, 8.0, -3.0, 2.0, 4.0, -1.0]);
+
+                let mut sum = 0u64;
+                // SAFETY: _addcarryx_u64 is unsafe in Rust 1.89 and gated by token ADX proof.
+                let carry = unsafe { _addcarryx_u64(1, u64::MAX, 9, &mut sum) };
+                assert_eq!(carry, 1);
+                assert_eq!(sum, 9);
+
+                let sha = _mm_sha256msg1_epu32(_mm_set1_epi32(1), _mm_set1_epi32(2));
+                std::hint::black_box(sha);
+            }
+            exec(token);
+            exec_vnni2_fp16(token);
+        }
+    }
+
     /// If X64V4Token is available, AVX-512 instructions must work.
     #[cfg(feature = "avx512")]
     #[test]
@@ -142,10 +221,6 @@ mod x86_64_tests {
             assert!(
                 X64V2Token::summon().is_some(),
                 "v3 implies v2 should be available"
-            );
-            assert!(
-                Avx2FmaToken::summon().is_some(),
-                "v3 implies Avx2FmaToken (same type)"
             );
         }
 
@@ -184,14 +259,38 @@ mod x86_64_tests {
                 "V3 GFNI Crypto implies V3 Crypto should be available"
             );
         }
+        if X64V3VnniToken::summon().is_some() {
+            assert!(
+                X64V3GfniCryptoToken::summon().is_some(),
+                "V3 VNNI implies V3 GFNI Crypto should be available"
+            );
+        }
+        if X64V3Vnni2Token::summon().is_some() {
+            assert!(
+                X64V3VnniToken::summon().is_some(),
+                "V3 VNNI-2 implies V3 VNNI should be available"
+            );
+        }
     }
 
+    /// If X64V3VnniToken is available, ADX and SHA instructions must work.
     #[test]
-    fn avx2fma_is_x64v3() {
-        let v3 = X64V3Token::summon();
-        let avx2fma = Avx2FmaToken::summon();
-        assert_eq!(v3.is_some(), avx2fma.is_some());
-        assert_eq!(Avx2FmaToken::NAME, X64V3Token::NAME);
+    fn x64v3_vnni_adx_and_sha_work_when_token_available() {
+        if let Some(token) = X64V3VnniToken::summon() {
+            #[allow(unused_unsafe)]
+            #[archmage::attune(wrap)]
+            fn exec(_token: X64V3VnniToken) {
+                use core::arch::x86_64::*;
+                let mut sum = 0u64;
+                // SAFETY: _addcarryx_u64 is unsafe in Rust 1.89 and gated by token ADX proof.
+                let carry = unsafe { _addcarryx_u64(1, u64::MAX, 123, &mut sum) };
+                assert_eq!(carry, 1);
+                assert_eq!(sum, 123);
+                let sha = _mm_sha256msg1_epu32(_mm_set1_epi32(3), _mm_set1_epi32(5));
+                std::hint::black_box(sha);
+            }
+            exec(token);
+        }
     }
 
     #[test]
@@ -201,12 +300,17 @@ mod x86_64_tests {
         println!("  x86-64-v2:    {}", X64V2Token::summon().is_some());
         println!("  x86 Crypto:   {}", X64CryptoToken::summon().is_some());
         println!(
-            "  x86-64-v3:    {} (Desktop64/Avx2FmaToken)",
+            "  x86-64-v3:    {} (Desktop64)",
             X64V3Token::summon().is_some()
         );
         println!(
             "  x86-64-v3 Crypto: {}",
             X64V3CryptoToken::summon().is_some()
+        );
+        println!("  x86-64-v3 VNNI:   {}", X64V3VnniToken::summon().is_some());
+        println!(
+            "  x86-64-v3 VNNI-2: {}",
+            X64V3Vnni2Token::summon().is_some()
         );
         #[cfg(feature = "avx512")]
         {
@@ -425,6 +529,10 @@ mod wasm32_tests {
             "  Wasm128Relaxed:   {}",
             Wasm128RelaxedToken::summon().is_some()
         );
+        println!(
+            "  Wasm128RelaxedFma: {}",
+            Wasm128RelaxedFmaToken::summon().is_some()
+        );
     }
 }
 
@@ -475,6 +583,10 @@ fn wrong_arch_tokens_return_none() {
             Wasm128RelaxedToken::summon().is_none(),
             "WASM relaxed tokens should be None on non-WASM"
         );
+        assert!(
+            Wasm128RelaxedFmaToken::summon().is_none(),
+            "WASM relaxed FMA tokens should be None on non-WASM"
+        );
     }
 }
 
@@ -519,6 +631,14 @@ fn x64_tokens_are_x86_64_only() {
         assert!(
             X64V3GfniCryptoToken::summon().is_none(),
             "X64V3GfniCryptoToken must be None on non-x86_64"
+        );
+        assert!(
+            X64V3VnniToken::summon().is_none(),
+            "X64V3VnniToken must be None on non-x86_64"
+        );
+        assert!(
+            X64V3Vnni2Token::summon().is_none(),
+            "X64V3Vnni2Token must be None on non-x86_64"
         );
     }
 }

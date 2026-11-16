@@ -47,7 +47,7 @@ no integer min/max or bitwise reductions. How the generated backends implement
 
 **Integer scalar fallback pattern** (from the generated `x86_v3.rs`):
 ```rust
-#[arcane(suppress_const_test, _self = X64V3Token)]
+#[arcane(_self = X64V3Token)]
 fn reduce_add(self, a: __m128i) -> i8 {
     let arr = <Self as I8x16Backend>::to_array(_self, a);
     arr.iter().copied().fold(0i8, i8::wrapping_add)

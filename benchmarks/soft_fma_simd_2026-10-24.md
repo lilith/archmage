@@ -21,7 +21,7 @@ Results are bit-identical to the previous implementation's contract.
 
 ## Method
 
-Two harnesses, neither run on dev (shared with other agents):
+Two harnesses, neither run on Zen 5 (shared with other agents):
 
 1. **Interleaved, one binary.** main's code copied verbatim (its f32 helper;
    libm 0.2.16's `fma_round` for f64), the candidate's `soft_fma.rs` included
@@ -41,12 +41,12 @@ Two harnesses, neither run on dev (shared with other agents):
    are excluded).
 
 Rust 1.99.0, release, `codegen-units=1`, baseline `x86_64-unknown-linux-gnu`
-(no `target-cpu`), CPU 2 pinned, under `run-heavy`. Candidate commit for the
+(no `target-cpu`), CPU 2 pinned, in serialized benchmark runs. Candidate commit for the
 cross-process tables: `06291ec2` (same code as pushed). wasmtime 47.0.2.
 
 ## Interleaved: candidate vs main vs std (median ns per 1,024 operations)
 
-**r7900x** (AMD Ryzen 9 7900X, Zen 4) (zenbench `unreliable`: [False, False], gate waits: [142, 129])
+**zen4** (AMD Ryzen 9 7900X, Zen 4) (zenbench `unreliable`: [False, False], gate waits: [142, 129])
 
 | Context | Type | Kind | main (ns) | candidate (ns) | std `mul_add` (ns) | candidate / main, normal [95% CI] | candidate / main, random [95% CI] | candidate / std |
 |---|---|---|---:|---:|---:|---|---|---:|
@@ -67,7 +67,7 @@ cross-process tables: `06291ec2` (same code as pushed). wasmtime 47.0.2.
 | inside V3 | f64x4 | stream | 18026 | 6723 | 776 | 0.41× [0.38, 0.44] | 0.34× [0.33, 0.34] | 8.66× |
 | inside V3 | f64x4 | chain | 15949 | 10182 | 704 | 0.66× [0.64, 0.68] | 0.64× [0.61, 0.66] | 14.46× |
 
-**i265** (Intel Core Ultra 7 265K; another agent loaded the box intermittently, hence the gate waits) (zenbench `unreliable`: [False, False], gate waits: [1686, 1222])
+**core-ultra-265k** (Intel Core Ultra 7 265K; another agent loaded the box intermittently, hence the gate waits) (zenbench `unreliable`: [False, False], gate waits: [1686, 1222])
 
 | Context | Type | Kind | main (ns) | candidate (ns) | std `mul_add` (ns) | candidate / main, normal [95% CI] | candidate / main, random [95% CI] | candidate / std |
 |---|---|---|---:|---:|---:|---|---|---:|
@@ -91,7 +91,7 @@ cross-process tables: `06291ec2` (same code as pushed). wasmtime 47.0.2.
 ## Cross-process: against published 0.9.30
 
 
-baseline x86-64 build, r7900x
+baseline x86-64 build, zen4
 
 | Case | input | 0.9.30 (ns) | main (ns) | candidate (ns) | std `mul_add` (ns) | candidate / 0.9.30 | candidate / main |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -120,7 +120,7 @@ baseline x86-64 build, r7900x
 | inside V3 f64x4 chain | random | 2423 | 16118 | 7745 | 703 | 3.20× | 0.48× |
 | inside V3 f64x4 stream | random | 2881 | 19364 | 6514 | 760 | 2.26× | 0.34× |
 
-WASM (wasmtime 47, r7900x)
+WASM (wasmtime 47, zen4)
 
 | Case | input | 0.9.30 (ns) | main (ns) | candidate (ns) | std `mul_add` (ns) | candidate / 0.9.30 | candidate / main |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -140,13 +140,13 @@ WASM (wasmtime 47, r7900x)
 ## Where it is still slower
 
 - **Single-lane f32 streams inside a V3 function** (a long loop of `f32x1` in
-  an `#[arcane]` function): 1.20–1.22× main on r7900x, 1.23–1.24× on i265.
+  an `#[arcane]` function): 1.20–1.22× main on zen4, 1.23–1.24× on core-ultra-265k.
   main's branchy helper has no call, so LLVM vectorizes that loop across
   elements (packed `vcvtps2pd`/`vsubpd`/`vblendvpd` in the disassembly); the
   candidate's out-of-line exact path keeps it scalar. Scalar tails are a few elements long, so
   this pattern needs over 8 elements of `f32x1` work in one loop to matter.
-- **f64x1** on r7900x: 1.03–1.07× main in chains; streams within noise. On
-  i265 f64x1 takes 0.60–0.82×.
+- **f64x1** on zen4: 1.03–1.07× main in chains; streams within noise. On
+  core-ultra-265k f64x1 takes 0.60–0.82×.
 - **Against 0.9.30 in baseline builds**: f32 vectors are faster than 0.9.30
   (0.48–0.58×), but f64 takes 2.3–6.3× and f32x1 chains 1.97× as long. 0.9.30
   reached the FMA instruction through a per-call CPU check, which magetypes no
@@ -173,7 +173,7 @@ WASM (wasmtime 47, r7900x)
 
 ## Data
 
-`/mnt/v/output/archmage/soft_fma_simd_2026-10-24/` on `dev`: interleaved
+`<archive>/soft_fma_simd_2026-10-24/` in external archive: interleaved
 harness (`interleaved/`, binary SHA-256 in `b.sha256`), per-process results
 and harness (`cross-process/`), emitted assembly for x86-64, WASM and RISC-V
 (`asm/`).
@@ -185,7 +185,7 @@ CPUID on first use, caches a function pointer, and then makes one indirect
 call per lane to a `vfmadd`. Results from hardware FMA and the software path
 are bit-identical, so a runtime check changes speed, not output.
 
-Three designs were compared interleaved in one binary on i265 and r7900x
+Three designs were compared interleaved in one binary on core-ultra-265k and zen4
 (data: `interleaved-rt/`): the software path; archmage's cached
 `X64V3Token::summon()` once per call, then one V3 call for the whole array;
 and the same check with one V3 call per lane, operands in float registers. A
@@ -194,7 +194,7 @@ to simulate a CPU without FMA.
 
 - f64, per-lane calls: 0.09–0.43× the software path's time for every shape,
   both hosts, both inputs; faster than std (0.40–0.71×). Without FMA:
-  1.00–1.07×, one row 1.14× (i265 f64x4 stream, random).
+  1.00–1.07×, one row 1.14× (core-ultra-265k f64x4 stream, random).
 - f32: no design was a consistent win. Array calls lost on f32x8 chains
   (1.37–1.69×: the array goes through memory every step); per-lane calls lost
   on f32x8 streams (1.20–1.89×). The vectorized software path stays.
@@ -202,7 +202,7 @@ to simulate a CPU without FMA.
 
 Shipped: f64 per-lane with the cached check on x86_64 std builds; no_std
 builds use a token only when `summon` is a compile-time constant. The final
-code, cross-process on r7900x against the pushed array software (normal
+code, cross-process on zen4 against the pushed array software (normal
 inputs; random agrees):
 
 
@@ -227,7 +227,7 @@ The relaxed-SIMD proposal lets each environment choose fused or unfused
 `madd` per operator but requires a fixed choice ("each environment globally
 chooses a fixed projection for each operator"). A probe on a pair where the
 two differ, cached in an atomic, can therefore select the single instruction
-for the `_portable` forms. Measured in relaxed builds on r7900x, wasmtime 47:
+for the `_portable` forms. Measured in relaxed builds on zen4, wasmtime 47:
 
 Engine fuses (host FMA):
 
@@ -257,7 +257,7 @@ The probe is a large win on fusing engines and costs 9–20% on engines that
 round twice, so it is held for a decision rather than shipped.
 
 A cached probe is only sound if an engine's tiers agree. V8 in node 26.7.0
-on dev (2026-10-25) agrees with itself: with relaxed madd on host inputs, the
+on Zen 5 (2026-10-25) agrees with itself: with relaxed madd on host inputs, the
 Liftoff-only (`--liftoff --no-wasm-tier-up`), TurboFan-only (`--no-liftoff`)
 and default tier-up runs all fused, for f32 and f64, including all 2,000,000
 iterations of a loop that tiers up mid-run. Under `qemu-x86_64 -cpu Nehalem`
@@ -266,7 +266,7 @@ iterations of a loop that tiers up mid-run. Under `qemu-x86_64 -cpu Nehalem`
 tested. Harness: a `no_std` cdylib built with
 `-C target-feature=+simd128,+relaxed-simd` exporting `f32x4_relaxed_madd` /
 `f64x2_relaxed_madd` on the probe inputs, run by a small node script
-(`~/tmp/wasm-relaxed-tiers` on dev).
+(`wasm-relaxed-tiers` local harness).
 
 ## Residual: calls in baseline callers (same day)
 
@@ -292,7 +292,7 @@ register. Interleaved prototypes (data: `interleaved-residual/`):
 The first pair implementation used one packed `_mm_fmadd_pd` with set/unpack
 shuffles; inlined into a V3 caller it kept two 128-bit FMAs plus shuffles on
 the chain (f64x4 chain 2.51× slower). Two scalar FMAs per pair merge into one
-`vfmadd ymm` again. The shipped version (`647f2d3d`), real code on i265,
+`vfmadd ymm` again. The shipped version (`647f2d3d`), real code on core-ultra-265k,
 against the per-lane calls (`eae93cb0`), 12 alternating passes:
 
 | Shape | Baseline caller | Inside a V3 function |
@@ -302,6 +302,6 @@ against the per-lane calls (`eae93cb0`), 12 alternating passes:
 | f64x4 stream / chain | 0.62–0.67× / 0.99× | 1.00× / 1.00× |
 | f64x8 stream / chain | 0.81–0.84× / 0.75× | |
 
-r7900x could not run this round (its disk was full from other work). The
+zen4 could not run this round (its disk was full from other work). The
 remaining gap, baseline f64x4 chains at about 3.8 µs against 0.74 µs inside
 V3, is the cost of a call clobbering the XMM registers; no safe form removed it.

@@ -1,17 +1,13 @@
 [workspace]
 members = [".", "archmage-macros", "magetypes", "magemath", "xtask", "tests/no-features-crate", "tests/clippy-consumer"]
-# `apidoc/` is the CI-free public-API snapshot runner: excluded so plain
-# `cargo test` and every CI job never compile its dependency tree or run
-# rustdoc. Regenerate via `just api-doc`.
-# The independent dispatch prototype is not part of the release workspace.
-exclude = ["apidoc", "experiments/artisanal-dispatch"]
+exclude = ["apidoc"]
 
 [workspace.package]
-version = "0.9.31"
+version = "0.10.0"
 edition = "2024"
 rust-version = "1.89"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/imazen/archmage"
+repository = "https://github.com/lilith/archmage"
 
 [package]
 name = "archmage"
@@ -45,15 +41,8 @@ include = [
 [features]
 default = ["std"]
 std = []
-# Backwards-compat: macros are now always included. This feature exists so
-# `features = ["macros"]` doesn't break.
-macros = []
-# AVX-512 token support (Avx512Token, X64V4xToken, X64V4Token, etc.)
-# Also enables AVX-512 safe memory ops from safe_unaligned_simd.
+# AVX-512 token support and safe 512-bit memory ops from safe_unaligned_simd.
 avx512 = ["safe_unaligned_simd/avx512", "archmage-macros/avx512"]
-# Backwards-compat: safe_unaligned_simd is now always included (no longer optional).
-# This feature exists so `features = ["safe_unaligned_simd"]` doesn't break.
-safe_unaligned_simd = []
 # Make token disabling work even when compiled with -Ctarget-cpu=native.
 # Without this, the compiler bakes summon() into a no-op and tokens can't be
 # disabled at runtime. With this, compiled_with() returns None and summon()
@@ -66,15 +55,10 @@ safe_unaligned_simd = []
 # `_dev = ["archmage/testable_dispatch"]`), never from [dependencies] or
 # [workspace.dependencies], where it reaches every downstream build.
 testable_dispatch = []
-# Backwards-compat no-op. forge_token_dangerously() used to be gated behind
-# this feature; it is now always public, because it is a safe
-# #[target_feature] function that rustc checks against the caller's feature
-# context. This feature exists so `features = ["forge-token-api"]` doesn't break.
-forge-token-api = []
 
 [dependencies]
 # Proc-macro output references this crate's internal API; release the pair together.
-archmage-macros = { version = "=0.9.31", path = "archmage-macros" }
+archmage-macros = { version = "=0.10.0", path = "archmage-macros" }
 # Safe unaligned SIMD load/store (reference-based, no raw pointers)
 safe_unaligned_simd = { version = "0.2.5" }
 

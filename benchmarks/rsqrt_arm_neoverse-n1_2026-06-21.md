@@ -7,7 +7,7 @@ ARM hardware, for both the estimate (`_approx`) and full-precision tiers.
 
 | | |
 |---|---|
-| Box | Hetzner `arm-big` (CAX31), Ampere Altra **Neoverse-N1**, 8 cores, fixed 3.0 GHz (no turbo) |
+| Box | ARM64 cloud server (Neoverse-N1), Ampere Altra **Neoverse-N1**, 8 cores, fixed 3.0 GHz (no turbo) |
 | OS / toolchain | Ubuntu aarch64, rustc 1.96.0 (stable) |
 | Commit | `ffbee4b` (main) |
 | Bench | `magetypes/benches/rsqrt_arm.rs` (`f32x4` / `NeonToken`) |

@@ -87,6 +87,445 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vst4q_lane_p64` (unsafe)
 - `vst4q_p64` (unsafe)
 
+## NeonDotProdToken (12 intrinsics)
+
+### Other
+
+- `vdot_lane_s32`
+- `vdot_lane_u32`
+- `vdot_laneq_s32`
+- `vdot_laneq_u32`
+- `vdot_s32`
+- `vdot_u32`
+- `vdotq_lane_s32`
+- `vdotq_lane_u32`
+- `vdotq_laneq_s32`
+- `vdotq_laneq_u32`
+- `vdotq_s32`
+- `vdotq_u32`
+
+## NeonFcmaToken (62 intrinsics)
+
+### Other
+
+- `vcadd_rot270_f16`
+- `vcadd_rot270_f32`
+- `vcadd_rot90_f16`
+- `vcadd_rot90_f32`
+- `vcaddq_rot270_f16`
+- `vcaddq_rot270_f32`
+- `vcaddq_rot270_f64`
+- `vcaddq_rot90_f16`
+- `vcaddq_rot90_f32`
+- `vcaddq_rot90_f64`
+- `vcmla_f16`
+- `vcmla_f32`
+- `vcmla_lane_f16`
+- `vcmla_lane_f32`
+- `vcmla_laneq_f16`
+- `vcmla_laneq_f32`
+- `vcmla_rot180_f16`
+- `vcmla_rot180_f32`
+- `vcmla_rot180_lane_f16`
+- `vcmla_rot180_lane_f32`
+- `vcmla_rot180_laneq_f16`
+- `vcmla_rot180_laneq_f32`
+- `vcmla_rot270_f16`
+- `vcmla_rot270_f32`
+- `vcmla_rot270_lane_f16`
+- `vcmla_rot270_lane_f32`
+- `vcmla_rot270_laneq_f16`
+- `vcmla_rot270_laneq_f32`
+- `vcmla_rot90_f16`
+- `vcmla_rot90_f32`
+- `vcmla_rot90_lane_f16`
+- `vcmla_rot90_lane_f32`
+- `vcmla_rot90_laneq_f16`
+- `vcmla_rot90_laneq_f32`
+- `vcmlaq_f16`
+- `vcmlaq_f32`
+- `vcmlaq_f64`
+- `vcmlaq_lane_f16`
+- `vcmlaq_lane_f32`
+- `vcmlaq_laneq_f16`
+- `vcmlaq_laneq_f32`
+- `vcmlaq_rot180_f16`
+- `vcmlaq_rot180_f32`
+- `vcmlaq_rot180_f64`
+- `vcmlaq_rot180_lane_f16`
+- `vcmlaq_rot180_lane_f32`
+- `vcmlaq_rot180_laneq_f16`
+- `vcmlaq_rot180_laneq_f32`
+- `vcmlaq_rot270_f16`
+- `vcmlaq_rot270_f32`
+- `vcmlaq_rot270_f64`
+- `vcmlaq_rot270_lane_f16`
+- `vcmlaq_rot270_lane_f32`
+- `vcmlaq_rot270_laneq_f16`
+- `vcmlaq_rot270_laneq_f32`
+- `vcmlaq_rot90_f16`
+- `vcmlaq_rot90_f32`
+- `vcmlaq_rot90_f64`
+- `vcmlaq_rot90_lane_f16`
+- `vcmlaq_rot90_lane_f32`
+- `vcmlaq_rot90_laneq_f16`
+- `vcmlaq_rot90_laneq_f32`
+
+## NeonFhmToken (24 intrinsics)
+
+### Other
+
+- `vfmlal_high_f16`
+- `vfmlal_lane_high_f16`
+- `vfmlal_lane_low_f16`
+- `vfmlal_laneq_high_f16`
+- `vfmlal_laneq_low_f16`
+- `vfmlal_low_f16`
+- `vfmlalq_high_f16`
+- `vfmlalq_lane_high_f16`
+- `vfmlalq_lane_low_f16`
+- `vfmlalq_laneq_high_f16`
+- `vfmlalq_laneq_low_f16`
+- `vfmlalq_low_f16`
+- `vfmlsl_high_f16`
+- `vfmlsl_lane_high_f16`
+- `vfmlsl_lane_low_f16`
+- `vfmlsl_laneq_high_f16`
+- `vfmlsl_laneq_low_f16`
+- `vfmlsl_low_f16`
+- `vfmlslq_high_f16`
+- `vfmlslq_lane_high_f16`
+- `vfmlslq_lane_low_f16`
+- `vfmlslq_laneq_high_f16`
+- `vfmlslq_laneq_low_f16`
+- `vfmlslq_low_f16`
+
+## NeonFp16Token (297 intrinsics)
+
+### Load
+
+- `vld1_f16` (unsafe)
+- `vld1q_f16` (unsafe)
+- `vld4_dup_f16` (unsafe)
+- `vld4_f16` (unsafe)
+- `vld4_lane_f16` (unsafe)
+- `vld4q_dup_f16` (unsafe)
+- `vld4q_f16` (unsafe)
+- `vld4q_lane_f16` (unsafe)
+
+### Other
+
+- `vabd_f16`
+- `vabdh_f16`
+- `vabdq_f16`
+- `vabs_f16`
+- `vabsh_f16`
+- `vabsq_f16`
+- `vadd_f16`
+- `vaddh_f16`
+- `vaddq_f16`
+- `vbsl_f16`
+- `vbslq_f16`
+- `vcage_f16`
+- `vcageh_f16`
+- `vcageq_f16`
+- `vcagt_f16`
+- `vcagth_f16`
+- `vcagtq_f16`
+- `vcale_f16`
+- `vcaleh_f16`
+- `vcaleq_f16`
+- `vcalt_f16`
+- `vcalth_f16`
+- `vcaltq_f16`
+- `vceq_f16`
+- `vceqh_f16`
+- `vceqq_f16`
+- `vceqz_f16`
+- `vceqzh_f16`
+- `vceqzq_f16`
+- `vcge_f16`
+- `vcgeh_f16`
+- `vcgeq_f16`
+- `vcgez_f16`
+- `vcgezh_f16`
+- `vcgezq_f16`
+- `vcgt_f16`
+- `vcgth_f16`
+- `vcgtq_f16`
+- `vcgtz_f16`
+- `vcgtzh_f16`
+- `vcgtzq_f16`
+- `vcle_f16`
+- `vcleh_f16`
+- `vcleq_f16`
+- `vclez_f16`
+- `vclezh_f16`
+- `vclezq_f16`
+- `vclt_f16`
+- `vclth_f16`
+- `vcltq_f16`
+- `vcltz_f16`
+- `vcltzh_f16`
+- `vcltzq_f16`
+- `vcvt_f16_s16`
+- `vcvt_f16_u16`
+- `vcvt_n_f16_s16`
+- `vcvt_n_f16_u16`
+- `vcvt_n_s16_f16`
+- `vcvt_n_u16_f16`
+- `vcvt_s16_f16`
+- `vcvt_u16_f16`
+- `vcvta_s16_f16`
+- `vcvta_u16_f16`
+- `vcvtah_s16_f16`
+- `vcvtah_s32_f16`
+- `vcvtah_s64_f16`
+- `vcvtah_u16_f16`
+- `vcvtah_u32_f16`
+- `vcvtah_u64_f16`
+- `vcvtaq_s16_f16`
+- `vcvtaq_u16_f16`
+- `vcvth_f16_s16`
+- `vcvth_f16_s32`
+- `vcvth_f16_s64`
+- `vcvth_f16_u16`
+- `vcvth_f16_u32`
+- `vcvth_f16_u64`
+- `vcvth_n_f16_s16`
+- `vcvth_n_f16_s32`
+- `vcvth_n_f16_s64`
+- `vcvth_n_f16_u16`
+- `vcvth_n_f16_u32`
+- `vcvth_n_f16_u64`
+- `vcvth_n_s16_f16`
+- `vcvth_n_s32_f16`
+- `vcvth_n_s64_f16`
+- `vcvth_n_u16_f16`
+- `vcvth_n_u32_f16`
+- `vcvth_n_u64_f16`
+- `vcvth_s16_f16`
+- `vcvth_s32_f16`
+- `vcvth_s64_f16`
+- `vcvth_u16_f16`
+- `vcvth_u32_f16`
+- `vcvth_u64_f16`
+- `vcvtm_s16_f16`
+- `vcvtm_u16_f16`
+- `vcvtmh_s16_f16`
+- `vcvtmh_s32_f16`
+- `vcvtmh_s64_f16`
+- `vcvtmh_u16_f16`
+- `vcvtmh_u32_f16`
+- `vcvtmh_u64_f16`
+- `vcvtmq_s16_f16`
+- `vcvtmq_u16_f16`
+- `vcvtn_s16_f16`
+- `vcvtn_u16_f16`
+- `vcvtnh_s16_f16`
+- `vcvtnh_s32_f16`
+- `vcvtnh_s64_f16`
+- `vcvtnh_u16_f16`
+- `vcvtnh_u32_f16`
+- `vcvtnh_u64_f16`
+- `vcvtnq_s16_f16`
+- `vcvtnq_u16_f16`
+- `vcvtp_s16_f16`
+- `vcvtp_u16_f16`
+- `vcvtph_s16_f16`
+- `vcvtph_s32_f16`
+- `vcvtph_s64_f16`
+- `vcvtph_u16_f16`
+- `vcvtph_u32_f16`
+- `vcvtph_u64_f16`
+- `vcvtpq_s16_f16`
+- `vcvtpq_u16_f16`
+- `vcvtq_f16_s16`
+- `vcvtq_f16_u16`
+- `vcvtq_n_f16_s16`
+- `vcvtq_n_f16_u16`
+- `vcvtq_n_s16_f16`
+- `vcvtq_n_u16_f16`
+- `vcvtq_s16_f16`
+- `vcvtq_u16_f16`
+- `vdiv_f16`
+- `vdivh_f16`
+- `vdivq_f16`
+- `vduph_lane_f16`
+- `vduph_laneq_f16`
+- `vext_f16`
+- `vextq_f16`
+- `vfma_f16`
+- `vfma_lane_f16`
+- `vfma_laneq_f16`
+- `vfma_n_f16`
+- `vfmah_f16`
+- `vfmah_lane_f16`
+- `vfmah_laneq_f16`
+- `vfmaq_f16`
+- `vfmaq_lane_f16`
+- `vfmaq_laneq_f16`
+- `vfmaq_n_f16`
+- `vfms_f16`
+- `vfms_lane_f16`
+- `vfms_laneq_f16`
+- `vfms_n_f16`
+- `vfmsh_f16`
+- `vfmsh_lane_f16`
+- `vfmsh_laneq_f16`
+- `vfmsq_f16`
+- `vfmsq_lane_f16`
+- `vfmsq_laneq_f16`
+- `vfmsq_n_f16`
+- `vluti4q_lane_f16_x2` (unsafe)
+- `vluti4q_laneq_f16_x2` (unsafe)
+- `vmax_f16`
+- `vmaxh_f16`
+- `vmaxnm_f16`
+- `vmaxnmh_f16`
+- `vmaxnmq_f16`
+- `vmaxnmv_f16`
+- `vmaxnmvq_f16`
+- `vmaxq_f16`
+- `vmaxv_f16`
+- `vmaxvq_f16`
+- `vmin_f16`
+- `vminh_f16`
+- `vminnm_f16`
+- `vminnmh_f16`
+- `vminnmq_f16`
+- `vminnmv_f16`
+- `vminnmvq_f16`
+- `vminq_f16`
+- `vminv_f16`
+- `vminvq_f16`
+- `vmul_f16`
+- `vmul_lane_f16`
+- `vmul_laneq_f16`
+- `vmul_n_f16`
+- `vmulh_f16`
+- `vmulh_lane_f16`
+- `vmulh_laneq_f16`
+- `vmulq_f16`
+- `vmulq_lane_f16`
+- `vmulq_laneq_f16`
+- `vmulq_n_f16`
+- `vmulx_f16`
+- `vmulx_lane_f16`
+- `vmulx_laneq_f16`
+- `vmulx_n_f16`
+- `vmulxh_f16`
+- `vmulxh_lane_f16`
+- `vmulxh_laneq_f16`
+- `vmulxq_f16`
+- `vmulxq_lane_f16`
+- `vmulxq_laneq_f16`
+- `vmulxq_n_f16`
+- `vneg_f16`
+- `vnegh_f16`
+- `vnegq_f16`
+- `vpadd_f16`
+- `vpaddq_f16`
+- `vpmax_f16`
+- `vpmaxnm_f16`
+- `vpmaxnmq_f16`
+- `vpmaxq_f16`
+- `vpmin_f16`
+- `vpminnm_f16`
+- `vpminnmq_f16`
+- `vpminq_f16`
+- `vrecpe_f16`
+- `vrecpeh_f16`
+- `vrecpeq_f16`
+- `vrecps_f16`
+- `vrecpsh_f16`
+- `vrecpsq_f16`
+- `vrecpxh_f16`
+- `vrev64_f16`
+- `vrev64q_f16`
+- `vrnd_f16`
+- `vrnda_f16`
+- `vrndah_f16`
+- `vrndaq_f16`
+- `vrndh_f16`
+- `vrndi_f16`
+- `vrndih_f16`
+- `vrndiq_f16`
+- `vrndm_f16`
+- `vrndmh_f16`
+- `vrndmq_f16`
+- `vrndn_f16`
+- `vrndnh_f16`
+- `vrndnq_f16`
+- `vrndp_f16`
+- `vrndph_f16`
+- `vrndpq_f16`
+- `vrndq_f16`
+- `vrndx_f16`
+- `vrndxh_f16`
+- `vrndxq_f16`
+- `vrsqrte_f16`
+- `vrsqrteh_f16`
+- `vrsqrteq_f16`
+- `vrsqrts_f16`
+- `vrsqrtsh_f16`
+- `vrsqrtsq_f16`
+- `vset_lane_f16`
+- `vsetq_lane_f16`
+- `vsqrt_f16`
+- `vsqrth_f16`
+- `vsqrtq_f16`
+- `vsub_f16`
+- `vsubh_f16`
+- `vsubq_f16`
+- `vtrn1_f16`
+- `vtrn1q_f16`
+- `vtrn2_f16`
+- `vtrn2q_f16`
+- `vtrn_f16`
+- `vtrnq_f16`
+- `vuzp1_f16`
+- `vuzp1q_f16`
+- `vuzp2_f16`
+- `vuzp2q_f16`
+- `vuzp_f16`
+- `vuzpq_f16`
+- `vzip1_f16`
+- `vzip1q_f16`
+- `vzip2_f16`
+- `vzip2q_f16`
+- `vzip_f16`
+- `vzipq_f16`
+
+### Store
+
+- `vst1_f16` (unsafe)
+- `vst1_f16_x2` (unsafe)
+- `vst1_f16_x3` (unsafe)
+- `vst1_f16_x4` (unsafe)
+- `vst1q_f16` (unsafe)
+- `vst1q_f16_x2` (unsafe)
+- `vst1q_f16_x3` (unsafe)
+- `vst1q_f16_x4` (unsafe)
+
+## NeonI8mmToken (13 intrinsics)
+
+### Other
+
+- `vmmlaq_s32`
+- `vmmlaq_u32`
+- `vsudot_lane_s32`
+- `vsudot_laneq_s32`
+- `vsudotq_lane_s32`
+- `vsudotq_laneq_s32`
+- `vusdot_lane_s32`
+- `vusdot_laneq_s32`
+- `vusdot_s32`
+- `vusdotq_lane_s32`
+- `vusdotq_laneq_s32`
+- `vusdotq_s32`
+- `vusmmlaq_s32`
+
 ## NeonSha3Token (22 intrinsics)
 
 ### Other
@@ -114,7 +553,7 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vsha512su1q_u64`
 - `vxarq_u64`
 
-## NeonToken / Arm64 (4126 intrinsics)
+## NeonToken / Arm64 (3718 intrinsics)
 
 ### Load
 
@@ -131,7 +570,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vld1_dup_u32` (unsafe)
 - `vld1_dup_u64` (unsafe)
 - `vld1_dup_u8` (unsafe)
-- `vld1_f16` (unsafe)
 - `vld1_f16_x2` (unsafe)
 - `vld1_f16_x3` (unsafe)
 - `vld1_f16_x4` (unsafe)
@@ -209,7 +647,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vld1q_dup_u32` (unsafe)
 - `vld1q_dup_u64` (unsafe)
 - `vld1q_dup_u8` (unsafe)
-- `vld1q_f16` (unsafe)
 - `vld1q_f16_x2` (unsafe)
 - `vld1q_f16_x3` (unsafe)
 - `vld1q_f16_x4` (unsafe)
@@ -430,7 +867,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vld3q_u32` (unsafe)
 - `vld3q_u64` (unsafe)
 - `vld3q_u8` (unsafe)
-- `vld4_dup_f16` (unsafe)
 - `vld4_dup_f32` (unsafe)
 - `vld4_dup_f64` (unsafe)
 - `vld4_dup_p16` (unsafe)
@@ -443,10 +879,8 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vld4_dup_u32` (unsafe)
 - `vld4_dup_u64` (unsafe)
 - `vld4_dup_u8` (unsafe)
-- `vld4_f16` (unsafe)
 - `vld4_f32` (unsafe)
 - `vld4_f64` (unsafe)
-- `vld4_lane_f16` (unsafe)
 - `vld4_lane_f32` (unsafe)
 - `vld4_lane_f64` (unsafe)
 - `vld4_lane_p16` (unsafe)
@@ -469,7 +903,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vld4_u32` (unsafe)
 - `vld4_u64` (unsafe)
 - `vld4_u8` (unsafe)
-- `vld4q_dup_f16` (unsafe)
 - `vld4q_dup_f32` (unsafe)
 - `vld4q_dup_f64` (unsafe)
 - `vld4q_dup_p16` (unsafe)
@@ -482,10 +915,8 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vld4q_dup_u32` (unsafe)
 - `vld4q_dup_u64` (unsafe)
 - `vld4q_dup_u8` (unsafe)
-- `vld4q_f16` (unsafe)
 - `vld4q_f32` (unsafe)
 - `vld4q_f64` (unsafe)
-- `vld4q_lane_f16` (unsafe)
 - `vld4q_lane_f32` (unsafe)
 - `vld4q_lane_f64` (unsafe)
 - `vld4q_lane_p16` (unsafe)
@@ -543,7 +974,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vabaq_u16`
 - `vabaq_u32`
 - `vabaq_u8`
-- `vabd_f16`
 - `vabd_f32`
 - `vabd_f64`
 - `vabd_s16`
@@ -553,7 +983,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vabd_u32`
 - `vabd_u8`
 - `vabdd_f64`
-- `vabdh_f16`
 - `vabdl_high_s16`
 - `vabdl_high_s32`
 - `vabdl_high_s8`
@@ -566,7 +995,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vabdl_u16`
 - `vabdl_u32`
 - `vabdl_u8`
-- `vabdq_f16`
 - `vabdq_f32`
 - `vabdq_f64`
 - `vabdq_s16`
@@ -576,7 +1004,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vabdq_u32`
 - `vabdq_u8`
 - `vabds_f32`
-- `vabs_f16`
 - `vabs_f32`
 - `vabs_f64`
 - `vabs_s16`
@@ -584,15 +1011,12 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vabs_s64`
 - `vabs_s8`
 - `vabsd_s64`
-- `vabsh_f16`
-- `vabsq_f16`
 - `vabsq_f32`
 - `vabsq_f64`
 - `vabsq_s16`
 - `vabsq_s32`
 - `vabsq_s64`
 - `vabsq_s8`
-- `vadd_f16`
 - `vadd_f32`
 - `vadd_f64`
 - `vadd_p16`
@@ -608,7 +1032,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vadd_u8`
 - `vaddd_s64`
 - `vaddd_u64`
-- `vaddh_f16`
 - `vaddhn_high_s16`
 - `vaddhn_high_s32`
 - `vaddhn_high_s64`
@@ -645,7 +1068,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vaddlvq_u16`
 - `vaddlvq_u32`
 - `vaddlvq_u8`
-- `vaddq_f16`
 - `vaddq_f32`
 - `vaddq_f64`
 - `vaddq_p128`
@@ -731,7 +1153,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vbicq_u32`
 - `vbicq_u64`
 - `vbicq_u8`
-- `vbsl_f16`
 - `vbsl_f32`
 - `vbsl_f64`
 - `vbsl_p16`
@@ -745,7 +1166,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vbsl_u32`
 - `vbsl_u64`
 - `vbsl_u8`
-- `vbslq_f16`
 - `vbslq_f32`
 - `vbslq_f64`
 - `vbslq_p16`
@@ -759,53 +1179,30 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vbslq_u32`
 - `vbslq_u64`
 - `vbslq_u8`
-- `vcadd_rot270_f16`
-- `vcadd_rot270_f32`
-- `vcadd_rot90_f16`
-- `vcadd_rot90_f32`
-- `vcaddq_rot270_f16`
-- `vcaddq_rot270_f32`
-- `vcaddq_rot270_f64`
-- `vcaddq_rot90_f16`
-- `vcaddq_rot90_f32`
-- `vcaddq_rot90_f64`
-- `vcage_f16`
 - `vcage_f32`
 - `vcage_f64`
 - `vcaged_f64`
-- `vcageh_f16`
-- `vcageq_f16`
 - `vcageq_f32`
 - `vcageq_f64`
 - `vcages_f32`
-- `vcagt_f16`
 - `vcagt_f32`
 - `vcagt_f64`
 - `vcagtd_f64`
-- `vcagth_f16`
-- `vcagtq_f16`
 - `vcagtq_f32`
 - `vcagtq_f64`
 - `vcagts_f32`
-- `vcale_f16`
 - `vcale_f32`
 - `vcale_f64`
 - `vcaled_f64`
-- `vcaleh_f16`
-- `vcaleq_f16`
 - `vcaleq_f32`
 - `vcaleq_f64`
 - `vcales_f32`
-- `vcalt_f16`
 - `vcalt_f32`
 - `vcalt_f64`
 - `vcaltd_f64`
-- `vcalth_f16`
-- `vcaltq_f16`
 - `vcaltq_f32`
 - `vcaltq_f64`
 - `vcalts_f32`
-- `vceq_f16`
 - `vceq_f32`
 - `vceq_f64`
 - `vceq_p64`
@@ -821,8 +1218,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vceqd_f64`
 - `vceqd_s64`
 - `vceqd_u64`
-- `vceqh_f16`
-- `vceqq_f16`
 - `vceqq_f32`
 - `vceqq_f64`
 - `vceqq_p64`
@@ -836,7 +1231,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vceqq_u64`
 - `vceqq_u8`
 - `vceqs_f32`
-- `vceqz_f16`
 - `vceqz_f32`
 - `vceqz_f64`
 - `vceqz_p64`
@@ -852,8 +1246,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vceqzd_f64`
 - `vceqzd_s64`
 - `vceqzd_u64`
-- `vceqzh_f16`
-- `vceqzq_f16`
 - `vceqzq_f32`
 - `vceqzq_f64`
 - `vceqzq_p64`
@@ -867,7 +1259,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vceqzq_u64`
 - `vceqzq_u8`
 - `vceqzs_f32`
-- `vcge_f16`
 - `vcge_f32`
 - `vcge_f64`
 - `vcge_s16`
@@ -881,8 +1272,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcged_f64`
 - `vcged_s64`
 - `vcged_u64`
-- `vcgeh_f16`
-- `vcgeq_f16`
 - `vcgeq_f32`
 - `vcgeq_f64`
 - `vcgeq_s16`
@@ -894,7 +1283,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcgeq_u64`
 - `vcgeq_u8`
 - `vcges_f32`
-- `vcgez_f16`
 - `vcgez_f32`
 - `vcgez_f64`
 - `vcgez_s16`
@@ -903,8 +1291,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcgez_s8`
 - `vcgezd_f64`
 - `vcgezd_s64`
-- `vcgezh_f16`
-- `vcgezq_f16`
 - `vcgezq_f32`
 - `vcgezq_f64`
 - `vcgezq_s16`
@@ -912,7 +1298,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcgezq_s64`
 - `vcgezq_s8`
 - `vcgezs_f32`
-- `vcgt_f16`
 - `vcgt_f32`
 - `vcgt_f64`
 - `vcgt_s16`
@@ -926,8 +1311,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcgtd_f64`
 - `vcgtd_s64`
 - `vcgtd_u64`
-- `vcgth_f16`
-- `vcgtq_f16`
 - `vcgtq_f32`
 - `vcgtq_f64`
 - `vcgtq_s16`
@@ -939,7 +1322,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcgtq_u64`
 - `vcgtq_u8`
 - `vcgts_f32`
-- `vcgtz_f16`
 - `vcgtz_f32`
 - `vcgtz_f64`
 - `vcgtz_s16`
@@ -948,8 +1330,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcgtz_s8`
 - `vcgtzd_f64`
 - `vcgtzd_s64`
-- `vcgtzh_f16`
-- `vcgtzq_f16`
 - `vcgtzq_f32`
 - `vcgtzq_f64`
 - `vcgtzq_s16`
@@ -957,7 +1337,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcgtzq_s64`
 - `vcgtzq_s8`
 - `vcgtzs_f32`
-- `vcle_f16`
 - `vcle_f32`
 - `vcle_f64`
 - `vcle_s16`
@@ -971,8 +1350,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcled_f64`
 - `vcled_s64`
 - `vcled_u64`
-- `vcleh_f16`
-- `vcleq_f16`
 - `vcleq_f32`
 - `vcleq_f64`
 - `vcleq_s16`
@@ -984,7 +1361,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcleq_u64`
 - `vcleq_u8`
 - `vcles_f32`
-- `vclez_f16`
 - `vclez_f32`
 - `vclez_f64`
 - `vclez_s16`
@@ -993,8 +1369,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vclez_s8`
 - `vclezd_f64`
 - `vclezd_s64`
-- `vclezh_f16`
-- `vclezq_f16`
 - `vclezq_f32`
 - `vclezq_f64`
 - `vclezq_s16`
@@ -1014,7 +1388,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vclsq_u16`
 - `vclsq_u32`
 - `vclsq_u8`
-- `vclt_f16`
 - `vclt_f32`
 - `vclt_f64`
 - `vclt_s16`
@@ -1028,8 +1401,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcltd_f64`
 - `vcltd_s64`
 - `vcltd_u64`
-- `vclth_f16`
-- `vcltq_f16`
 - `vcltq_f32`
 - `vcltq_f64`
 - `vcltq_s16`
@@ -1041,7 +1412,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcltq_u64`
 - `vcltq_u8`
 - `vclts_f32`
-- `vcltz_f16`
 - `vcltz_f32`
 - `vcltz_f64`
 - `vcltz_s16`
@@ -1050,8 +1420,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcltz_s8`
 - `vcltzd_f64`
 - `vcltzd_s64`
-- `vcltzh_f16`
-- `vcltzq_f16`
 - `vcltzq_f32`
 - `vcltzq_f64`
 - `vcltzq_s16`
@@ -1071,58 +1439,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vclzq_u16`
 - `vclzq_u32`
 - `vclzq_u8`
-- `vcmla_f16`
-- `vcmla_f32`
-- `vcmla_lane_f16`
-- `vcmla_lane_f32`
-- `vcmla_laneq_f16`
-- `vcmla_laneq_f32`
-- `vcmla_rot180_f16`
-- `vcmla_rot180_f32`
-- `vcmla_rot180_lane_f16`
-- `vcmla_rot180_lane_f32`
-- `vcmla_rot180_laneq_f16`
-- `vcmla_rot180_laneq_f32`
-- `vcmla_rot270_f16`
-- `vcmla_rot270_f32`
-- `vcmla_rot270_lane_f16`
-- `vcmla_rot270_lane_f32`
-- `vcmla_rot270_laneq_f16`
-- `vcmla_rot270_laneq_f32`
-- `vcmla_rot90_f16`
-- `vcmla_rot90_f32`
-- `vcmla_rot90_lane_f16`
-- `vcmla_rot90_lane_f32`
-- `vcmla_rot90_laneq_f16`
-- `vcmla_rot90_laneq_f32`
-- `vcmlaq_f16`
-- `vcmlaq_f32`
-- `vcmlaq_f64`
-- `vcmlaq_lane_f16`
-- `vcmlaq_lane_f32`
-- `vcmlaq_laneq_f16`
-- `vcmlaq_laneq_f32`
-- `vcmlaq_rot180_f16`
-- `vcmlaq_rot180_f32`
-- `vcmlaq_rot180_f64`
-- `vcmlaq_rot180_lane_f16`
-- `vcmlaq_rot180_lane_f32`
-- `vcmlaq_rot180_laneq_f16`
-- `vcmlaq_rot180_laneq_f32`
-- `vcmlaq_rot270_f16`
-- `vcmlaq_rot270_f32`
-- `vcmlaq_rot270_f64`
-- `vcmlaq_rot270_lane_f16`
-- `vcmlaq_rot270_lane_f32`
-- `vcmlaq_rot270_laneq_f16`
-- `vcmlaq_rot270_laneq_f32`
-- `vcmlaq_rot90_f16`
-- `vcmlaq_rot90_f32`
-- `vcmlaq_rot90_f64`
-- `vcmlaq_rot90_lane_f16`
-- `vcmlaq_rot90_lane_f32`
-- `vcmlaq_rot90_laneq_f16`
-- `vcmlaq_rot90_laneq_f32`
 - `vcnt_p8`
 - `vcnt_s8`
 - `vcnt_u8`
@@ -1209,8 +1525,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcreate_u64`
 - `vcreate_u8`
 - `vcvt_f16_f32`
-- `vcvt_f16_s16`
-- `vcvt_f16_u16`
 - `vcvt_f32_f16`
 - `vcvt_f32_f64`
 - `vcvt_f32_s32`
@@ -1222,42 +1536,26 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcvt_high_f32_f16`
 - `vcvt_high_f32_f64`
 - `vcvt_high_f64_f32`
-- `vcvt_n_f16_s16`
-- `vcvt_n_f16_u16`
 - `vcvt_n_f32_s32`
 - `vcvt_n_f32_u32`
 - `vcvt_n_f64_s64`
 - `vcvt_n_f64_u64`
-- `vcvt_n_s16_f16`
 - `vcvt_n_s32_f32`
 - `vcvt_n_s64_f64`
-- `vcvt_n_u16_f16`
 - `vcvt_n_u32_f32`
 - `vcvt_n_u64_f64`
-- `vcvt_s16_f16`
 - `vcvt_s32_f32`
 - `vcvt_s64_f64`
-- `vcvt_u16_f16`
 - `vcvt_u32_f32`
 - `vcvt_u64_f64`
-- `vcvta_s16_f16`
 - `vcvta_s32_f32`
 - `vcvta_s64_f64`
-- `vcvta_u16_f16`
 - `vcvta_u32_f32`
 - `vcvta_u64_f64`
 - `vcvtad_s64_f64`
 - `vcvtad_u64_f64`
-- `vcvtah_s16_f16`
-- `vcvtah_s32_f16`
-- `vcvtah_s64_f16`
-- `vcvtah_u16_f16`
-- `vcvtah_u32_f16`
-- `vcvtah_u64_f16`
-- `vcvtaq_s16_f16`
 - `vcvtaq_s32_f32`
 - `vcvtaq_s64_f64`
-- `vcvtaq_u16_f16`
 - `vcvtaq_u32_f32`
 - `vcvtaq_u64_f64`
 - `vcvtas_s32_f32`
@@ -1270,118 +1568,56 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcvtd_n_u64_f64`
 - `vcvtd_s64_f64`
 - `vcvtd_u64_f64`
-- `vcvth_f16_s16`
-- `vcvth_f16_s32`
-- `vcvth_f16_s64`
-- `vcvth_f16_u16`
-- `vcvth_f16_u32`
-- `vcvth_f16_u64`
-- `vcvth_n_f16_s16`
-- `vcvth_n_f16_s32`
-- `vcvth_n_f16_s64`
-- `vcvth_n_f16_u16`
-- `vcvth_n_f16_u32`
-- `vcvth_n_f16_u64`
-- `vcvth_n_s16_f16`
-- `vcvth_n_s32_f16`
-- `vcvth_n_s64_f16`
-- `vcvth_n_u16_f16`
-- `vcvth_n_u32_f16`
-- `vcvth_n_u64_f16`
-- `vcvth_s16_f16`
-- `vcvth_s32_f16`
-- `vcvth_s64_f16`
-- `vcvth_u16_f16`
-- `vcvth_u32_f16`
-- `vcvth_u64_f16`
-- `vcvtm_s16_f16`
 - `vcvtm_s32_f32`
 - `vcvtm_s64_f64`
-- `vcvtm_u16_f16`
 - `vcvtm_u32_f32`
 - `vcvtm_u64_f64`
 - `vcvtmd_s64_f64`
 - `vcvtmd_u64_f64`
-- `vcvtmh_s16_f16`
-- `vcvtmh_s32_f16`
-- `vcvtmh_s64_f16`
-- `vcvtmh_u16_f16`
-- `vcvtmh_u32_f16`
-- `vcvtmh_u64_f16`
-- `vcvtmq_s16_f16`
 - `vcvtmq_s32_f32`
 - `vcvtmq_s64_f64`
-- `vcvtmq_u16_f16`
 - `vcvtmq_u32_f32`
 - `vcvtmq_u64_f64`
 - `vcvtms_s32_f32`
 - `vcvtms_u32_f32`
-- `vcvtn_s16_f16`
 - `vcvtn_s32_f32`
 - `vcvtn_s64_f64`
-- `vcvtn_u16_f16`
 - `vcvtn_u32_f32`
 - `vcvtn_u64_f64`
 - `vcvtnd_s64_f64`
 - `vcvtnd_u64_f64`
-- `vcvtnh_s16_f16`
-- `vcvtnh_s32_f16`
-- `vcvtnh_s64_f16`
-- `vcvtnh_u16_f16`
-- `vcvtnh_u32_f16`
-- `vcvtnh_u64_f16`
-- `vcvtnq_s16_f16`
 - `vcvtnq_s32_f32`
 - `vcvtnq_s64_f64`
-- `vcvtnq_u16_f16`
 - `vcvtnq_u32_f32`
 - `vcvtnq_u64_f64`
 - `vcvtns_s32_f32`
 - `vcvtns_u32_f32`
-- `vcvtp_s16_f16`
 - `vcvtp_s32_f32`
 - `vcvtp_s64_f64`
-- `vcvtp_u16_f16`
 - `vcvtp_u32_f32`
 - `vcvtp_u64_f64`
 - `vcvtpd_s64_f64`
 - `vcvtpd_u64_f64`
-- `vcvtph_s16_f16`
-- `vcvtph_s32_f16`
-- `vcvtph_s64_f16`
-- `vcvtph_u16_f16`
-- `vcvtph_u32_f16`
-- `vcvtph_u64_f16`
-- `vcvtpq_s16_f16`
 - `vcvtpq_s32_f32`
 - `vcvtpq_s64_f64`
-- `vcvtpq_u16_f16`
 - `vcvtpq_u32_f32`
 - `vcvtpq_u64_f64`
 - `vcvtps_s32_f32`
 - `vcvtps_u32_f32`
-- `vcvtq_f16_s16`
-- `vcvtq_f16_u16`
 - `vcvtq_f32_s32`
 - `vcvtq_f32_u32`
 - `vcvtq_f64_s64`
 - `vcvtq_f64_u64`
-- `vcvtq_n_f16_s16`
-- `vcvtq_n_f16_u16`
 - `vcvtq_n_f32_s32`
 - `vcvtq_n_f32_u32`
 - `vcvtq_n_f64_s64`
 - `vcvtq_n_f64_u64`
-- `vcvtq_n_s16_f16`
 - `vcvtq_n_s32_f32`
 - `vcvtq_n_s64_f64`
-- `vcvtq_n_u16_f16`
 - `vcvtq_n_u32_f32`
 - `vcvtq_n_u64_f64`
-- `vcvtq_s16_f16`
 - `vcvtq_s32_f32`
 - `vcvtq_s64_f64`
-- `vcvtq_u16_f16`
 - `vcvtq_u32_f32`
 - `vcvtq_u64_f64`
 - `vcvts_f32_s32`
@@ -1395,25 +1631,10 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vcvtx_f32_f64`
 - `vcvtx_high_f32_f64`
 - `vcvtxd_f32_f64`
-- `vdiv_f16`
 - `vdiv_f32`
 - `vdiv_f64`
-- `vdivh_f16`
-- `vdivq_f16`
 - `vdivq_f32`
 - `vdivq_f64`
-- `vdot_lane_s32`
-- `vdot_lane_u32`
-- `vdot_laneq_s32`
-- `vdot_laneq_u32`
-- `vdot_s32`
-- `vdot_u32`
-- `vdotq_lane_s32`
-- `vdotq_lane_u32`
-- `vdotq_laneq_s32`
-- `vdotq_laneq_u32`
-- `vdotq_s32`
-- `vdotq_u32`
 - `vdup_lane_f16`
 - `vdup_lane_f32`
 - `vdup_lane_f64`
@@ -1468,11 +1689,9 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vdupd_laneq_f64`
 - `vdupd_laneq_s64`
 - `vdupd_laneq_u64`
-- `vduph_lane_f16`
 - `vduph_lane_p16`
 - `vduph_lane_s16`
 - `vduph_lane_u16`
-- `vduph_laneq_f16`
 - `vduph_laneq_p16`
 - `vduph_laneq_s16`
 - `vduph_laneq_u16`
@@ -1540,7 +1759,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `veorq_u32`
 - `veorq_u64`
 - `veorq_u8`
-- `vext_f16`
 - `vext_f32`
 - `vext_f64`
 - `vext_p16`
@@ -1554,7 +1772,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vext_u32`
 - `vext_u64` (unsafe)
 - `vext_u8`
-- `vextq_f16`
 - `vextq_f32`
 - `vextq_f64`
 - `vextq_p16`
@@ -1568,88 +1785,42 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vextq_u32`
 - `vextq_u64`
 - `vextq_u8`
-- `vfma_f16`
 - `vfma_f32`
 - `vfma_f64`
-- `vfma_lane_f16`
 - `vfma_lane_f32`
 - `vfma_lane_f64`
-- `vfma_laneq_f16`
 - `vfma_laneq_f32`
 - `vfma_laneq_f64`
-- `vfma_n_f16`
 - `vfma_n_f32`
 - `vfma_n_f64`
 - `vfmad_lane_f64`
 - `vfmad_laneq_f64`
-- `vfmah_f16`
-- `vfmah_lane_f16`
-- `vfmah_laneq_f16`
-- `vfmaq_f16`
 - `vfmaq_f32`
 - `vfmaq_f64`
-- `vfmaq_lane_f16`
 - `vfmaq_lane_f32`
 - `vfmaq_lane_f64`
-- `vfmaq_laneq_f16`
 - `vfmaq_laneq_f32`
 - `vfmaq_laneq_f64`
-- `vfmaq_n_f16`
 - `vfmaq_n_f32`
 - `vfmaq_n_f64`
 - `vfmas_lane_f32`
 - `vfmas_laneq_f32`
-- `vfmlal_high_f16`
-- `vfmlal_lane_high_f16`
-- `vfmlal_lane_low_f16`
-- `vfmlal_laneq_high_f16`
-- `vfmlal_laneq_low_f16`
-- `vfmlal_low_f16`
-- `vfmlalq_high_f16`
-- `vfmlalq_lane_high_f16`
-- `vfmlalq_lane_low_f16`
-- `vfmlalq_laneq_high_f16`
-- `vfmlalq_laneq_low_f16`
-- `vfmlalq_low_f16`
-- `vfmlsl_high_f16`
-- `vfmlsl_lane_high_f16`
-- `vfmlsl_lane_low_f16`
-- `vfmlsl_laneq_high_f16`
-- `vfmlsl_laneq_low_f16`
-- `vfmlsl_low_f16`
-- `vfmlslq_high_f16`
-- `vfmlslq_lane_high_f16`
-- `vfmlslq_lane_low_f16`
-- `vfmlslq_laneq_high_f16`
-- `vfmlslq_laneq_low_f16`
-- `vfmlslq_low_f16`
-- `vfms_f16`
 - `vfms_f32`
 - `vfms_f64`
-- `vfms_lane_f16`
 - `vfms_lane_f32`
 - `vfms_lane_f64`
-- `vfms_laneq_f16`
 - `vfms_laneq_f32`
 - `vfms_laneq_f64`
-- `vfms_n_f16`
 - `vfms_n_f32`
 - `vfms_n_f64`
 - `vfmsd_lane_f64`
 - `vfmsd_laneq_f64`
-- `vfmsh_f16`
-- `vfmsh_lane_f16`
-- `vfmsh_laneq_f16`
-- `vfmsq_f16`
 - `vfmsq_f32`
 - `vfmsq_f64`
-- `vfmsq_lane_f16`
 - `vfmsq_lane_f32`
 - `vfmsq_lane_f64`
-- `vfmsq_laneq_f16`
 - `vfmsq_laneq_f32`
 - `vfmsq_laneq_f64`
-- `vfmsq_n_f16`
 - `vfmsq_n_f32`
 - `vfmsq_n_f64`
 - `vfmss_lane_f32`
@@ -1762,21 +1933,18 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vluti2q_laneq_s8` (unsafe)
 - `vluti2q_laneq_u16` (unsafe)
 - `vluti2q_laneq_u8` (unsafe)
-- `vluti4q_lane_f16_x2` (unsafe)
 - `vluti4q_lane_p16_x2` (unsafe)
 - `vluti4q_lane_p8` (unsafe)
 - `vluti4q_lane_s16_x2` (unsafe)
 - `vluti4q_lane_s8` (unsafe)
 - `vluti4q_lane_u16_x2` (unsafe)
 - `vluti4q_lane_u8` (unsafe)
-- `vluti4q_laneq_f16_x2` (unsafe)
 - `vluti4q_laneq_p16_x2` (unsafe)
 - `vluti4q_laneq_p8` (unsafe)
 - `vluti4q_laneq_s16_x2` (unsafe)
 - `vluti4q_laneq_s8` (unsafe)
 - `vluti4q_laneq_u16_x2` (unsafe)
 - `vluti4q_laneq_u8` (unsafe)
-- `vmax_f16`
 - `vmax_f32`
 - `vmax_f64`
 - `vmax_s16`
@@ -1785,20 +1953,13 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmax_u16`
 - `vmax_u32`
 - `vmax_u8`
-- `vmaxh_f16`
-- `vmaxnm_f16`
 - `vmaxnm_f32`
 - `vmaxnm_f64`
-- `vmaxnmh_f16`
-- `vmaxnmq_f16`
 - `vmaxnmq_f32`
 - `vmaxnmq_f64`
-- `vmaxnmv_f16`
 - `vmaxnmv_f32`
-- `vmaxnmvq_f16`
 - `vmaxnmvq_f32`
 - `vmaxnmvq_f64`
-- `vmaxq_f16`
 - `vmaxq_f32`
 - `vmaxq_f64`
 - `vmaxq_s16`
@@ -1807,7 +1968,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmaxq_u16`
 - `vmaxq_u32`
 - `vmaxq_u8`
-- `vmaxv_f16`
 - `vmaxv_f32`
 - `vmaxv_s16`
 - `vmaxv_s32`
@@ -1815,7 +1975,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmaxv_u16`
 - `vmaxv_u32`
 - `vmaxv_u8`
-- `vmaxvq_f16`
 - `vmaxvq_f32`
 - `vmaxvq_f64`
 - `vmaxvq_s16`
@@ -1824,7 +1983,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmaxvq_u16`
 - `vmaxvq_u32`
 - `vmaxvq_u8`
-- `vmin_f16`
 - `vmin_f32`
 - `vmin_f64`
 - `vmin_s16`
@@ -1833,20 +1991,13 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmin_u16`
 - `vmin_u32`
 - `vmin_u8`
-- `vminh_f16`
-- `vminnm_f16`
 - `vminnm_f32`
 - `vminnm_f64`
-- `vminnmh_f16`
-- `vminnmq_f16`
 - `vminnmq_f32`
 - `vminnmq_f64`
-- `vminnmv_f16`
 - `vminnmv_f32`
-- `vminnmvq_f16`
 - `vminnmvq_f32`
 - `vminnmvq_f64`
-- `vminq_f16`
 - `vminq_f32`
 - `vminq_f64`
 - `vminq_s16`
@@ -1855,7 +2006,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vminq_u16`
 - `vminq_u32`
 - `vminq_u8`
-- `vminv_f16`
 - `vminv_f32`
 - `vminv_s16`
 - `vminv_s32`
@@ -1863,7 +2013,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vminv_u16`
 - `vminv_u32`
 - `vminv_u8`
-- `vminvq_f16`
 - `vminvq_f32`
 - `vminvq_f64`
 - `vminvq_s16`
@@ -2036,8 +2185,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmlsq_u16`
 - `vmlsq_u32`
 - `vmlsq_u8`
-- `vmmlaq_s32`
-- `vmmlaq_u32`
 - `vmov_n_f16`
 - `vmov_n_f32`
 - `vmov_n_f64`
@@ -2090,24 +2237,20 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmovq_n_u32`
 - `vmovq_n_u64`
 - `vmovq_n_u8`
-- `vmul_f16`
 - `vmul_f32`
 - `vmul_f64`
-- `vmul_lane_f16`
 - `vmul_lane_f32`
 - `vmul_lane_f64`
 - `vmul_lane_s16`
 - `vmul_lane_s32`
 - `vmul_lane_u16`
 - `vmul_lane_u32`
-- `vmul_laneq_f16`
 - `vmul_laneq_f32`
 - `vmul_laneq_f64`
 - `vmul_laneq_s16`
 - `vmul_laneq_s32`
 - `vmul_laneq_u16`
 - `vmul_laneq_u32`
-- `vmul_n_f16`
 - `vmul_n_f32`
 - `vmul_n_f64`
 - `vmul_n_s16`
@@ -2123,9 +2266,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmul_u8`
 - `vmuld_lane_f64`
 - `vmuld_laneq_f64`
-- `vmulh_f16`
-- `vmulh_lane_f16`
-- `vmulh_laneq_f16`
 - `vmull_high_lane_s16`
 - `vmull_high_lane_s32`
 - `vmull_high_lane_u16`
@@ -2164,24 +2304,20 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmull_u16`
 - `vmull_u32`
 - `vmull_u8`
-- `vmulq_f16`
 - `vmulq_f32`
 - `vmulq_f64`
-- `vmulq_lane_f16`
 - `vmulq_lane_f32`
 - `vmulq_lane_f64`
 - `vmulq_lane_s16`
 - `vmulq_lane_s32`
 - `vmulq_lane_u16`
 - `vmulq_lane_u32`
-- `vmulq_laneq_f16`
 - `vmulq_laneq_f32`
 - `vmulq_laneq_f64`
 - `vmulq_laneq_s16`
 - `vmulq_laneq_s32`
 - `vmulq_laneq_u16`
 - `vmulq_laneq_u32`
-- `vmulq_n_f16`
 - `vmulq_n_f32`
 - `vmulq_n_f64`
 - `vmulq_n_s16`
@@ -2197,32 +2333,21 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmulq_u8`
 - `vmuls_lane_f32`
 - `vmuls_laneq_f32`
-- `vmulx_f16`
 - `vmulx_f32`
 - `vmulx_f64`
-- `vmulx_lane_f16`
 - `vmulx_lane_f32`
 - `vmulx_lane_f64`
-- `vmulx_laneq_f16`
 - `vmulx_laneq_f32`
 - `vmulx_laneq_f64`
-- `vmulx_n_f16`
 - `vmulxd_f64`
 - `vmulxd_lane_f64`
 - `vmulxd_laneq_f64`
-- `vmulxh_f16`
-- `vmulxh_lane_f16`
-- `vmulxh_laneq_f16`
-- `vmulxq_f16`
 - `vmulxq_f32`
 - `vmulxq_f64`
-- `vmulxq_lane_f16`
 - `vmulxq_lane_f32`
 - `vmulxq_lane_f64`
-- `vmulxq_laneq_f16`
 - `vmulxq_laneq_f32`
 - `vmulxq_laneq_f64`
-- `vmulxq_n_f16`
 - `vmulxs_f32`
 - `vmulxs_lane_f32`
 - `vmulxs_laneq_f32`
@@ -2240,7 +2365,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vmvnq_u16`
 - `vmvnq_u32`
 - `vmvnq_u8`
-- `vneg_f16`
 - `vneg_f32`
 - `vneg_f64`
 - `vneg_s16`
@@ -2248,8 +2372,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vneg_s64`
 - `vneg_s8`
 - `vnegd_s64`
-- `vnegh_f16`
-- `vnegq_f16`
 - `vnegq_f32`
 - `vnegq_f64`
 - `vnegq_s16`
@@ -2300,7 +2422,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vpadalq_u16`
 - `vpadalq_u32`
 - `vpadalq_u8`
-- `vpadd_f16`
 - `vpadd_f32`
 - `vpadd_s16`
 - `vpadd_s32`
@@ -2323,7 +2444,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vpaddlq_u16`
 - `vpaddlq_u32`
 - `vpaddlq_u8`
-- `vpaddq_f16`
 - `vpaddq_f32`
 - `vpaddq_f64`
 - `vpaddq_s16`
@@ -2335,7 +2455,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vpaddq_u64`
 - `vpaddq_u8`
 - `vpadds_f32`
-- `vpmax_f16`
 - `vpmax_f32`
 - `vpmax_s16`
 - `vpmax_s32`
@@ -2343,14 +2462,11 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vpmax_u16`
 - `vpmax_u32`
 - `vpmax_u8`
-- `vpmaxnm_f16`
 - `vpmaxnm_f32`
-- `vpmaxnmq_f16`
 - `vpmaxnmq_f32`
 - `vpmaxnmq_f64`
 - `vpmaxnmqd_f64`
 - `vpmaxnms_f32`
-- `vpmaxq_f16`
 - `vpmaxq_f32`
 - `vpmaxq_f64`
 - `vpmaxq_s16`
@@ -2361,7 +2477,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vpmaxq_u8`
 - `vpmaxqd_f64`
 - `vpmaxs_f32`
-- `vpmin_f16`
 - `vpmin_f32`
 - `vpmin_s16`
 - `vpmin_s32`
@@ -2369,14 +2484,11 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vpmin_u16`
 - `vpmin_u32`
 - `vpmin_u8`
-- `vpminnm_f16`
 - `vpminnm_f32`
-- `vpminnmq_f16`
 - `vpminnmq_f32`
 - `vpminnmq_f64`
 - `vpminnmqd_f64`
 - `vpminnms_f32`
-- `vpminq_f16`
 - `vpminq_f32`
 - `vpminq_f64`
 - `vpminq_s16`
@@ -2800,28 +2912,21 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vrbitq_p8`
 - `vrbitq_s8`
 - `vrbitq_u8`
-- `vrecpe_f16`
 - `vrecpe_f32`
 - `vrecpe_f64`
 - `vrecpe_u32`
 - `vrecped_f64`
-- `vrecpeh_f16`
-- `vrecpeq_f16`
 - `vrecpeq_f32`
 - `vrecpeq_f64`
 - `vrecpeq_u32`
 - `vrecpes_f32`
-- `vrecps_f16`
 - `vrecps_f32`
 - `vrecps_f64`
 - `vrecpsd_f64`
-- `vrecpsh_f16`
-- `vrecpsq_f16`
 - `vrecpsq_f32`
 - `vrecpsq_f64`
 - `vrecpss_f32`
 - `vrecpxd_f64`
-- `vrecpxh_f16`
 - `vrecpxs_f32`
 - `vreinterpret_f16_f32`
 - `vreinterpret_f16_f64`
@@ -3221,7 +3326,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vrev32q_s8`
 - `vrev32q_u16`
 - `vrev32q_u8`
-- `vrev64_f16`
 - `vrev64_f32`
 - `vrev64_p16`
 - `vrev64_p8`
@@ -3231,7 +3335,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vrev64_u16`
 - `vrev64_u32`
 - `vrev64_u8`
-- `vrev64q_f16`
 - `vrev64q_f32`
 - `vrev64q_p16`
 - `vrev64q_p8`
@@ -3269,54 +3372,33 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vrnd64z_f64`
 - `vrnd64zq_f32`
 - `vrnd64zq_f64`
-- `vrnd_f16`
 - `vrnd_f32`
 - `vrnd_f64`
-- `vrnda_f16`
 - `vrnda_f32`
 - `vrnda_f64`
-- `vrndah_f16`
-- `vrndaq_f16`
 - `vrndaq_f32`
 - `vrndaq_f64`
-- `vrndh_f16`
-- `vrndi_f16`
 - `vrndi_f32`
 - `vrndi_f64`
-- `vrndih_f16`
-- `vrndiq_f16`
 - `vrndiq_f32`
 - `vrndiq_f64`
-- `vrndm_f16`
 - `vrndm_f32`
 - `vrndm_f64`
-- `vrndmh_f16`
-- `vrndmq_f16`
 - `vrndmq_f32`
 - `vrndmq_f64`
-- `vrndn_f16`
 - `vrndn_f32`
 - `vrndn_f64`
-- `vrndnh_f16`
-- `vrndnq_f16`
 - `vrndnq_f32`
 - `vrndnq_f64`
 - `vrndns_f32`
-- `vrndp_f16`
 - `vrndp_f32`
 - `vrndp_f64`
-- `vrndph_f16`
-- `vrndpq_f16`
 - `vrndpq_f32`
 - `vrndpq_f64`
-- `vrndq_f16`
 - `vrndq_f32`
 - `vrndq_f64`
-- `vrndx_f16`
 - `vrndx_f32`
 - `vrndx_f64`
-- `vrndxh_f16`
-- `vrndxq_f16`
 - `vrndxq_f32`
 - `vrndxq_f64`
 - `vrshl_s16`
@@ -3367,23 +3449,17 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vrshrq_n_u32`
 - `vrshrq_n_u64`
 - `vrshrq_n_u8`
-- `vrsqrte_f16`
 - `vrsqrte_f32`
 - `vrsqrte_f64`
 - `vrsqrte_u32`
 - `vrsqrted_f64`
-- `vrsqrteh_f16`
-- `vrsqrteq_f16`
 - `vrsqrteq_f32`
 - `vrsqrteq_f64`
 - `vrsqrteq_u32`
 - `vrsqrtes_f32`
-- `vrsqrts_f16`
 - `vrsqrts_f32`
 - `vrsqrts_f64`
 - `vrsqrtsd_f64`
-- `vrsqrtsh_f16`
-- `vrsqrtsq_f16`
 - `vrsqrtsq_f32`
 - `vrsqrtsq_f64`
 - `vrsqrtss_f32`
@@ -3422,7 +3498,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vscaleq_f16`
 - `vscaleq_f32`
 - `vscaleq_f64`
-- `vset_lane_f16`
 - `vset_lane_f32`
 - `vset_lane_f64`
 - `vset_lane_p16`
@@ -3435,7 +3510,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vset_lane_u32`
 - `vset_lane_u64`
 - `vset_lane_u8`
-- `vsetq_lane_f16`
 - `vsetq_lane_f32`
 - `vsetq_lane_f64`
 - `vsetq_lane_p16`
@@ -3569,11 +3643,8 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vsqaddq_u64`
 - `vsqaddq_u8`
 - `vsqadds_u32`
-- `vsqrt_f16`
 - `vsqrt_f32`
 - `vsqrt_f64`
-- `vsqrth_f16`
-- `vsqrtq_f16`
 - `vsqrtq_f32`
 - `vsqrtq_f64`
 - `vsra_n_s16`
@@ -3616,7 +3687,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vsriq_n_u32`
 - `vsriq_n_u64`
 - `vsriq_n_u8`
-- `vsub_f16`
 - `vsub_f32`
 - `vsub_f64`
 - `vsub_s16`
@@ -3629,7 +3699,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vsub_u8`
 - `vsubd_s64`
 - `vsubd_u64`
-- `vsubh_f16`
 - `vsubhn_high_s16`
 - `vsubhn_high_s32`
 - `vsubhn_high_s64`
@@ -3654,7 +3723,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vsubl_u16`
 - `vsubl_u32`
 - `vsubl_u8`
-- `vsubq_f16`
 - `vsubq_f32`
 - `vsubq_f64`
 - `vsubq_s16`
@@ -3677,10 +3745,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vsubw_u16`
 - `vsubw_u32`
 - `vsubw_u8`
-- `vsudot_lane_s32`
-- `vsudot_laneq_s32`
-- `vsudotq_lane_s32`
-- `vsudotq_laneq_s32`
 - `vtbl1_p8`
 - `vtbl1_s8`
 - `vtbl1_u8`
@@ -3705,7 +3769,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vtbx4_p8`
 - `vtbx4_s8`
 - `vtbx4_u8`
-- `vtrn1_f16`
 - `vtrn1_f32`
 - `vtrn1_p16`
 - `vtrn1_p8`
@@ -3715,7 +3778,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vtrn1_u16`
 - `vtrn1_u32`
 - `vtrn1_u8`
-- `vtrn1q_f16`
 - `vtrn1q_f32`
 - `vtrn1q_f64`
 - `vtrn1q_p16`
@@ -3729,7 +3791,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vtrn1q_u32`
 - `vtrn1q_u64`
 - `vtrn1q_u8`
-- `vtrn2_f16`
 - `vtrn2_f32`
 - `vtrn2_p16`
 - `vtrn2_p8`
@@ -3739,7 +3800,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vtrn2_u16`
 - `vtrn2_u32`
 - `vtrn2_u8`
-- `vtrn2q_f16`
 - `vtrn2q_f32`
 - `vtrn2q_f64`
 - `vtrn2q_p16`
@@ -3753,7 +3813,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vtrn2q_u32`
 - `vtrn2q_u64`
 - `vtrn2q_u8`
-- `vtrn_f16`
 - `vtrn_f32`
 - `vtrn_p16`
 - `vtrn_p8`
@@ -3763,7 +3822,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vtrn_u16`
 - `vtrn_u32`
 - `vtrn_u8`
-- `vtrnq_f16`
 - `vtrnq_f32`
 - `vtrnq_p16`
 - `vtrnq_p8`
@@ -3809,14 +3867,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vuqaddq_s64`
 - `vuqaddq_s8`
 - `vuqadds_s32`
-- `vusdot_lane_s32`
-- `vusdot_laneq_s32`
-- `vusdot_s32`
-- `vusdotq_lane_s32`
-- `vusdotq_laneq_s32`
-- `vusdotq_s32`
-- `vusmmlaq_s32`
-- `vuzp1_f16`
 - `vuzp1_f32`
 - `vuzp1_p16`
 - `vuzp1_p8`
@@ -3826,7 +3876,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vuzp1_u16`
 - `vuzp1_u32`
 - `vuzp1_u8`
-- `vuzp1q_f16`
 - `vuzp1q_f32`
 - `vuzp1q_f64`
 - `vuzp1q_p16`
@@ -3840,7 +3889,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vuzp1q_u32`
 - `vuzp1q_u64`
 - `vuzp1q_u8`
-- `vuzp2_f16`
 - `vuzp2_f32`
 - `vuzp2_p16`
 - `vuzp2_p8`
@@ -3850,7 +3898,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vuzp2_u16`
 - `vuzp2_u32`
 - `vuzp2_u8`
-- `vuzp2q_f16`
 - `vuzp2q_f32`
 - `vuzp2q_f64`
 - `vuzp2q_p16`
@@ -3864,7 +3911,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vuzp2q_u32`
 - `vuzp2q_u64`
 - `vuzp2q_u8`
-- `vuzp_f16`
 - `vuzp_f32`
 - `vuzp_p16`
 - `vuzp_p8`
@@ -3874,7 +3920,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vuzp_u16`
 - `vuzp_u32`
 - `vuzp_u8`
-- `vuzpq_f16`
 - `vuzpq_f32`
 - `vuzpq_p16`
 - `vuzpq_p8`
@@ -3884,7 +3929,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vuzpq_u16`
 - `vuzpq_u32`
 - `vuzpq_u8`
-- `vzip1_f16`
 - `vzip1_f32`
 - `vzip1_p16`
 - `vzip1_p8`
@@ -3894,7 +3938,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vzip1_u16`
 - `vzip1_u32`
 - `vzip1_u8`
-- `vzip1q_f16`
 - `vzip1q_f32`
 - `vzip1q_f64`
 - `vzip1q_p16`
@@ -3908,7 +3951,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vzip1q_u32`
 - `vzip1q_u64`
 - `vzip1q_u8`
-- `vzip2_f16`
 - `vzip2_f32`
 - `vzip2_p16`
 - `vzip2_p8`
@@ -3918,7 +3960,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vzip2_u16`
 - `vzip2_u32`
 - `vzip2_u8`
-- `vzip2q_f16`
 - `vzip2q_f32`
 - `vzip2q_f64`
 - `vzip2q_p16`
@@ -3932,7 +3973,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vzip2q_u32`
 - `vzip2q_u64`
 - `vzip2q_u8`
-- `vzip_f16`
 - `vzip_f32`
 - `vzip_p16`
 - `vzip_p8`
@@ -3942,7 +3982,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vzip_u16`
 - `vzip_u32`
 - `vzip_u8`
-- `vzipq_f16`
 - `vzipq_f32`
 - `vzipq_p16`
 - `vzipq_p8`
@@ -3955,10 +3994,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 
 ### Store
 
-- `vst1_f16` (unsafe)
-- `vst1_f16_x2` (unsafe)
-- `vst1_f16_x3` (unsafe)
-- `vst1_f16_x4` (unsafe)
 - `vst1_f32` (unsafe)
 - `vst1_f32_x2` (unsafe)
 - `vst1_f32_x3` (unsafe)
@@ -4020,10 +4055,6 @@ Based on Rust 1.96 stdarch. Regenerate: `cargo xtask generate`
 - `vst1_u8_x2` (unsafe)
 - `vst1_u8_x3` (unsafe)
 - `vst1_u8_x4` (unsafe)
-- `vst1q_f16` (unsafe)
-- `vst1q_f16_x2` (unsafe)
-- `vst1q_f16_x3` (unsafe)
-- `vst1q_f16_x4` (unsafe)
 - `vst1q_f32` (unsafe)
 - `vst1q_f32_x2` (unsafe)
 - `vst1q_f32_x3` (unsafe)

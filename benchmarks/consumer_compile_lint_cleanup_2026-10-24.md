@@ -60,15 +60,15 @@ difference. Raw data: [final](consumer_compile_lint_cleanup_2026-10-24.json),
 
 ## Method
 
-- Intel Core Ultra 7 265K (`i265`), idle (load 0.03 before each phase),
+- Intel Core Ultra 7 265K (`core-ultra-265k`), idle (load 0.03 before each phase),
   Rust 1.99.0, eight Cargo jobs, serial runs under
-  `run-heavy --mem 16G --jobs 8` (check 106 s, peak RSS 0.86 GiB, peak load
+  `cargo` (check 106 s, peak RSS 0.86 GiB, peak load
   1.29; release 211 s, peak RSS 1.16 GiB, peak load 2.66).
 - Same harness, pinned consumer sources and normalization as the
   [beta study](consumer_compile_beta_2026-10-10.md): zenav1-svt `224c6bbb`,
   rav1d-safe `5b51b144`, magetypes standalone. Fresh target directory per run,
   incremental and compiler wrappers off, no target-cpu override.
-- `just consumer-compile OUT prepare --sources ~/tmp/attune-consumer-cold/sources
+- `just consumer-compile OUT prepare --sources <scratch>/attune-consumer-cold/sources
   --baseline da0ed5de --candidate 0d50cb13`, then `check`, `release`, `report`.
-  Logs and Cargo timing HTML: `~/tmp/compile-20261024b/` on i265 (interim run:
-  `~/tmp/compile-20261024/`).
+  Logs and Cargo timing HTML: `<scratch>/compile-20261024b/` on core-ultra-265k (interim run:
+  `<scratch>/compile-20261024/`).

@@ -6,6 +6,7 @@ use archmage::prelude::*;
 )]
 #[inline]
 fn probe<'a, U: Copy, const N: usize>(token: X64V3Token, xs: &'a [U; N]) -> &'a [U; N] {
+    let _: () = <X64V3Token>::__ARCHMAGE_ASSERT_TIER_F38B284B;
     let _ = token;
     xs
 }

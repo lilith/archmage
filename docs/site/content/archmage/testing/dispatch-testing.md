@@ -74,6 +74,6 @@ tails, explicit stride/length policy, integer extremes, NaNs/infinities/signed
 zeros where relevant, and the algorithm's floating-point tolerance. Separate
 compile success, numerical correctness, and optimized codegen claims.
 
-`python3 xtask/check_docs.py` compiles and runs the website's Rust fences directly.
-This prevents a stale Markdown example from being hidden by a corrected copy in
-a test file. Syntax-only reference notation uses text rather than Rust fences.
+The Rust fences on the website follow standalone doctest conventions rather than
+hiding imports or helper definitions. Syntax-only reference notation uses text
+rather than Rust fences.

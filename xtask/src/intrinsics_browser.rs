@@ -549,8 +549,7 @@ pub fn generate_intrinsics_browser(reg: &Registry) -> Result<()> {
     let csv_path = PathBuf::from("docs/intrinsics/complete_intrinsics.csv");
     let content = fs::read_to_string(&csv_path).with_context(|| {
         format!(
-            "Failed to read {}. Run: python3 xtask/extract_intrinsics.py > {}",
-            csv_path.display(),
+            "Failed to read {}. Run: cargo run -p xtask -- intrinsics-refresh",
             csv_path.display()
         )
     })?;

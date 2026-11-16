@@ -18,7 +18,7 @@
   "environment": {
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
     "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
-    "host": "i265",
+    "host": "core-ultra-265k",
     "incremental": false,
     "rustflags": "",
     "compiler_cache": false,
@@ -58,7 +58,7 @@
     "check": "cargo --config CASE_CONFIG check --frozen --lib -p PACKAGE --timings",
     "release": "cargo --config CASE_CONFIG build --frozen --lib -p PACKAGE --timings --release"
   },
-  "logs": "/home/lilith/tmp/compile-20261024b/run",
+  "logs": "<scratch>/compile-20261024b/run",
   "summary": [
     {
       "workload": "magetypes",
@@ -740,7 +740,7 @@
     ]
   ],
   "run_heavy": {
-    "check": "run-heavy: done rc=0 106s | peak-RSS 0.86GiB | min-avail 19747MiB | peak-load 1.29",
-    "release": "run-heavy: done rc=0 211s | peak-RSS 1.16GiB | min-avail 19634MiB | peak-load 2.66"
+    "check": "run summary: rc=0 106s | peak-RSS 0.86GiB | min-avail 19747MiB | peak-load 1.29",
+    "release": "run summary: rc=0 211s | peak-RSS 1.16GiB | min-avail 19634MiB | peak-load 2.66"
   }
 }

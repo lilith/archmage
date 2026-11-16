@@ -2,9 +2,7 @@
 //! The generator selects the concrete token. Suppression removes only the
 //! redundant name check; rustc still checks intrinsic feature requirements.
 pub(super) fn arcane(token: &str) -> String {
-    // Only registry-selected concrete tokens reach this generator. Suppression
-    // removes a redundant name-mismatch guard, not intrinsic feature checking.
-    format!("#[arcane(suppress_const_test, _self = {token})]")
+    format!("#[arcane(_self = {token})]")
 }
 
 /// SSE/SSE2 are baseline x86-64 features. Do not create an AVX boundary for
@@ -28,7 +26,7 @@ macro_rules! sse2_baseline {
     (fn $name:ident(self, $($arg:ident: $ty:ty),* $(,)?) -> $ret:ty $body:block) => {
         #[inline(always)]
         fn $name(self, $($arg: $ty),*) -> $ret {
-            #[archmage::arcane(suppress_const_test)]
+            #[archmage::arcane]
             fn inner(_token: archmage::X64V1Token, $($arg: $ty),*) -> $ret $body
             inner(self.v1(), $($arg),*)
         }
@@ -62,10 +60,7 @@ mod tests {
         let files = super::super::backend_gen::generate_backend_files();
         for file in ["impls/x86_v3.rs", "impls/x86_v4.rs", "impls/arm_neon.rs"] {
             let source = &files[file];
-            assert!(
-                source.contains("#[arcane(suppress_const_test, _self = "),
-                "{file}"
-            );
+            assert!(source.contains("#[arcane(_self = "), "{file}");
             // A representative pure intrinsic must no longer need an unsafe block.
             assert!(!source.contains("unsafe { _mm_add_ps"), "{file}");
             assert!(!source.contains("unsafe { vaddq_f32"), "{file}");

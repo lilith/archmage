@@ -190,6 +190,8 @@ fn duplicate_options_and_unknown_syntax_never_silently_overwrite() {
         assert!(error.to_string().contains("duplicate"), "{source}: {error}");
     }
     for source in [
+        "suppress_const_test",
+        "wrap, suppress_const_test",
         "__v3",
         "__v3_t",
         "_v3(magic)",

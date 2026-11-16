@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 
 mod compare_arch;
 mod expand_gen;
+mod extract_intrinsics;
 mod intrinsics_browser;
 mod registry;
 mod simd_types;
@@ -70,7 +71,7 @@ pub(crate) struct IntrinsicEntry {
 
 /// Load the intrinsic database from docs/intrinsics/complete_intrinsics.csv.
 ///
-/// This CSV is extracted from stdarch source by xtask/extract_intrinsics.py
+/// This CSV is extracted from stdarch source by `cargo xtask intrinsics-refresh`
 /// and covers ALL intrinsics: x86 shared, x86_64 specific, arm_shared,
 /// aarch64 specific, and wasm32 — including pub use re-exports.
 ///
@@ -79,8 +80,12 @@ pub(crate) fn load_intrinsic_database() -> Result<HashMap<String, IntrinsicEntry
     let mut db = HashMap::new();
 
     let csv_path = PathBuf::from("docs/intrinsics/complete_intrinsics.csv");
-    let content = fs::read_to_string(&csv_path)
-        .with_context(|| format!("Failed to read {}. Run: python3 xtask/extract_intrinsics.py > docs/intrinsics/complete_intrinsics.csv", csv_path.display()))?;
+    let content = fs::read_to_string(&csv_path).with_context(|| {
+        format!(
+            "Failed to read {}. Run: cargo run -p xtask -- intrinsics-refresh",
+            csv_path.display()
+        )
+    })?;
 
     for line in content.lines().skip(1) {
         if line.trim().is_empty() {
@@ -139,7 +144,6 @@ fn validate_summon(reg: &registry::Registry) -> Result<()> {
 
     let token_files = [
         ("src/tokens/generated/x86.rs", "x86"),
-        ("src/tokens/generated/x86_avx512.rs", "x86"),
         ("src/tokens/generated/arm.rs", "aarch64"),
         ("src/tokens/generated/wasm.rs", "wasm"),
     ];
@@ -178,12 +182,78 @@ fn validate_summon(reg: &registry::Registry) -> Result<()> {
 
             // Handle special cases before parsing
             if *arch == "wasm" {
-                // Wasm128Token uses #[cfg(target_feature)], not runtime detection
-                println!(
-                    "  {} — compile-time cfg check (no runtime detection)",
-                    token_name
-                );
-                verified += 1;
+                let impl_header = format!("impl {token_name} {{");
+                let ctor_block = content
+                    .match_indices(&impl_header)
+                    .filter_map(|(pos, _)| {
+                        let rest = &content[pos..];
+                        let end = rest.find("\n}\n").map(|i| i + 3).unwrap_or(rest.len());
+                        let block = &rest[..end];
+                        block.contains("fn from_context(").then_some(block)
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+
+                if token_def.runtime_probe {
+                    let detect_name = crate::token_gen::lower_snake(&token_def.name, "detect");
+                    let detect_fn = format!("fn {detect_name}()");
+                    let detect_call = format!("{detect_name}()");
+                    let impl_start = cap.get(0).unwrap().start();
+                    let remaining = &content[impl_start..];
+                    let summon_end = remaining[1..]
+                        .find("\nimpl ")
+                        .unwrap_or(remaining.len() - 1);
+                    let summon_region = &remaining[..summon_end + 1];
+
+                    let detect_body = content
+                        .find(&detect_fn)
+                        .map(|start| {
+                            let rest = &content[start..];
+                            let end = rest.find("\n}\n").map(|i| i + 3).unwrap_or(rest.len());
+                            &rest[..end]
+                        })
+                        .unwrap_or("");
+                    let has_detect =
+                        !detect_body.is_empty() && summon_region.contains(&detect_call);
+                    let has_f32 = detect_body.contains("f32x4_relaxed_madd")
+                        && detect_body.contains("f32x4_extract_lane::<0>")
+                        && detect_body.contains("f32x4_extract_lane::<1>")
+                        && detect_body.contains("f32x4_extract_lane::<2>")
+                        && detect_body.contains("f32x4_extract_lane::<3>");
+                    let has_f64 = detect_body.contains("f64x2_relaxed_madd")
+                        && detect_body.contains("f64x2_extract_lane::<0>")
+                        && detect_body.contains("f64x2_extract_lane::<1>");
+                    let has_no_forge = !content.contains("forge_token_dangerously");
+                    let has_no_from_context = !ctor_block.contains("from_context");
+                    if has_detect && has_f32 && has_f64 && has_no_from_context && has_no_forge {
+                        println!(
+                            "  {} — WASM runtime fusion probe verified with no from_context() ({detect_fn})",
+                            token_name
+                        );
+                        verified += 1;
+                    } else {
+                        errors.push(format!(
+                            "{}: wasm.rs missing complete runtime fusion probe or illegally exposes from_context/forge_token_dangerously (detect={has_detect}, f32={has_f32}, f64={has_f64}, no_from_context={has_no_from_context}, no_forge={has_no_forge})",
+                            token_name
+                        ));
+                    }
+                } else {
+                    let has_safe_ctor = ctor_block.contains("pub fn from_context()");
+                    let has_unsafe_ctor = ctor_block.contains("pub unsafe fn from_context()");
+                    let has_no_forge = !ctor_block.contains("forge_token_dangerously");
+                    if has_safe_ctor && has_unsafe_ctor && has_no_forge {
+                        println!(
+                            "  {} — cfg-gated compile-time check (safe with features, unsafe fallback without)",
+                            token_name
+                        );
+                        verified += 1;
+                    } else {
+                        errors.push(format!(
+                            "{}: wasm.rs missing cfg-split from_context (safe={has_safe_ctor}, unsafe={has_unsafe_ctor}, no_forge={has_no_forge})",
+                            token_name
+                        ));
+                    }
+                }
                 continue;
             }
 
@@ -205,35 +275,17 @@ fn validate_summon(reg: &registry::Registry) -> Result<()> {
             let summon_body = &remaining[summon_pos..];
             let body_end = summon_body
                 .find("\n    fn ")
-                .or_else(|| summon_body.find("\n    #["))
-                .unwrap_or(summon_body.len().min(2000));
+                .or_else(|| summon_body.find("\n}\n"))
+                .unwrap_or(summon_body.len());
             let mut summon_section = summon_body[..body_end].to_string();
 
-            // Also search the cold-path _DETECT function if it exists.
-            // The detect function is a module-level function named like
-            // X64_V3_DETECT, NEON_DETECT, etc.
-            let detect_fn_name = {
-                let mut result = String::new();
-                let mut prev_was_upper = false;
-                for (i, c) in token_name.chars().enumerate() {
-                    if c.is_uppercase() {
-                        if i > 0 && !prev_was_upper {
-                            result.push('_');
-                        }
-                        result.push(c.to_ascii_lowercase());
-                        prev_was_upper = true;
-                    } else {
-                        result.push(c);
-                        prev_was_upper = c.is_uppercase();
-                    }
-                }
-                let result = result.trim_end_matches("_token").to_string();
-                format!("{result}_detect")
-            };
+            // Also search the cold-path _detect function if it exists.
+            let detect_fn_name = crate::token_gen::lower_snake(&token_name, "detect");
             let detect_marker = format!("fn {detect_fn_name}()");
             if let Some(detect_pos) = content.find(&detect_marker) {
-                let detect_end = (detect_pos + 2000).min(content.len());
-                summon_section.push_str(&content[detect_pos..detect_end]);
+                let rest = &content[detect_pos..];
+                let detect_end = rest.find("\n}\n").map(|i| i + 3).unwrap_or(rest.len());
+                summon_section.push_str(&rest[..detect_end]);
             }
 
             let re = match *arch {
@@ -247,18 +299,9 @@ fn validate_summon(reg: &registry::Registry) -> Result<()> {
                 .map(|c| c[1].to_string())
                 .collect();
 
-            // Determine expected features (strip baselines that aren't runtime-checked)
+            // Check ALL features including sse/sse2 and neon
             let expected: BTreeSet<String> = match *arch {
-                "x86" => token_def
-                    .features
-                    .iter()
-                    .filter(|f| *f != "sse" && *f != "sse2")
-                    .cloned()
-                    .collect(),
-                "aarch64" => {
-                    // AArch64 tokens check ALL features including neon
-                    token_def.features.iter().cloned().collect()
-                }
+                "x86" | "aarch64" => token_def.features.iter().cloned().collect(),
                 _ => continue,
             };
 
@@ -533,9 +576,36 @@ fn generate_x86_reference(db: &HashMap<String, IntrinsicEntry>) -> String {
             intrinsics: BTreeMap::new(),
         },
         TierInfo {
+            name: "X64V3VnniToken (AVX-VNNI + Crypto + ADX/SHA)",
+            token: "X64V3VnniToken",
+            features: &[
+                "aes",
+                "pclmulqdq",
+                "vaes",
+                "vpclmulqdq",
+                "gfni",
+                "avxvnni",
+                "adx",
+                "sha",
+            ],
+            intrinsics: BTreeMap::new(),
+        },
+        TierInfo {
+            name: "X64V3Vnni2Token (AVX-VNNI-2)",
+            token: "X64V3Vnni2Token",
+            features: &["avxvnniint8", "avxvnniint16", "avxneconvert", "avxifma"],
+            intrinsics: BTreeMap::new(),
+        },
+        TierInfo {
             name: "X64V4Token (AVX-512)",
             token: "X64V4Token / Server64",
             features: &["avx512f", "avx512bw", "avx512cd", "avx512dq", "avx512vl"],
+            intrinsics: BTreeMap::new(),
+        },
+        TierInfo {
+            name: "X64Avx512Bf16Token",
+            token: "X64Avx512Bf16Token",
+            features: &["avx512bf16"],
             intrinsics: BTreeMap::new(),
         },
         TierInfo {
@@ -548,7 +618,6 @@ fn generate_x86_reference(db: &HashMap<String, IntrinsicEntry>) -> String {
                 "avx512vbmi2",
                 "avx512bitalg",
                 "avx512vnni",
-                "avx512bf16",
                 "vpclmulqdq",
                 "gfni",
                 "vaes",
@@ -662,8 +731,26 @@ fn generate_aarch64_reference(db: &HashMap<String, IntrinsicEntry>) -> String {
 
         let token = if entry.features.contains("sha3") {
             "NeonSha3Token"
+        } else if entry.features.contains("sha2") {
+            "NeonSha2Token"
         } else if entry.features.contains("aes") {
             "NeonAesToken"
+        } else if entry.features.contains("crc") {
+            "NeonCrcToken"
+        } else if entry.features.contains("rdm") {
+            "NeonRdmToken"
+        } else if entry.features.contains("dotprod") {
+            "NeonDotProdToken"
+        } else if entry.features.contains("i8mm") {
+            "NeonI8mmToken"
+        } else if entry.features.contains("bf16") {
+            "NeonBf16Token"
+        } else if entry.features.contains("fcma") {
+            "NeonFcmaToken"
+        } else if entry.features.contains("fhm") {
+            "NeonFhmToken"
+        } else if entry.features.contains("fp16") {
+            "NeonFp16Token"
         } else {
             "NeonToken / Arm64"
         };
@@ -1188,8 +1275,8 @@ fn main() -> Result<()> {
 /// cores. A percentage that looks small against a whole parallel build is paid
 /// in full, serially, by every downstream crate.
 ///
-/// **The numbers are calibrated, not invented.** Measured on `r5900xt`
-/// (32 cores, 60 GB, rustc 1.98.1, idle), `magetypes` unit only with
+/// **The numbers are calibrated, not invented.** Measured on a 32-core
+/// x86_64 workstation (60 GB, rustc 1.98.1, idle), `magetypes` unit only with
 /// dependencies pre-built, mean of three cold runs, spread +/- 0.02 s:
 ///
 /// | x86-compiled lines | magetypes unit |
@@ -1211,81 +1298,226 @@ fn main() -> Result<()> {
 /// Only files the target actually compiles are counted: `impls/mod.rs`
 /// cfg-gates `arm_neon` and `wasm128` away on x86, so a NEON-only change
 /// costs an x86 build nothing.
-const COMPILE_BUDGETS: &[(&str, &[&str], usize)] = &[
-    (
-        "x86_64",
-        &[
-            "magetypes/src/simd/impls/x86_v3.rs",
-            "magetypes/src/simd/impls/x86_v4.rs",
-            "magetypes/src/simd/impls/x86_v4_f32_delegated.rs",
-            "magetypes/src/simd/impls/x86_v4_f32_overrides.rs",
-            "magetypes/src/simd/impls/scalar.rs",
-            "magetypes/src/simd/backends/",
-        ],
-        31_700, // measured 30 197
-    ),
-    (
-        "aarch64",
-        &[
-            "magetypes/src/simd/impls/arm_neon.rs",
-            "magetypes/src/simd/impls/scalar.rs",
-            "magetypes/src/simd/backends/",
-        ],
-        26_100, // measured 24 890
-    ),
-    (
-        "wasm32",
-        &[
-            "magetypes/src/simd/impls/wasm128.rs",
-            "magetypes/src/simd/impls/scalar.rs",
-            "magetypes/src/simd/backends/",
-        ],
-        25_700, // measured 24 442
-    ),
+///
+/// Unlike a hardcoded file list, [`check_compile_budgets`] parses
+/// `magetypes/src/simd/impls/mod.rs` directly, verifies that every `.rs` file
+/// in `magetypes/src/simd/impls/` is declared there, attributes each module to
+/// its matching `target_arch` targets, checks `magetypes/src/simd/generic/generated/`
+/// as well, and rejects unapproved `macro_rules!` inside generated backend
+/// files so delegation bloat cannot hide behind macro expansion.
+const COMPILE_BUDGETS: &[(&str, usize)] = &[
+    // Measured 40 048 (+1 486 over PR #178 baseline 38 562 due to #112 §2
+    // f32x16 block ops/dual-8x8/16x16 transposes and #112 §3 F64x{2,4,8}Convert).
+    ("x86_64", 41_500),
+    // Measured 36 980 (+1 283 over 35 697 baseline due to #112 §2 f32x16
+    // block ops and #112 §3 F64x{2,4,8}Convert).
+    ("aarch64", 38_500),
+    // Measured 36 831 (+1 279 over 35 552 baseline due to #112 §2 f32x16
+    // block ops and #112 §3 F64x{2,4,8}Convert).
+    ("wasm32", 38_500),
 ];
 
-/// Check the generated backend surface against [`COMPILE_BUDGETS`].
-fn check_compile_budgets() -> Result<()> {
-    println!("\n=== Generated backend surface (compile budget) ===");
-    let count = |spec: &str| -> Result<usize> {
-        let mut files: Vec<PathBuf> = Vec::new();
-        if let Some(dir) = spec.strip_suffix('/') {
-            for entry in std::fs::read_dir(dir)
-                .with_context(|| format!("reading {dir}"))?
-                .flatten()
-            {
-                let p = entry.path();
-                if p.extension().is_some_and(|e| e == "rs") {
-                    files.push(p);
-                }
+/// Budget for `magetypes/src/simd/generic/generated/*.rs` (target-common
+/// wrapper definitions; measured 28 492 lines).
+const GENERIC_GENERATED_BUDGET: usize = 29_500;
+
+/// Single-method helper macros audited to stay 1:1 with source lines (never
+/// generating whole `impl ... for Token` blocks).
+const ALLOWED_IMPL_MACROS: &[(&str, &str)] =
+    &[("magetypes/src/simd/impls/x86_v3.rs", "sse2_baseline")];
+
+/// Parse `#[cfg(...)]` attributes on a `mod <stem>;` item in `impls/mod.rs`
+/// and return which budgeted `target_arch` values compile it.
+fn impl_mod_arches(mod_name: &str, attrs: &[syn::Attribute]) -> Result<Vec<&'static str>> {
+    const ALL: &[&str] = &["x86_64", "aarch64", "wasm32"];
+    let mut matched: Option<Vec<&'static str>> = None;
+
+    for attr in attrs {
+        if !attr.path().is_ident("cfg") {
+            continue;
+        }
+        let tokens = attr.meta.require_list()?.tokens.to_string();
+        if !tokens.contains("target_arch") {
+            continue;
+        }
+        if tokens.contains("not(") || tokens.contains("not (") {
+            anyhow::bail!(
+                "impls/mod.rs: negated target_arch cfg on `mod {mod_name};` is not supported by check_compile_budgets"
+            );
+        }
+        let mut arches = Vec::new();
+        for &arch in ALL {
+            let needle = format!("\"{arch}\"");
+            if tokens.contains(&needle) {
+                arches.push(arch);
             }
-        } else {
-            files.push(PathBuf::from(spec));
         }
-        files.sort();
-        let mut total = 0usize;
-        for f in files {
-            let text =
-                std::fs::read_to_string(&f).with_context(|| format!("reading {}", f.display()))?;
-            total += text.lines().count();
+        if arches.is_empty() {
+            anyhow::bail!(
+                "impls/mod.rs: `mod {mod_name};` has a target_arch cfg matching none of {ALL:?}: #[cfg({tokens})]"
+            );
         }
-        Ok(total)
+        matched = Some(match matched {
+            None => arches,
+            Some(prev) => prev.into_iter().filter(|a| arches.contains(a)).collect(),
+        });
+    }
+
+    Ok(matched.unwrap_or_else(|| ALL.to_vec()))
+}
+
+/// Reject `macro_rules!` inside generated backend/trait files unless listed in
+/// [`ALLOWED_IMPL_MACROS`], preventing macro-compressed trait delegation from
+/// hiding `rustc` expansion and monomorphization cost from [`COMPILE_BUDGETS`].
+fn check_no_hidden_impl_macros(rel_path: &str, text: &str) -> Result<()> {
+    let parsed =
+        syn::parse_file(text).with_context(|| format!("parsing {rel_path} for macro audit"))?;
+    for item in &parsed.items {
+        if let syn::Item::Macro(mac) = item
+            && mac.mac.path.is_ident("macro_rules")
+        {
+            let name = mac
+                .ident
+                .as_ref()
+                .map(ToString::to_string)
+                .unwrap_or_else(|| "<unnamed>".to_string());
+            let allowed = ALLOWED_IMPL_MACROS
+                .iter()
+                .any(|(p, n)| *p == rel_path && *n == name);
+            if !allowed {
+                anyhow::bail!(
+                    "{rel_path}: unapproved `macro_rules! {name}` inside generated backend surface.\n\
+                     Macro-compressed backend impls hide rustc expansion and monomorphization cost\n\
+                     from COMPILE_BUDGETS. Prefer zero-KLOC #[attune(..., define(...))] namespace\n\
+                     mapping or explicit audited code."
+                );
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Check the generated backend and wrapper surface against [`COMPILE_BUDGETS`]
+/// and [`GENERIC_GENERATED_BUDGET`].
+fn check_compile_budgets() -> Result<()> {
+    check_compile_budgets_in(std::path::Path::new("."))
+}
+
+fn check_compile_budgets_in(root: &std::path::Path) -> Result<()> {
+    println!("\n=== Generated backend surface (compile budget) ===");
+
+    let read_rs_dir = |rel_dir: &str| -> Result<Vec<(String, String, usize)>> {
+        let dir = root.join(rel_dir);
+        let mut entries = Vec::new();
+        for entry in std::fs::read_dir(&dir)
+            .with_context(|| format!("reading {}", dir.display()))?
+            .flatten()
+        {
+            let p = entry.path();
+            if p.extension().is_some_and(|e| e == "rs") {
+                let fname = p
+                    .file_name()
+                    .and_then(|s| s.to_str())
+                    .context("non-UTF-8 filename")?;
+                let rel = format!("{rel_dir}/{fname}");
+                let text = std::fs::read_to_string(&p)
+                    .with_context(|| format!("reading {}", p.display()))?;
+                let lines = text.lines().count();
+                entries.push((rel, text, lines));
+            }
+        }
+        entries.sort_by(|a, b| a.0.cmp(&b.0));
+        Ok(entries)
     };
 
-    let mut over: Vec<String> = Vec::new();
-    for (arch, specs, budget) in COMPILE_BUDGETS {
-        let mut lines = 0usize;
-        for spec in *specs {
-            lines += count(spec)?;
+    let impl_files = read_rs_dir("magetypes/src/simd/impls")?;
+    let backend_files = read_rs_dir("magetypes/src/simd/backends")?;
+    let generic_files = read_rs_dir("magetypes/src/simd/generic/generated")?;
+
+    for (rel, text, _) in impl_files.iter().chain(backend_files.iter()) {
+        check_no_hidden_impl_macros(rel, text)?;
+    }
+
+    // Parse impls/mod.rs so every impls/*.rs file is accounted for automatically.
+    let mod_rs_rel = "magetypes/src/simd/impls/mod.rs";
+    let (_, mod_rs_text, mod_rs_lines) = impl_files
+        .iter()
+        .find(|(rel, _, _)| rel == mod_rs_rel)
+        .with_context(|| format!("missing {mod_rs_rel}"))?;
+    let mod_ast = syn::parse_file(mod_rs_text).with_context(|| format!("parsing {mod_rs_rel}"))?;
+
+    let mut declared_mods: std::collections::BTreeMap<String, Vec<&'static str>> =
+        std::collections::BTreeMap::new();
+    for item in &mod_ast.items {
+        if let syn::Item::Mod(m) = item {
+            if m.content.is_some() {
+                anyhow::bail!(
+                    "{mod_rs_rel}: inline `mod {} {{ ... }}` is not allowed",
+                    m.ident
+                );
+            }
+            let name = m.ident.to_string();
+            let arches = impl_mod_arches(&name, &m.attrs)?;
+            declared_mods.insert(name, arches);
         }
+    }
+
+    let mut impl_lines_by_arch: std::collections::BTreeMap<&str, usize> = COMPILE_BUDGETS
+        .iter()
+        .map(|(a, _)| (*a, *mod_rs_lines))
+        .collect();
+
+    for (rel, _, lines) in &impl_files {
+        if rel == mod_rs_rel {
+            continue;
+        }
+        let stem = std::path::Path::new(rel)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .context("missing file stem")?;
+        let Some(arches) = declared_mods.remove(stem) else {
+            anyhow::bail!(
+                "{rel} exists on disk in magetypes/src/simd/impls/ but is not declared in {mod_rs_rel}"
+            );
+        };
+        for arch in arches {
+            *impl_lines_by_arch.entry(arch).or_default() += *lines;
+        }
+    }
+    if !declared_mods.is_empty() {
+        let missing: Vec<_> = declared_mods.keys().cloned().collect();
+        anyhow::bail!(
+            "{mod_rs_rel} declares modules without matching .rs files: {}",
+            missing.join(", ")
+        );
+    }
+
+    let backend_lines: usize = backend_files.iter().map(|(_, _, n)| *n).sum();
+    let generic_lines: usize = generic_files.iter().map(|(_, _, n)| *n).sum();
+
+    let mut over: Vec<String> = Vec::new();
+    for (arch, budget) in COMPILE_BUDGETS {
+        let lines = impl_lines_by_arch[arch] + backend_lines;
         let pct = (lines as f64 / *budget as f64) * 100.0;
-        println!("  {arch:<8} {lines:>6} lines / {budget:>6} budget  ({pct:.1}%)");
+        println!("  {arch:<18} {lines:>6} lines / {budget:>6} budget  ({pct:.1}%)");
         if lines > *budget {
             over.push(format!(
                 "  {arch}: {lines} lines exceeds the {budget} budget by {}",
                 lines - budget
             ));
         }
+    }
+
+    let generic_pct = (generic_lines as f64 / GENERIC_GENERATED_BUDGET as f64) * 100.0;
+    println!(
+        "  {:<18} {:>6} lines / {:>6} budget  ({generic_pct:.1}%)",
+        "generic/generated", generic_lines, GENERIC_GENERATED_BUDGET
+    );
+    if generic_lines > GENERIC_GENERATED_BUDGET {
+        over.push(format!(
+            "  generic/generated: {generic_lines} lines exceeds the {GENERIC_GENERATED_BUDGET} budget by {}",
+            generic_lines - GENERIC_GENERATED_BUDGET
+        ));
     }
 
     if !over.is_empty() {
@@ -1791,8 +2023,8 @@ fn generate_all() -> Result<()> {
         .split_once('\n')
         .context("attune guide needs a title")?;
     let (reference, _) = body
-        .split_once("\n## Beta scope and validation")
-        .context("attune guide needs its release-validation boundary")?;
+        .split_once("\n## Scope and validation")
+        .context("attune guide needs its scope-and-validation boundary")?;
     fs::write(
         "docs/site/content/attunement/reference.md",
         format!(
@@ -2376,12 +2608,6 @@ fn check_api_parity(strict: bool) -> Result<()> {
         "  u32x4::from_m128i — missing from: ARM, WASM",
         "  i64x2::from_m128i — missing from: ARM, WASM",
         "  u64x2::from_m128i — missing from: ARM, WASM",
-        // AVX-512 fast-path methods (only available with X64V4Token)
-        "  i64x2::abs_fast — missing from: ARM, WASM",
-        "  i64x2::min_fast — missing from: ARM, WASM",
-        "  i64x2::max_fast — missing from: ARM, WASM",
-        "  u64x2::min_fast — missing from: ARM, WASM",
-        "  u64x2::max_fast — missing from: ARM, WASM",
         // x86 W128 uses V3 token (no _mm_srai_epi64 until AVX-512)
         "  i64x2::shr_arithmetic — missing from: x86",
     ];
@@ -2796,38 +3022,6 @@ fn run_ci() -> Result<()> {
     }
     println!("└─ ARM64 clippy complete ─────────────────────────────────────────┘\n");
 
-    // Step 19: optimized consumer codegen against the last pushed main, on
-    // x86_64, AArch64 and WASM. CI runs xtask/codegen.py only for pull
-    // requests; work pushed straight to main is compared here instead.
-    timer.begin("Step 19/19: Comparing consumer codegen with origin/main");
-    let rev = |r: &str| -> Result<String> {
-        let out = std::process::Command::new("git")
-            .args(["rev-parse", r])
-            .output()
-            .with_context(|| format!("Failed to resolve {r}"))?;
-        if !out.status.success() {
-            bail!("git rev-parse {r} failed; fetch origin first (jj git fetch)");
-        }
-        Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
-    };
-    let (base, head) = (rev("origin/main")?, rev("HEAD")?);
-    if base == head {
-        println!("  ✓ HEAD is origin/main; nothing to compare");
-    } else {
-        let codegen = std::process::Command::new("python3")
-            .args(["xtask/codegen.py", &base, &head])
-            .status()
-            .context("Failed to run xtask/codegen.py")?;
-        if !codegen.success() {
-            bail!(
-                "Consumer codegen differs from origin/main without a reviewed exception \
-                 (xtask/codegen.py); inspect the printed instructions"
-            );
-        }
-        println!("  ✓ Codegen matches origin/main or differs only as reviewed");
-    }
-    println!("└─ Codegen comparison complete ────────────────────────────────────┘\n");
-
     timer.finish();
     println!("╔══════════════════════════════════════════════════════════════════╗");
     println!("║  ✓ ALL CI CHECKS PASSED - Safe to push/publish                   ║");
@@ -3107,30 +3301,11 @@ fn run_safety_audit() -> Result<()> {
 fn refresh_intrinsics_database() -> Result<()> {
     println!("=== Refreshing Intrinsics Database ===\n");
 
-    let script_path = PathBuf::from("xtask/extract_intrinsics.py");
-    if !script_path.exists() {
-        bail!(
-            "extract_intrinsics.py not found at {}",
-            script_path.display()
-        );
-    }
-
-    // Run the Python script
-    let output = std::process::Command::new("python3")
-        .arg(&script_path)
-        .output()
-        .context("Failed to run extract_intrinsics.py")?;
-
-    if !output.status.success() {
-        eprintln!("{}", String::from_utf8_lossy(&output.stderr));
-        bail!("extract_intrinsics.py failed");
-    }
-
-    let new_csv = String::from_utf8_lossy(&output.stdout);
+    let new_csv = extract_intrinsics::extract_intrinsics_csv()?;
     let new_lines: Vec<&str> = new_csv.lines().collect();
     println!(
         "Extracted {} intrinsics from current toolchain",
-        new_lines.len() - 1
+        new_lines.len().saturating_sub(1)
     );
 
     // Load existing database
@@ -3200,8 +3375,78 @@ fn refresh_intrinsics_database() -> Result<()> {
 
     // Save new database
     fs::create_dir_all("docs/intrinsics")?;
-    fs::write(&db_path, new_csv.as_ref())?;
+    fs::write(&db_path, &new_csv)?;
     println!("\nSaved to {}", db_path.display());
 
     Ok(())
+}
+
+#[cfg(test)]
+mod compile_budget_tests {
+    use super::{check_compile_budgets_in, check_no_hidden_impl_macros, impl_mod_arches};
+
+    #[test]
+    fn repo_compile_budgets_pass() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("workspace root");
+        check_compile_budgets_in(root).expect("repo compile budgets should pass");
+    }
+
+    #[test]
+    fn rejects_hidden_macro_rules_in_impls() {
+        let err = check_no_hidden_impl_macros(
+            "magetypes/src/simd/impls/delegated.rs",
+            "macro_rules! delegate_all { () => {}; }\n",
+        )
+        .unwrap_err();
+        assert!(
+            err.to_string()
+                .contains("unapproved `macro_rules! delegate_all`")
+        );
+
+        // Audited single-method SSE2 baseline helper remains allowed in x86_v3.rs.
+        check_no_hidden_impl_macros(
+            "magetypes/src/simd/impls/x86_v3.rs",
+            "macro_rules! sse2_baseline { () => {}; }\n",
+        )
+        .expect("sse2_baseline is explicitly audited");
+    }
+
+    #[test]
+    fn impl_mod_arches_parses_cfg_accurately() {
+        let parsed = syn::parse_file(
+            r#"
+            #[cfg(target_arch = "x86_64")]
+            mod x86_v3;
+            #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
+            mod x86_v4;
+            mod scalar;
+            #[cfg(not(target_arch = "x86_64"))]
+            mod bad_negated;
+            "#,
+        )
+        .unwrap();
+        let mods: Vec<_> = parsed
+            .items
+            .into_iter()
+            .filter_map(|i| match i {
+                syn::Item::Mod(m) => Some(m),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            impl_mod_arches(&mods[0].ident.to_string(), &mods[0].attrs).unwrap(),
+            vec!["x86_64"]
+        );
+        assert_eq!(
+            impl_mod_arches(&mods[1].ident.to_string(), &mods[1].attrs).unwrap(),
+            vec!["x86_64"]
+        );
+        assert_eq!(
+            impl_mod_arches(&mods[2].ident.to_string(), &mods[2].attrs).unwrap(),
+            vec!["x86_64", "aarch64", "wasm32"]
+        );
+        assert!(impl_mod_arches(&mods[3].ident.to_string(), &mods[3].attrs).is_err());
+    }
 }

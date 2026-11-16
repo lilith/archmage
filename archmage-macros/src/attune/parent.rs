@@ -81,9 +81,16 @@ impl Candidate {
                 let name = &pattern.ident;
                 let mut value = quote!(#name);
                 let mut ty = arg.ty.as_ref();
-                while let Type::Reference(reference) = ty {
-                    value = quote!(*(#value));
-                    ty = &reference.elem;
+                loop {
+                    match ty {
+                        Type::Reference(reference) => {
+                            value = quote!(*(#value));
+                            ty = &reference.elem;
+                        }
+                        Type::Paren(paren) => ty = &paren.elem,
+                        Type::Group(group) => ty = &group.elem,
+                        _ => break,
+                    }
                 }
                 if pattern.by_ref.is_some() {
                     value = quote!(*(#value));

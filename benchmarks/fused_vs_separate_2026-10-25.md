@@ -5,15 +5,15 @@ Interleaved zenbench comparison in one binary (`fused`: `mul_add` / std
 `mul_add`, one `vfmadd`; `separate`: `a * b + c`, a `vmul` and a `vadd`, checked
 in the disassembly), V3 kernels on `f32x8`, `f64x4` and scalar `f64` inside a
 V3 function, 1,024 operations per sample. Rust 1.99.0, release,
-`codegen-units=1`, CPU 2 pinned, under `run-heavy`. zenbench reported both runs
+`codegen-units=1`, CPU 2 pinned, in serialized benchmark runs. zenbench reported both runs
 reliable.
 
-- i265: Intel Core Ultra 7 265K (Lion Cove P-core).
-- r7900x: AMD Ryzen 9 7900X (Zen 4).
+- core-ultra-265k: Intel Core Ultra 7 265K (Lion Cove P-core).
+- zen4: AMD Ryzen 9 7900X (Zen 4).
 
 Separate time / fused time (95% paired CI where it matters):
 
-| Shape | i265 | r7900x |
+| Shape | core-ultra-265k | zen4 |
 |---|---:|---:|
 | Multiplicand chain `x = x * y + z` (Horner) | 1.58–1.61× | 1.50–1.56× |
 | Accumulator chain `acc = a[i] * b[i] + acc` | 0.49–0.58× | 0.78–0.80× |
@@ -32,4 +32,4 @@ Consequences: no single lowering of a "fastest" multiply-add wins everywhere;
 reductions with one or few accumulators are faster written as `a * b + acc`
 on these CPUs, and Horner-style chains as a fused multiply-add.
 
-Data: `/mnt/v/output/archmage/fma_vs_separate_2026-10-25/` on `dev`.
+Data: `<archive>/fma_vs_separate_2026-10-25/` in external archive.

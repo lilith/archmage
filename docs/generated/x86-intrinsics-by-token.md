@@ -891,6 +891,90 @@ Token: `X64V3Token`
 - `_mm_maskstore_pd` (unsafe)
 - `_mm_maskstore_ps` (unsafe)
 
+## X64V3VnniToken (AVX-VNNI + Crypto + ADX/SHA) (30 intrinsics)
+Token: `X64V3VnniToken`
+
+### Other
+
+- `_mm256_aesdec_epi128`
+- `_mm256_aesdeclast_epi128`
+- `_mm256_aesenc_epi128`
+- `_mm256_aesenclast_epi128`
+- `_mm256_clmulepi64_epi128`
+- `_mm256_dpbusd_avx_epi32`
+- `_mm256_dpbusds_avx_epi32`
+- `_mm256_dpwssd_avx_epi32`
+- `_mm256_dpwssds_avx_epi32`
+- `_mm_aesdec_si128`
+- `_mm_aesdeclast_si128`
+- `_mm_aesenc_si128`
+- `_mm_aesenclast_si128`
+- `_mm_aesimc_si128`
+- `_mm_aeskeygenassist_si128`
+- `_mm_clmulepi64_si128`
+- `_mm_dpbusd_avx_epi32`
+- `_mm_dpbusds_avx_epi32`
+- `_mm_dpwssd_avx_epi32`
+- `_mm_dpwssds_avx_epi32`
+- `_mm_gf2p8affine_epi64_epi8`
+- `_mm_gf2p8affineinv_epi64_epi8`
+- `_mm_gf2p8mul_epi8`
+- `_mm_sha1msg1_epu32`
+- `_mm_sha1msg2_epu32`
+- `_mm_sha1nexte_epu32`
+- `_mm_sha1rnds4_epu32`
+- `_mm_sha256msg1_epu32`
+- `_mm_sha256msg2_epu32`
+- `_mm_sha256rnds2_epu32`
+
+## X64V3Vnni2Token (AVX-VNNI-2) (42 intrinsics)
+Token: `X64V3Vnni2Token`
+
+### Other
+
+- `_mm256_bcstnebf16_ps` (unsafe)
+- `_mm256_bcstnesh_ps` (unsafe)
+- `_mm256_cvtneebf16_ps` (unsafe)
+- `_mm256_cvtneeph_ps` (unsafe)
+- `_mm256_cvtneobf16_ps` (unsafe)
+- `_mm256_cvtneoph_ps` (unsafe)
+- `_mm256_cvtneps_avx_pbh`
+- `_mm256_dpbssd_epi32`
+- `_mm256_dpbssds_epi32`
+- `_mm256_dpbsud_epi32`
+- `_mm256_dpbsuds_epi32`
+- `_mm256_dpbuud_epi32`
+- `_mm256_dpbuuds_epi32`
+- `_mm256_dpwsud_epi32`
+- `_mm256_dpwsuds_epi32`
+- `_mm256_dpwusd_epi32`
+- `_mm256_dpwusds_epi32`
+- `_mm256_dpwuud_epi32`
+- `_mm256_dpwuuds_epi32`
+- `_mm256_madd52hi_avx_epu64`
+- `_mm256_madd52lo_avx_epu64`
+- `_mm_bcstnebf16_ps` (unsafe)
+- `_mm_bcstnesh_ps` (unsafe)
+- `_mm_cvtneebf16_ps` (unsafe)
+- `_mm_cvtneeph_ps` (unsafe)
+- `_mm_cvtneobf16_ps` (unsafe)
+- `_mm_cvtneoph_ps` (unsafe)
+- `_mm_cvtneps_avx_pbh`
+- `_mm_dpbssd_epi32`
+- `_mm_dpbssds_epi32`
+- `_mm_dpbsud_epi32`
+- `_mm_dpbsuds_epi32`
+- `_mm_dpbuud_epi32`
+- `_mm_dpbuuds_epi32`
+- `_mm_dpwsud_epi32`
+- `_mm_dpwsuds_epi32`
+- `_mm_dpwusd_epi32`
+- `_mm_dpwusds_epi32`
+- `_mm_dpwuud_epi32`
+- `_mm_dpwuuds_epi32`
+- `_mm_madd52hi_avx_epu64`
+- `_mm_madd52lo_avx_epu64`
+
 ## X64V4Token (AVX-512) (3826 intrinsics)
 Token: `X64V4Token / Server64`
 
@@ -4738,7 +4822,51 @@ Token: `X64V4Token / Server64`
 - `_mm_storeu_epi64` (unsafe)
 - `_mm_storeu_epi8` (unsafe)
 
-## X64V4xToken (Modern Extensions) (351 intrinsics)
+## X64Avx512Bf16Token (38 intrinsics)
+Token: `X64Avx512Bf16Token`
+
+### Other
+
+- `_mm256_cvtne2ps_pbh`
+- `_mm256_cvtneps_pbh`
+- `_mm256_cvtpbh_ps`
+- `_mm256_dpbf16_ps`
+- `_mm256_mask_cvtne2ps_pbh`
+- `_mm256_mask_cvtneps_pbh`
+- `_mm256_mask_cvtpbh_ps`
+- `_mm256_mask_dpbf16_ps`
+- `_mm256_maskz_cvtne2ps_pbh`
+- `_mm256_maskz_cvtneps_pbh`
+- `_mm256_maskz_cvtpbh_ps`
+- `_mm256_maskz_dpbf16_ps`
+- `_mm512_cvtne2ps_pbh`
+- `_mm512_cvtneps_pbh`
+- `_mm512_cvtpbh_ps`
+- `_mm512_dpbf16_ps`
+- `_mm512_mask_cvtne2ps_pbh`
+- `_mm512_mask_cvtneps_pbh`
+- `_mm512_mask_cvtpbh_ps`
+- `_mm512_mask_dpbf16_ps`
+- `_mm512_maskz_cvtne2ps_pbh`
+- `_mm512_maskz_cvtneps_pbh`
+- `_mm512_maskz_cvtpbh_ps`
+- `_mm512_maskz_dpbf16_ps`
+- `_mm_cvtne2ps_pbh`
+- `_mm_cvtneps_pbh`
+- `_mm_cvtness_sbh`
+- `_mm_cvtpbh_ps`
+- `_mm_cvtsbh_ss`
+- `_mm_dpbf16_ps`
+- `_mm_mask_cvtne2ps_pbh`
+- `_mm_mask_cvtneps_pbh`
+- `_mm_mask_cvtpbh_ps`
+- `_mm_mask_dpbf16_ps`
+- `_mm_maskz_cvtne2ps_pbh`
+- `_mm_maskz_cvtneps_pbh`
+- `_mm_maskz_cvtpbh_ps`
+- `_mm_maskz_dpbf16_ps`
+
+## X64V4xToken (Modern Extensions) (305 intrinsics)
 Token: `X64V4xToken`
 
 ### Compress/Expand
@@ -4785,16 +4913,7 @@ Token: `X64V4xToken`
 
 ### Other
 
-- `_mm256_aesdec_epi128`
-- `_mm256_aesdeclast_epi128`
-- `_mm256_aesenc_epi128`
-- `_mm256_aesenclast_epi128`
 - `_mm256_bitshuffle_epi64_mask`
-- `_mm256_clmulepi64_epi128`
-- `_mm256_cvtne2ps_pbh`
-- `_mm256_cvtneps_pbh`
-- `_mm256_cvtpbh_ps`
-- `_mm256_dpbf16_ps`
 - `_mm256_dpbusd_epi32`
 - `_mm256_dpbusds_epi32`
 - `_mm256_dpwssd_epi32`
@@ -4806,10 +4925,6 @@ Token: `X64V4xToken`
 - `_mm256_madd52lo_epu64`
 - `_mm256_mask2_permutex2var_epi8`
 - `_mm256_mask_bitshuffle_epi64_mask`
-- `_mm256_mask_cvtne2ps_pbh`
-- `_mm256_mask_cvtneps_pbh`
-- `_mm256_mask_cvtpbh_ps`
-- `_mm256_mask_dpbf16_ps`
 - `_mm256_mask_dpbusd_epi32`
 - `_mm256_mask_dpbusds_epi32`
 - `_mm256_mask_dpwssd_epi32`
@@ -4838,10 +4953,6 @@ Token: `X64V4xToken`
 - `_mm256_mask_shrdv_epi16`
 - `_mm256_mask_shrdv_epi32`
 - `_mm256_mask_shrdv_epi64`
-- `_mm256_maskz_cvtne2ps_pbh`
-- `_mm256_maskz_cvtneps_pbh`
-- `_mm256_maskz_cvtpbh_ps`
-- `_mm256_maskz_dpbf16_ps`
 - `_mm256_maskz_dpbusd_epi32`
 - `_mm256_maskz_dpbusds_epi32`
 - `_mm256_maskz_dpwssd_epi32`
@@ -4895,10 +5006,6 @@ Token: `X64V4xToken`
 - `_mm512_aesenclast_epi128`
 - `_mm512_bitshuffle_epi64_mask`
 - `_mm512_clmulepi64_epi128`
-- `_mm512_cvtne2ps_pbh`
-- `_mm512_cvtneps_pbh`
-- `_mm512_cvtpbh_ps`
-- `_mm512_dpbf16_ps`
 - `_mm512_dpbusd_epi32`
 - `_mm512_dpbusds_epi32`
 - `_mm512_dpwssd_epi32`
@@ -4910,10 +5017,6 @@ Token: `X64V4xToken`
 - `_mm512_madd52lo_epu64`
 - `_mm512_mask2_permutex2var_epi8`
 - `_mm512_mask_bitshuffle_epi64_mask`
-- `_mm512_mask_cvtne2ps_pbh`
-- `_mm512_mask_cvtneps_pbh`
-- `_mm512_mask_cvtpbh_ps`
-- `_mm512_mask_dpbf16_ps`
 - `_mm512_mask_dpbusd_epi32`
 - `_mm512_mask_dpbusds_epi32`
 - `_mm512_mask_dpwssd_epi32`
@@ -4942,10 +5045,6 @@ Token: `X64V4xToken`
 - `_mm512_mask_shrdv_epi16`
 - `_mm512_mask_shrdv_epi32`
 - `_mm512_mask_shrdv_epi64`
-- `_mm512_maskz_cvtne2ps_pbh`
-- `_mm512_maskz_cvtneps_pbh`
-- `_mm512_maskz_cvtpbh_ps`
-- `_mm512_maskz_dpbf16_ps`
 - `_mm512_maskz_dpbusd_epi32`
 - `_mm512_maskz_dpbusds_epi32`
 - `_mm512_maskz_dpwssd_epi32`
@@ -4994,27 +5093,14 @@ Token: `X64V4xToken`
 - `_mm512_shrdv_epi32`
 - `_mm512_shrdv_epi64`
 - `_mm_bitshuffle_epi64_mask`
-- `_mm_cvtne2ps_pbh`
-- `_mm_cvtneps_pbh`
-- `_mm_cvtness_sbh`
-- `_mm_cvtpbh_ps`
-- `_mm_cvtsbh_ss`
-- `_mm_dpbf16_ps`
 - `_mm_dpbusd_epi32`
 - `_mm_dpbusds_epi32`
 - `_mm_dpwssd_epi32`
 - `_mm_dpwssds_epi32`
-- `_mm_gf2p8affine_epi64_epi8`
-- `_mm_gf2p8affineinv_epi64_epi8`
-- `_mm_gf2p8mul_epi8`
 - `_mm_madd52hi_epu64`
 - `_mm_madd52lo_epu64`
 - `_mm_mask2_permutex2var_epi8`
 - `_mm_mask_bitshuffle_epi64_mask`
-- `_mm_mask_cvtne2ps_pbh`
-- `_mm_mask_cvtneps_pbh`
-- `_mm_mask_cvtpbh_ps`
-- `_mm_mask_dpbf16_ps`
 - `_mm_mask_dpbusd_epi32`
 - `_mm_mask_dpbusds_epi32`
 - `_mm_mask_dpwssd_epi32`
@@ -5043,10 +5129,6 @@ Token: `X64V4xToken`
 - `_mm_mask_shrdv_epi16`
 - `_mm_mask_shrdv_epi32`
 - `_mm_mask_shrdv_epi64`
-- `_mm_maskz_cvtne2ps_pbh`
-- `_mm_maskz_cvtneps_pbh`
-- `_mm_maskz_cvtpbh_ps`
-- `_mm_maskz_dpbf16_ps`
 - `_mm_maskz_dpbusd_epi32`
 - `_mm_maskz_dpbusds_epi32`
 - `_mm_maskz_dpwssd_epi32`

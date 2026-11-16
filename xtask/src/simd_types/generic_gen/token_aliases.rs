@@ -87,14 +87,14 @@ pub(super) fn generate(source: &str) -> String {
             alias.block = syn::parse_quote!({ #call });
             alias.attrs.retain(|a| !a.path().is_ident("doc"));
             let doc = format!(
-                "Deprecated token-taking spelling of [`Self::{name}`].\n\nUse `{name}` to keep explicit-token construction when `{legacy}` becomes tokenless in magetypes 0.10."
+                "Deprecated token-taking spelling of [`Self::{name}`].\n\nUse `{name}` to keep explicit-token construction when `{legacy}` becomes tokenless in magetypes 0.11."
             );
             let args = arguments
                 .iter()
                 .map(ToString::to_string)
                 .collect::<Vec<_>>()
                 .join(", ");
-            let note = format!("Use {name}({args}); {legacy} becomes tokenless in magetypes 0.10.");
+            let note = format!("Use {name}({args}); {legacy} becomes tokenless in magetypes 0.11.");
             alias.attrs.push(syn::parse_quote!(#[doc = #doc]));
             alias
                 .attrs

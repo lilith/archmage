@@ -27,7 +27,7 @@ codec-performance measurements. The encoder and decoder keep legacy attributes.
 - [zenav1-svt](https://github.com/imazen/zenav1-svt): `224c6bbb9a3dc577c64f6e0531bda5c3f60c6b0b`.
 - [rav1d-safe](https://github.com/imazen/rav1d-safe): `5b51b144cf73216fffd1100bfc396bc7dc17b5bd`.
 - Intel Core Ultra 7 265K, Rust 1.98.1, eight Cargo jobs, serial runs under
-  `run-heavy --mem 16G --jobs 8`.
+  `cargo`.
 - Default consumer features and original release profiles. Magetypes alone uses
   its defaults (`std`, `w512`); codec dependency features remain as written.
   This rav1d-safe snapshot uses Archmage directly and does not depend on Magetypes.
@@ -69,11 +69,11 @@ Full logs, Cargo timing HTML, source archives, metadata and lockfiles:
 
 Use `just consumer-compile OUT prepare --sources SOURCES --baseline v0.9.30
 --candidate afa92acb`, then `just consumer-compile OUT check` and
-`just consumer-compile OUT release` under run-heavy. `SOURCES` is the retained
-source capture at `~/tmp/attune-consumer-cold/sources/`, with revisions and hashes
+`just consumer-compile OUT release` in serialized benchmark runs. `SOURCES` is the retained
+source capture at `<scratch>/attune-consumer-cold/sources/`, with revisions and hashes
 recorded in its `provenance.json`. Each command refuses to overwrite prior runs.
 
 ```
-run-heavy: done rc=0 110s | peak-RSS 0.88GiB | min-avail 26741MiB | peak-load 1.80
-run-heavy: done rc=0 225s | peak-RSS 1.19GiB | min-avail 26559MiB | peak-load 2.13
+run summary: rc=0 110s | peak-RSS 0.88GiB | min-avail 26741MiB | peak-load 1.80
+run summary: rc=0 225s | peak-RSS 1.19GiB | min-avail 26559MiB | peak-load 2.13
 ```

@@ -6,7 +6,7 @@ Question: `mul_add_fused` on relaxed-SIMD WASM checks a cached probe and uses
 while bare `relaxed_madd` took 0.65× and 1.0×. Where does the cost come from?
 
 Method: one WASM module, every variant interleaved (400 rounds, rotating
-order, median of 8-run batches), on dev (Ryzen 9 9950X3D, busy host) with
+order, median of 8-run batches), on Zen 5 (Ryzen 9 9950X3D, busy host) with
 wasmtime 40.0.1, with and without `-C cranelift-has-fma=false`. Kernels run
 1,024 dependent steps (chain) or 1,024 independent vectors (stream). Full
 output: [results.txt](results.txt). Source: [src/main.rs](src/main.rs).

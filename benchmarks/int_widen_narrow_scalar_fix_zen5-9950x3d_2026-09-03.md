@@ -109,4 +109,4 @@ Correctness: `magetypes/tests/int_widen_narrow.rs` differential suite passes;
 full `cargo test -p magetypes` green (42 suites); `just check-generated`
 no-op; clippy zero warnings.
 
-[#77]: https://github.com/imazen/archmage/issues/77
+[#77]: https://github.com/lilith/archmage/issues/77

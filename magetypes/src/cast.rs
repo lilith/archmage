@@ -14,18 +14,18 @@
 //! - Width changes use `low()`, `high()`, `split()` and `from_halves_t()`.
 //!
 //! Both traits, and with them this module, are queued for removal in
-//! magetypes 0.10.
+//! magetypes 0.11.
 
 /// Marker trait for types that can be safely downcast.
 ///
 /// Downcasting from a wider SIMD context to a narrower one is always safe
 /// because the narrower context requires fewer CPU features.
 ///
-/// Deprecated since 0.9.30 and queued for removal in magetypes 0.10: nothing
+/// Deprecated since 0.9.30 and queued for removal in magetypes 0.11: nothing
 /// has ever implemented it. See the module docs for what replaces it.
 #[deprecated(
     since = "0.9.30",
-    note = "never implemented; a vector carries its token, so rebuild it under the narrower token (for example `f32x8::from_array_t(v4.v3(), v.to_array())`). Will be removed in magetypes 0.10."
+    note = "never implemented; a vector carries its token, so rebuild it under the narrower token (for example `f32x8::from_array_t(v4.v3(), v.to_array())`). Will be removed in magetypes 0.11."
 )]
 pub trait Downcast<T> {
     /// Downcast to a narrower context type.

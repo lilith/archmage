@@ -28,7 +28,7 @@ pub(super) fn expand(name: &str, args: Tokens, item: Tokens) -> syn::Result<Toke
 }
 
 fn check_item(item: Tokens, count: &mut usize) {
-    let Ok(mut fun) = syn::parse2::<LightFn>(item) else {
+    let Ok(mut fun) = syn::parse2::<syn::ItemFn>(item) else {
         return;
     };
     let Some(index) = fun.attrs.iter().position(|a| {
@@ -188,13 +188,13 @@ fn expansion_modes_preserve_body_and_generated_contracts() {
         ),
         (
             "arcane",
-            quote!(suppress_const_test),
+            quote!(),
             quote!(
-                unsafe fn kernel(token: X64V3Token) {
+                unsafe fn kernel(token: archmage::And<X64V3Token, X64GfniToken>) {
                     opaque!();
                 }
             ),
-            "target_feature",
+            "__ARCHMAGE_ASSERT_AND_",
         ),
         (
             "rite",
@@ -620,13 +620,44 @@ fn presence_scan_is_conservative_across_all_group_kinds() {
 }
 
 #[test]
-fn light_parser_preserves_opaque_body_and_rejects_broken_signatures() {
-    let input = quote!(#[allow(dead_code)] pub(crate) unsafe extern "C" fn kernel<'a, T: Copy, const N: usize>(token: X64V3Token, data: &'a [T; N]) -> &'a [T; N] where T: 'a {
-        // Deliberately not a Rust expression: LightFn must not parse the body.
-        opaque DSL => [Token :: { arbitrary : tokens }];
-    });
-    let parsed: LightFn = syn::parse2(input.clone()).unwrap();
-    assert_eq!(parsed.to_token_stream().to_string(), input.to_string());
+fn item_fn_parser_and_validator_enforce_macro_constraints() {
+    let input = quote!(
+        #[allow(dead_code)]
+        pub(crate) unsafe extern "C" fn kernel<'a, T: Copy, const N: usize>(
+            token: X64V3Token,
+            data: &'a [T; N],
+        ) -> &'a [T; N]
+        where
+            T: 'a,
+        {
+            opaque!(DSL => [Token :: { arbitrary : tokens }]);
+        }
+    );
+    let parsed: syn::ItemFn = syn::parse2(input).unwrap();
+    validate_item_fn(&parsed, "arcane").unwrap();
+
+    for disallowed in [
+        quote!(
+            const fn f(token: X64V3Token) {}
+        ),
+        quote!(
+            async fn f(token: X64V3Token) {}
+        ),
+        quote!(
+            unsafe extern "C" fn f(token: X64V3Token, ...) {}
+        ),
+        quote!(
+            #[target_feature(enable = "avx2")]
+            unsafe fn f(token: X64V3Token) {}
+        ),
+        quote!(
+            #[cfg_attr(target_arch = "x86_64", target_feature(enable = "avx2"))]
+            unsafe fn f(token: X64V3Token) {}
+        ),
+    ] {
+        let parsed: syn::ItemFn = syn::parse2(disallowed).unwrap();
+        assert!(validate_item_fn(&parsed, "arcane").is_err());
+    }
     for invalid in [
         quote!(fn f(token X64V3Token) {}),
         quote!(fn f<T(token: T) {}),
@@ -635,7 +666,7 @@ fn light_parser_preserves_opaque_body_and_rejects_broken_signatures() {
         ),
         quote!(fn f() {}, trailing),
     ] {
-        assert!(syn::parse2::<LightFn>(invalid).is_err());
+        assert!(syn::parse2::<syn::ItemFn>(invalid).is_err());
     }
 }
 
@@ -741,13 +772,13 @@ fn receivers_and_generic_modes_keep_feature_checks() {
         (
             quote!(nested),
             quote!(
-                fn f<T: HasX64V2 + HasNeon>(token: T) {}
+                fn f<T: HasX64V2 + HasX64Crypto>(token: T) {}
             ),
         ),
         (
             quote!(),
             quote!(
-                fn f<T: HasX64V2 + HasNeon>(token: T) {}
+                fn f<T: HasX64V2 + HasX64Crypto>(token: T) {}
             ),
         ),
     ] {
@@ -755,6 +786,43 @@ fn receivers_and_generic_modes_keep_feature_checks() {
         assert!(!out.to_string().contains("compile_error"));
         assert!(out.to_string().contains("target_feature"));
         syn::parse2::<syn::File>(out).unwrap();
+    }
+    for bad in [
+        quote!(
+            fn f<T: HasX64V2 + HasNeon>(token: T) {}
+        ),
+        quote!(
+            fn f(token: archmage::And<X64V3Token, NeonToken>) {}
+        ),
+        quote!(
+            fn f(a: X64V3Token, b: ScalarToken) {}
+        ),
+        quote!(
+            fn f(pair: (X64V3Token, NeonToken)) {}
+        ),
+        quote!(
+            const fn f(token: X64V3Token) {}
+        ),
+        quote!(
+            async fn f(token: X64V3Token) {}
+        ),
+        quote!(
+            unsafe extern "C" fn f(token: X64V3Token, ...) {}
+        ),
+        quote!(
+            #[target_feature(enable = "avx2")]
+            unsafe fn f(token: X64V3Token) {}
+        ),
+        quote!(
+            #[cfg_attr(target_arch = "x86_64", target_feature(enable = "avx2"))]
+            unsafe fn f(token: X64V3Token) {}
+        ),
+    ] {
+        let out = expand("arcane", quote!(), bad).unwrap().to_string();
+        assert!(
+            out.contains("compile_error"),
+            "expected compile_error for bad input: {out}"
+        );
     }
     let out = expand(
         "rite",
@@ -937,8 +1005,8 @@ fn combined_trait_features_preserve_first_seen_order() {
     assert_eq!(single, redundant);
 
     for names in [
-        ["HasX64V2", "HasNeon"],
-        ["HasNeon", "HasX64V2"],
+        ["HasX64V2", "HasX64Crypto"],
+        ["HasX64Crypto", "HasX64V2"],
         ["HasX64V2", "HasX64V4"],
         ["HasX64V4", "HasX64V2"],
     ] {
@@ -957,6 +1025,8 @@ fn combined_trait_features_preserve_first_seen_order() {
             expected.join(",")
         );
     }
+    // Cross-architecture trait combinations are rejected.
+    assert!(traits_to_features(&["HasX64V2".into(), "HasNeon".into()]).is_none());
     assert!(traits_to_features(&["UnknownTrait".into()]).is_none());
     let unusual = ["future_feature", "avx2", "future_feature"];
     let csv = crate::token_discovery::features_csv(None, &unusual);

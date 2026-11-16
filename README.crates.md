@@ -1,6 +1,6 @@
 # archmage
 
-[Guide](https://imazen.github.io/archmage/) · [Intrinsics browser](https://imazen.github.io/archmage/intrinsics/) · [Archmage API](https://docs.rs/archmage/latest/archmage/) · [Magetypes API](https://docs.rs/magetypes/latest/magetypes/)
+[Guide](https://lilith.github.io/archmage/) · [Intrinsics browser](https://lilith.github.io/archmage/intrinsics/) · [Archmage API](https://docs.rs/archmage/latest/archmage/) · [Magetypes API](https://docs.rs/magetypes/latest/magetypes/)
 
 Archmage lets you write SIMD code in Rust **without `unsafe`** — your crate can keep `#![forbid(unsafe_code)]` while calling intrinsics directly.
 
@@ -8,11 +8,16 @@ You pick a CPU tier, prove it's present once with `summon()`, and the type syste
 
 It runs on x86-64, AArch64 and WASM, is `no_std + alloc`, and needs Rust 1.89 or later.
 
-## 0.9.31: unified macros
+## 0.10.0: composable token conjunctions & zero-macro magetypes
 
-This release adds `#[attune]`, `attuned!`, and `reattune!`. Existing attributes
-and `incant!` remain supported. Use matching versions of archmage and
-magetypes so their tokens come from the same archmage package.
+`0.10.0` introduces `And<Base, Extra>` capability conjunctions (`.and()` / `And::join()`),
+granular leaf tokens and capability traits, unconditional macro tag/bound
+authentication (`#[arcane]`, `#[rite]`, `#[attune]`), runtime-probed WASM FMA
+(`Wasm128RelaxedFmaToken`), and zero-macro `magetypes` sealed backends. Legacy `0.9`
+compatibility aliases (`Sse2Token`, `Avx2FmaToken`, `Has*BitSimd`,
+`forge_token_dangerously()`, `guaranteed()`, `try_new()`, `suppress_const_test`)
+are removed, and `SimdToken::NAME` moves to `SimdLeafToken` (`SimdToken: Display`).
+Use matching versions of archmage and magetypes so their tokens come from the same archmage package.
 
 ```rust
 use archmage::prelude::*;
@@ -33,21 +38,21 @@ assert_eq!(values, [1.0, 2.0]);
 `#[attune(v3)]` adds features to one function; `#[attune(wrap)]` creates a proof
 wrapper using its token parameter. Bare `#[attune]` infers a direct `_v3` or
 proof-wrapper `_v3_t` suffix. A token parameter alone does not imply `wrap`.
-The [unified macro guide](https://github.com/imazen/archmage/blob/main/docs/ATTUNE.md)
+The [unified macro guide](https://github.com/lilith/archmage/blob/main/docs/ATTUNE.md)
 covers the selector grammar, call and proof rules, inline policies, a legacy-attribute
 mapping, and current restrictions.
 
 Configurable f32 power, exponential and logarithm approximations live in the
-[Magemath crate](magemath), above Magetypes. See the
-[math migration guide](docs/MAGEMATH-MIGRATION.md) for replacing deprecated
+[Magemath crate](https://github.com/lilith/archmage/tree/main/magemath), above Magetypes. See the
+[math migration guide](https://github.com/lilith/archmage/blob/main/docs/MAGEMATH-MIGRATION.md) for replacing deprecated
 approximation methods with explicit numerical profiles.
 
 ## Quick start
 
 ```toml
 [dependencies]
-archmage = "=0.9.31"
-magetypes = "=0.9.31"   # vector types such as f32x8
+archmage = "=0.10.0"
+magetypes = "=0.10.0"   # vector types such as f32x8
 ```
 
 Multiply a buffer by a gain, using AVX2, NEON or WASM SIMD where available:
@@ -87,10 +92,10 @@ assert_eq!(plane, [1.0; 11]);
 - Constructors ending in `_t` take the token as their first argument.
 
 The kernel is adapted from `zenfilters`;
-[Reusable generic kernels](https://imazen.github.io/archmage/magetypes/examples/generic-kernels/)
-links the production source. If you are upgrading, 0.9.30 deprecates the older
-constructor names (`splat`, `load`, …): the
-[migration guide](https://github.com/imazen/archmage/blob/main/docs/TOKEN-CONSTRUCTOR-MIGRATION.md)
+[Reusable generic kernels](https://lilith.github.io/archmage/magetypes/examples/generic-kernels/)
+links the production source. If you are upgrading from 0.9, the older
+constructor names (`splat`, `load`, …) remain deprecated in favor of `_t`: the
+[migration guide](https://github.com/lilith/archmage/blob/main/docs/TOKEN-CONSTRUCTOR-MIGRATION.md)
 has the mapping.
 
 ## Calling intrinsics directly
@@ -130,7 +135,7 @@ assert_eq!(multiply(&[3.0; 8]), [6.0; 8]);
 
 Mark helper functions with `#[rite]` instead. They get the same features and
 inline into the kernel that calls them. The
-[intrinsics browser](https://imazen.github.io/archmage/intrinsics/) shows which
+[intrinsics browser](https://lilith.github.io/archmage/intrinsics/) shows which
 intrinsics each token unlocks.
 
 ## Naming: `<name>_<tier>`
@@ -144,27 +149,27 @@ Name your own tier functions the same way:
 
 - They join the same family. Leave `v3` out of a `#[magetypes]` list, write
   `gain_impl_v3` by hand, and `incant!` still finds it:
-  [hand-tuned variants](https://imazen.github.io/archmage/archmage/dispatch/incant/#hand-tuned-variants).
+  [hand-tuned variants](https://lilith.github.io/archmage/archmage/dispatch/incant/#hand-tuned-variants).
 - Inside a tier function, `incant!` needs no CPU check. In a `v3` function,
   `incant!(helper(…), [v3, scalar])` compiles to a direct call to `helper_v3`:
-  [calls inside a tier](https://imazen.github.io/archmage/archmage/dispatch/incant/#calls-inside-a-tier).
+  [calls inside a tier](https://lilith.github.io/archmage/archmage/dispatch/incant/#calls-inside-a-tier).
 - The suffix shows, at every call site, which CPU features a function needs.
 
 ## Which macro
 
 | You want | Write | Call it |
 |---|---|---|
-| One kernel with vector types, for every CPU | [`#[magetypes(v3, neon, scalar)]`](https://imazen.github.io/archmage/archmage/dispatch/magetypes-macro/) on `fn kernel(token: Token, …)` | [`incant!(kernel(…), [v3, neon, scalar])`](https://imazen.github.io/archmage/archmage/dispatch/incant/) |
-| A plain loop the compiler vectorizes for each tier | [`#[autoversion]`](https://imazen.github.io/archmage/archmage/dispatch/autoversion/) on `fn sum(data: &[f32]) -> f32` | `sum(data)`. The macro writes the dispatcher |
-| The intrinsics of one instruction set | [`#[arcane]`](https://imazen.github.io/archmage/archmage/concepts/arcane/) on `fn kernel_v3(token: X64V3Token, …)` | `incant!(kernel(…), [v3, scalar])` |
-| A helper inside SIMD code | [`#[rite(v3)]`](https://imazen.github.io/archmage/archmage/concepts/rite/) on `fn helper(…)` | `helper(…)`, from a function that has the `v3` features |
-| An algorithm shared between kernels | [A generic helper](https://imazen.github.io/archmage/magetypes/examples/generic-kernels/): `#[inline(always)] fn helper<T: F32x8Backend>(token: T, …)` | `helper(token, …)`, from a `#[magetypes]` kernel |
-| The tier chosen by hand | `X64V3Token::summon()` and an `if let` | `kernel_v3(token, …)`, behind `#[cfg(target_arch = "x86_64")]`: [manual dispatch](https://imazen.github.io/archmage/archmage/dispatch/manual/) |
+| One kernel with vector types, for every CPU | [`#[magetypes(v3, neon, scalar)]`](https://lilith.github.io/archmage/archmage/dispatch/magetypes-macro/) on `fn kernel(token: Token, …)` | [`incant!(kernel(…), [v3, neon, scalar])`](https://lilith.github.io/archmage/archmage/dispatch/incant/) |
+| A plain loop the compiler vectorizes for each tier | [`#[autoversion]`](https://lilith.github.io/archmage/archmage/dispatch/autoversion/) on `fn sum(data: &[f32]) -> f32` | `sum(data)`. The macro writes the dispatcher |
+| The intrinsics of one instruction set | [`#[arcane]`](https://lilith.github.io/archmage/archmage/concepts/arcane/) on `fn kernel_v3(token: X64V3Token, …)` | `incant!(kernel(…), [v3, scalar])` |
+| A helper inside SIMD code | [`#[rite(v3)]`](https://lilith.github.io/archmage/archmage/concepts/rite/) on `fn helper(…)` | `helper(…)`, from a function that has the `v3` features |
+| An algorithm shared between kernels | [A generic helper](https://lilith.github.io/archmage/magetypes/examples/generic-kernels/): `#[inline(always)] fn helper<T: F32x8Backend>(token: T, …)` | `helper(token, …)`, from a `#[magetypes]` kernel |
+| The tier chosen by hand | `X64V3Token::summon()` and an `if let` | `kernel_v3(token, …)`, behind `#[cfg(target_arch = "x86_64")]`: [manual dispatch](https://lilith.github.io/archmage/archmage/dispatch/manual/) |
 
 The guide also covers
-[tokens and tiers](https://imazen.github.io/archmage/archmage/getting-started/tokens/),
-[testing every tier](https://imazen.github.io/archmage/archmage/testing/dispatch-testing/)
-and [AVX-512](https://imazen.github.io/archmage/archmage/advanced/avx512/).
+[tokens and tiers](https://lilith.github.io/archmage/archmage/getting-started/tokens/),
+[testing every tier](https://lilith.github.io/archmage/archmage/testing/dispatch-testing/)
+and [AVX-512](https://lilith.github.io/archmage/archmage/advanced/avx512/).
 
 ## Features
 
@@ -192,14 +197,14 @@ incant!(gain_impl(plane, gain), [v4(cfg(avx512)), v3, neon, wasm128, scalar])
 The other tiers run the same `f32x16` as a polyfill: two 256-bit operations on
 AVX2, four 128-bit operations on NEON and WASM. In the two kernels we
 inspected, each polyfilled operation compiled to those native operations and
-nothing else ([assembly results](https://github.com/imazen/archmage/blob/main/benchmarks/polyfill_asm_2026-10-06.md)). The
-[magetypes README](https://github.com/imazen/archmage/tree/main/magetypes#avx-512)
+nothing else ([assembly results](https://github.com/lilith/archmage/blob/main/benchmarks/polyfill_asm_2026-10-06.md)). The
+[magetypes README](https://github.com/lilith/archmage/tree/main/magetypes#avx-512)
 has the runnable example and what polyfills cost.
 
 Listing `v4` on an `f32x8` kernel does not widen it: `f32x8` stays eight lanes
 there.
 
-[Installation](https://imazen.github.io/archmage/archmage/getting-started/installation/)
+[Installation](https://lilith.github.io/archmage/archmage/getting-started/installation/)
 has the `no_std` setup and the remaining features.
 
 ## Safety
@@ -217,9 +222,9 @@ magetypes builds on the same tokens and adds its own compile-time checks. What
 is left for `unsafe` there is a few one-line blocks that load, store, gather and
 scatter vector storage.
 
-The [safety model](https://imazen.github.io/archmage/archmage/concepts/safety/)
+The [safety model](https://lilith.github.io/archmage/archmage/concepts/safety/)
 has the details, and
-[SOUNDNESS.md](https://github.com/imazen/archmage/blob/main/docs/SOUNDNESS.md)
+[SOUNDNESS.md](https://github.com/lilith/archmage/blob/main/docs/SOUNDNESS.md)
 lists every `unsafe` in both crates.
 
 ## Limits
@@ -228,21 +233,21 @@ lists every `unsafe` in both crates.
   than x86-64, AArch64 and WASM, including 32-bit x86, run the scalar fallback.
 - Calling an `#[arcane]` function once per loop iteration is slow. On two small
   kernels it measured 4.1× and 6.2× slower than one call around the whole loop
-  ([docs/PERFORMANCE.md](https://github.com/imazen/archmage/blob/main/docs/PERFORMANCE.md)).
+  ([docs/PERFORMANCE.md](https://github.com/lilith/archmage/blob/main/docs/PERFORMANCE.md)).
   Dispatch once, outside the loop.
 - A vector wider than the CPU's registers is a polyfill. It runs as two or
   four native operations, and each value takes that many registers: an `f32x8`
   on NEON is two `f32x4`s.
-  [Polyfills](https://imazen.github.io/archmage/magetypes/cross-platform/polyfills/) has the measured costs.
+  [Polyfills](https://lilith.github.io/archmage/magetypes/cross-platform/polyfills/) has the measured costs.
 - With the `avx512` feature, AVX-512 tokens also support the 128- and
   256-bit float and integer types. These narrower backend, conversion and
   bitcast implementations delegate to V3; 512-bit types use AVX-512.
 - Some floating-point results differ between backends. `mul_add_relaxed`
   rounds once where the hardware fuses (x86 v3/v4, NEON) and twice on the scalar
   backend and strict WASM; `mul_add_fused` rounds once everywhere, in software
-  where needed. `mul_add` is deprecated and becomes the fused form in 0.11. [ISA quirks and fixups](https://imazen.github.io/archmage/magetypes/isa-quirks/)
+  where needed. `mul_add` is deprecated and becomes the fused form in 0.11. [ISA quirks and fixups](https://lilith.github.io/archmage/magetypes/isa-quirks/)
   lists every difference, and
-  [Transcendentals](https://imazen.github.io/archmage/magetypes/math/transcendentals/)
+  [Transcendentals](https://lilith.github.io/archmage/magetypes/math/transcendentals/)
   gives each function's domain and precision.
 
 ## License
@@ -259,7 +264,7 @@ MIT OR Apache-2.0
 | Processing | [zenresize] · [zenquant] · [zenblend] · [zenfilters] · [zensally] · [zentone] |
 | Pixels & color | [zenpixels] · [zenpixels-convert] · [linear-srgb] · [garb] |
 | Pipeline & framework | [zenpipe] · [zencodec] · [zencodecs] · [zenlayout] · [zennode] · [zenwasm] · [zentract] |
-| Metrics | [zensim] · [fast-ssim2] · [butteraugli] · [zenmetrics] · [resamplescope-rs] |
+| Metrics | [zensim] · [fast-ssim2] · [butteraugli] · [resamplescope-rs] |
 | Pickers & ML | [zenanalyze] · [zenpredict] · [zenpicker] |
 | Products | [Imageflow] image engine ([.NET][imageflow-dotnet] · [Node][imageflow-node] · [Go][imageflow-go]) · [Imageflow Server] · [ImageResizer] (C#) |
 
@@ -314,13 +319,12 @@ MIT OR Apache-2.0
 [zensim]: https://github.com/imazen/zensim
 [fast-ssim2]: https://github.com/imazen/fast-ssim2
 [butteraugli]: https://github.com/imazen/butteraugli
-[zenmetrics]: https://github.com/imazen/zenmetrics
 [resamplescope-rs]: https://github.com/imazen/resamplescope-rs
 [zenanalyze]: https://github.com/imazen/zenanalyze
 [zenpredict]: https://github.com/imazen/zenanalyze
 [zenpicker]: https://github.com/imazen/zenanalyze
 [zenbench]: https://github.com/imazen/zenbench
-[magetypes]: https://github.com/imazen/archmage
+[magetypes]: https://github.com/lilith/archmage
 [enough]: https://github.com/imazen/enough
 [whereat]: https://github.com/lilith/whereat
 [cargo-copter]: https://github.com/imazen/cargo-copter

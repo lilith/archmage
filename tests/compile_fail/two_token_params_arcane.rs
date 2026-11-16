@@ -1,5 +1,5 @@
-//! #[arcane] takes its features from one token parameter. With two, the old
-//! rule picked whichever came first; now it says so (issue #122).
+//! #[arcane] allows multiple same-architecture tokens, but rejects combining
+//! tokens from different architectures (here Scalar and x86_64).
 #![forbid(unsafe_code)]
 use archmage::prelude::*;
 

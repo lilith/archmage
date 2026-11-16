@@ -1,0 +1,5 @@
+error: #[arcane] generates `#[target_feature]` from the token/tier; remove the manual `#[target_feature]` attribute
+ --> tests/compile_fail/explicit_target_feature_arcane.rs:2:1
+  |
+2 | #[target_feature(enable = "avx2")]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

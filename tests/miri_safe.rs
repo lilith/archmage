@@ -2,8 +2,6 @@
 //!
 //! These tests verify the token system's logic without executing
 //! actual SIMD instructions.
-// Covers the deprecated `Avx2FmaToken` alias and width traits.
-#![allow(deprecated)]
 // Only run these tests on x86_64 where the tokens are available
 #![cfg(target_arch = "x86_64")]
 
@@ -15,7 +13,6 @@ use archmage::*;
 fn tokens_are_zst() {
     assert_eq!(core::mem::size_of::<X64V2Token>(), 0);
     assert_eq!(core::mem::size_of::<X64V3Token>(), 0);
-    assert_eq!(core::mem::size_of::<Avx2FmaToken>(), 0); // type alias for X64V3Token
     #[cfg(feature = "avx512")]
     assert_eq!(core::mem::size_of::<X64V4Token>(), 0);
 }
@@ -26,7 +23,6 @@ fn tokens_are_copy() {
     fn assert_copy<T: Copy>() {}
     assert_copy::<X64V2Token>();
     assert_copy::<X64V3Token>();
-    assert_copy::<Avx2FmaToken>();
     #[cfg(feature = "avx512")]
     assert_copy::<X64V4Token>();
 }
@@ -36,8 +32,6 @@ fn tokens_are_copy() {
 fn token_names() {
     assert_eq!(X64V2Token::NAME, "x86-64-v2");
     assert_eq!(X64V3Token::NAME, "x86-64-v3");
-    // Avx2FmaToken is a type alias for X64V3Token
-    assert_eq!(Avx2FmaToken::NAME, "x86-64-v3");
     #[cfg(feature = "avx512")]
     assert_eq!(X64V4Token::NAME, "AVX-512"); // X64V4Token is alias for Avx512Token
 }
@@ -65,20 +59,14 @@ fn summon_is_consistent() {
 /// Test marker trait bounds compile correctly.
 #[test]
 fn marker_traits_compile() {
-    use archmage::{Has128BitSimd, Has256BitSimd};
+    use archmage::HasX64V2;
 
-    fn requires_128<T: Has128BitSimd>(_: T) {}
-    fn requires_256<T: Has256BitSimd>(_: T) {}
+    fn requires_v2<T: HasX64V2>(_: T) {}
 
     if let Some(token) = X64V2Token::summon() {
-        requires_128(token);
-    }
-    if let Some(token) = Avx2FmaToken::summon() {
-        requires_128(token);
-        requires_256(token);
+        requires_v2(token);
     }
     if let Some(token) = X64V3Token::summon() {
-        requires_128(token);
-        requires_256(token);
+        requires_v2(token);
     }
 }

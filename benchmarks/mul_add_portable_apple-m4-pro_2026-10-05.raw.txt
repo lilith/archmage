@@ -4,9 +4,9 @@
 # Two runs of: nice -n 10 cargo bench -p magetypes --bench mul_add_cost
 
 ## run 1
-   Compiling archmage-macros v0.9.29 (/Users/lilith/tmp/archmage-bench-2026-10-05/archmage-macros)
-   Compiling archmage v0.9.29 (/Users/lilith/tmp/archmage-bench-2026-10-05)
-   Compiling magetypes v0.9.29 (/Users/lilith/tmp/archmage-bench-2026-10-05/magetypes)
+   Compiling archmage-macros v0.9.29 (<workspace>/archmage-macros)
+   Compiling archmage v0.9.29 (<workspace>)
+   Compiling magetypes v0.9.29 (<workspace>/magetypes)
     Finished `bench` profile [optimized] target(s) in 3.41s
      Running benches/mul_add_cost.rs (target/release/deps/mul_add_cost-b5477b07db0da4e7)
 [zenbench] calibration: int=0.34ns/iter mem_bw=94.9GiB/s mem_lat=7.4ns

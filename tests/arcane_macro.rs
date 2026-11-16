@@ -1,14 +1,12 @@
 //! Tests for the #[arcane] attribute macro.
 
 #![allow(unused)]
-// Several cases still spell the token as the deprecated `Avx2FmaToken` alias.
-#![allow(deprecated)]
 
 #[cfg(target_arch = "x86_64")]
 mod x86_tests {
     #[cfg(feature = "avx512")]
     use archmage::Avx512Token;
-    use archmage::{Avx2FmaToken, Desktop64, SimdToken, X64V3Token, arcane};
+    use archmage::{Desktop64, SimdToken, X64V3Token, arcane};
     use std::arch::x86_64::*;
 
     /// Basic test: arcane with X64V3Token
@@ -30,9 +28,9 @@ mod x86_tests {
         }
     }
 
-    /// Test with FMA token (Avx2FmaToken is now alias for X64V3Token)
+    /// Test with FMA token (`X64V3Token` provides AVX2 + FMA)
     #[arcane]
-    fn fma_operation(token: Avx2FmaToken, a: &[f32; 8], b: &[f32; 8], c: &[f32; 8]) -> [f32; 8] {
+    fn fma_operation(token: X64V3Token, a: &[f32; 8], b: &[f32; 8], c: &[f32; 8]) -> [f32; 8] {
         let va = unsafe { _mm256_loadu_ps(a.as_ptr()) };
         let vb = unsafe { _mm256_loadu_ps(b.as_ptr()) };
         let vc = unsafe { _mm256_loadu_ps(c.as_ptr()) };
@@ -45,7 +43,7 @@ mod x86_tests {
 
     #[test]
     fn test_arcane_fma() {
-        if let Some(token) = Avx2FmaToken::summon() {
+        if let Some(token) = X64V3Token::summon() {
             let a = [2.0f32; 8];
             let b = [3.0f32; 8];
             let c = [1.0f32; 8];
@@ -238,10 +236,10 @@ mod x86_tests {
         }
     }
 
-    /// Test with multiple trait bounds using Avx2FmaToken
+    /// Test with Desktop64 alias for X64V3Token
     #[arcane]
     fn impl_trait_multi_bounds(
-        token: Avx2FmaToken,
+        token: Desktop64,
         a: &[f32; 8],
         b: &[f32; 8],
         c: &[f32; 8],
@@ -258,8 +256,8 @@ mod x86_tests {
 
     #[test]
     fn test_arcane_impl_trait_multi_bounds() {
-        // Avx2FmaToken provides AVX2 + FMA
-        if let Some(token) = Avx2FmaToken::summon() {
+        // Desktop64 (X64V3Token) provides AVX2 + FMA
+        if let Some(token) = Desktop64::summon() {
             let a = [2.0f32; 8];
             let b = [3.0f32; 8];
             let c = [1.0f32; 8];
@@ -269,10 +267,10 @@ mod x86_tests {
         }
     }
 
-    /// Test with Avx2FmaToken (provides both 256-bit SIMD and FMA)
+    /// Test with X64V3Token (provides both 256-bit AVX2 and FMA)
     #[arcane]
     fn generic_multi_bounds(
-        token: Avx2FmaToken,
+        token: X64V3Token,
         a: &[f32; 8],
         b: &[f32; 8],
         c: &[f32; 8],
@@ -288,7 +286,7 @@ mod x86_tests {
 
     #[test]
     fn test_arcane_generic_multi_bounds() {
-        if let Some(token) = Avx2FmaToken::summon() {
+        if let Some(token) = X64V3Token::summon() {
             let a = [2.0f32; 8];
             let b = [3.0f32; 8];
             let c = [1.0f32; 8];

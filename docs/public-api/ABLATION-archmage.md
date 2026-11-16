@@ -11,12 +11,11 @@ and `archmage-artisan/`. Docs-site content also checked as "documented = KEEP."
 
 **Grep command template:**
 ```
-grep -r "<ITEM>" /home/lilith/work/ \
+grep -r "<ITEM>" ../ \
   --include="*.rs" \
   --exclude-dir=target \
   --exclude-dir=".jj" \
   --exclude-dir=archmage \
-  --exclude-dir=archmage-artisan \
   --exclude-dir=downloaded-crates \
   -l
 ```
@@ -35,7 +34,7 @@ archmage is the org's SIMD dispatch foundation. The surface is intentionally dom
   combining `core::arch` + `safe_unaligned_simd` memory ops in one namespace.
 - **`#[arcane]`/`#[rite]`/`incant!` macro machinery** — required for the token/target_feature design.
 - **`testing` module** (`for_each_token_permutation`, etc.) — actively used by 251 call sites
-  across zen crates (jxl-encoder, zenresize, linear-srgb, zenwebp, zenmetrics, …).
+  across downstream crates (jxl-encoder, zenresize, linear-srgb, zenwebp, …).
 
 **None of the above should be flagged.** The investigation focused on the narrow complement:
 hand-written items outside the deliberate design.
@@ -96,9 +95,8 @@ docstrings (`src/detect.rs:757-789`). They are `#[inline(never)]` and exist so u
 inspect the emitted assembly to confirm compile-time optimization is working.
 
 **External consumer scan (as of this scan):**
-- Org-wide grep: **0 files** in `/home/lilith/work/zen/` or any non-archmage org crate.
-- Only consumers: `archmage`'s own `tests/token_infrastructure.rs:1062-1064` and
-  `archmage-artisan/tests/token_infrastructure.rs:1059-1061`.
+- Workspace grep: **0 files** in external crates.
+- Only consumers: `archmage`'s own `tests/token_infrastructure.rs`.
 - Not mentioned in `docs/site/` (any `.md`) or the project `README.md`.
 
 These are asm-inspection development tools, not part of the documented public API.

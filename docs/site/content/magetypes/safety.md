@@ -10,7 +10,7 @@ archmage's tokens until all that is left for `unsafe` is 14 one-line blocks:
 loads, stores and views of vector storage, and the AVX-512 gathers and
 scatters. The [archmage safety model](@/archmage/concepts/safety.md) covers
 tokens and `#[arcane]`;
-[SOUNDNESS.md](https://github.com/imazen/archmage/blob/main/docs/SOUNDNESS.md)
+[SOUNDNESS.md](https://github.com/lilith/archmage/blob/main/docs/SOUNDNESS.md)
 has the complete inventory.
 
 ## Proofs on proofs
@@ -23,7 +23,7 @@ Each layer relies on the one below it:
    an `#[arcane]` region for its token, so rustc rejects any intrinsic that the
    token's features don't cover. WASM SIMD intrinsics are safe to call
    anywhere, because a module that loads has its features. `cargo xtask
-   soundness` re-checks all 5,485 magetypes intrinsic calls in 0.9.30 against
+   soundness` re-checks all magetypes intrinsic calls against
    the intrinsic table extracted from Rust's `stdarch`.
 3. **Compile-time layout proofs.** Every reinterpretation of memory checks at
    compile time that the sizes match. Alignment is checked wherever a
@@ -60,8 +60,8 @@ let v = <archmage::X64V3Token as F32x8Backend>::splat(2.0);
 ## One module holds all of the `unsafe`
 
 magetypes denies `unsafe_code` at the crate root and allows it in one module,
-[`simd_storage.rs`](https://github.com/imazen/archmage/blob/main/magetypes/src/simd_storage.rs).
-In 0.9.30 it contains 14 `unsafe` blocks, one line each, and each with a
+[`simd_storage.rs`](https://github.com/lilith/archmage/blob/main/magetypes/src/simd_storage.rs).
+It contains 14 `unsafe` blocks, one line each, and each with a
 `// SAFETY:` comment:
 
 | Blocks | What they do | Why they hold |
@@ -103,7 +103,7 @@ has the same quotes and the method-to-intrinsic table.
   backend intrinsic against its token's features.
 - Miri runs the magetypes tests to catch layout and pointer mistakes in the
   `unsafe` blocks.
-- [`tests/gather_scatter_v4.rs`](https://github.com/imazen/archmage/blob/main/magetypes/tests/gather_scatter_v4.rs)
+- [`tests/gather_scatter_v4.rs`](https://github.com/lilith/archmage/blob/main/magetypes/tests/gather_scatter_v4.rs)
   drives gathers and scatters with hostile indices: negative values, the 2^31
   boundary, indices at and just past the end, empty slices and duplicate
   scatter targets.

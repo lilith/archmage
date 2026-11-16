@@ -4,12 +4,10 @@ Every claim about generated assembly in this reference is backed by `cargo asm` 
 
 ## How it works
 
-1. **Benchmark functions** in `benches/asm_patterns.rs` are marked `#[unsafe(no_mangle)]` so `cargo asm` can find them by name.
-2. **`scripts/verify-asm.sh`** extracts the assembly for each function and checks:
+1. **Benchmark functions** in `magetypes/benches/asm_patterns.rs` are marked `#[unsafe(no_mangle)]` so `cargo asm` can find them by name.
+2. **Codegen probes** inspect the emitted assembly for each pattern using `cargo asm`:
    - Required instructions are present (e.g., `vmovups` for a float load)
-   - Two functions produce identical instruction sequences (e.g., `first_chunk` vs `array_ref`)
-3. **Expected baselines** are stored in `tests/expected-asm/` and compared against.
-4. **`just verify-asm`** runs all checks. `just verify-asm-update` refreshes baselines after intentional codegen changes.
+   - Equivalent forms produce matching load/store instruction sequences (e.g., `first_chunk` vs `array_ref`)
 
 ## What we verify
 
@@ -21,7 +19,7 @@ Every claim about generated assembly in this reference is backed by `cargo asm` 
 | Safe and unsafe single loads produce identical ASM | Verified |
 | `#[rite]` in `#[arcane]` matches manual inline | Verified |
 
-### Load pattern claims (from `benches/asm_patterns.rs`)
+### Load pattern claims (from `magetypes/benches/asm_patterns.rs`)
 
 | Claim | Status |
 |-------|--------|
@@ -36,15 +34,9 @@ Every claim about generated assembly in this reference is backed by `cargo asm` 
 ## Running verification
 
 ```bash
-# Check all claims
-just verify-asm
-
-# Update baselines after intentional changes
-just verify-asm-update
-
 # Inspect a specific function's ASM
-cargo asm -p archmage --bench asm_patterns --features "std avx512" \
-    "asm_patterns::load_first_chunk::__simd_inner_load_first_chunk"
+cargo asm -p magetypes --bench asm_patterns --features "std avx512" \
+    "asm_patterns::x86_impl::__simd_inner_load_first_chunk"
 ```
 
 ## Why this matters

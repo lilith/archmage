@@ -4,6 +4,7 @@ use archmage::{token_target_features, X64V3Token};
 )]
 #[inline]
 fn process(token: X64V3Token, a: f32) -> f32 {
+    let _: () = <X64V3Token>::__ARCHMAGE_ASSERT_TIER_F38B284B;
     a
 }
 fn main() {}

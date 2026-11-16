@@ -1,36 +1,12 @@
 //! Feature-proof boundaries shared by all attribute frontends.
 //! Parsing syntax is kept out of this module; the proof is authenticated before
-//! emitting the single unsafe call. Body tokens are never parsed as expressions.
+//! emitting the single unsafe call.
 use super::inline::InlinePolicy;
 use crate::common::*;
 use crate::token_discovery::*;
 use proc_macro2::TokenStream;
-use quote::{ToTokens, format_ident, quote};
+use quote::{format_ident, quote};
 use syn::{Attribute, FnArg, Type, parse_quote};
-
-/// Validate a concrete token using the tier-specific constant supplied by archmage.
-///
-/// The signature's full type path preserves renamed dependencies and re-exports.
-/// A weaker tier lacks the expected constant, so accidental aliasing is rejected.
-/// The initializer is checked once in archmage; each expansion only references it.
-/// This public constant is an accidental-misuse check, not an anti-forgery boundary.
-/// The exact archmage-macros dependency pin keeps this internal protocol in sync.
-fn gen_token_assertion(
-    token_type_name: &Option<String>,
-    token_type: &Option<Type>,
-    suppress_const_test: bool,
-) -> TokenStream {
-    if suppress_const_test {
-        return quote! {};
-    }
-    if let (Some(name), Some(ty)) = (token_type_name, token_type)
-        && let Some(expected_tag) = crate::generated::expected_tier_tag(name)
-    {
-        let assertion = format_ident!("__ARCHMAGE_ASSERT_TIER_{:08X}", expected_tag);
-        return quote! { let _: () = <#ty>::#assertion; };
-    }
-    quote! {}
-}
 
 #[derive(Default)]
 pub(crate) struct BoundaryOptions {
@@ -38,9 +14,6 @@ pub(crate) struct BoundaryOptions {
     pub(crate) body_inline: Option<InlinePolicy>,
     /// Options spelled the same way in `#[rite]`: imports and `cfg(feature)`.
     pub(crate) shared: SharedOptions,
-    /// Trusted generators may omit the accidental token-name mismatch check.
-    /// Intrinsic feature checking remains enabled.
-    pub(crate) suppress_const_test: bool,
     /// Use `#[inline(always)]` instead of `#[inline]` for the inner function.
     /// Requires nightly Rust with `#![feature(target_feature_inline_always)]`.
     pub(crate) inline_always: bool,
@@ -62,19 +35,22 @@ pub(crate) struct BoundaryOptions {
     pub(crate) wrapper_attrs: Vec<Attribute>,
 }
 
-/// Shared implementation for arcane/arcane macros.
+/// Shared implementation for `#[arcane]` / sibling boundary macros.
 pub(crate) fn expand(
-    mut input_fn: LightFn,
+    mut input_fn: syn::ItemFn,
     macro_name: &str,
     args: BoundaryOptions,
 ) -> TokenStream {
+    if let Err(err) = validate_item_fn(&input_fn, macro_name) {
+        return err.to_compile_error();
+    }
+
     // Check for self receiver
     let has_self_receiver = input_fn
         .sig
         .inputs
         .first()
-        .map(|arg| matches!(arg, FnArg::Receiver(_)))
-        .unwrap_or(false);
+        .is_some_and(|arg| matches!(arg, FnArg::Receiver(_)));
 
     // Nested mode is required when _self = Type is used (for Self replacement in nested fn).
     // In sibling mode, self/Self work naturally since both fns live in the same impl scope.
@@ -92,48 +68,47 @@ pub(crate) fn expand(
         return syn::Error::new_spanned(&input_fn.sig, msg).to_compile_error();
     }
 
-    // Find the token parameter, its features, target arch, and token type name
-    let TokenParamInfo {
-        ident: mut _token_ident,
-        features,
-        target_arch,
-        token_type_name,
-        magetypes_namespace,
-        token_type,
-        tier_traits,
-    } = match find_token_param(&input_fn.sig).or_else(|| {
-        // A concrete token receiver can itself prove the required features.
-        // Reuse normal discovery so token validation and feature lookup agree.
-        let self_ty = args.self_type.as_ref()?;
-        if !has_self_receiver {
-            return None;
+    let (mut proofs, from_self_receiver) = match discover_signature_proofs(&input_fn.sig) {
+        Ok(Some(proofs)) => (proofs, false),
+        Ok(None) => {
+            let receiver_proofs = if has_self_receiver && let Some(self_ty) = &args.self_type {
+                let mut receiver_sig = input_fn.sig.clone();
+                if let Some(FnArg::Receiver(receiver)) = receiver_sig.inputs.iter().next().cloned()
+                {
+                    receiver_sig.inputs.clear();
+                    receiver_sig
+                        .inputs
+                        .push(nested_self_param(&receiver, self_ty));
+                } else {
+                    receiver_sig.inputs.clear();
+                    receiver_sig.inputs.push(syn::parse_quote!(_self: #self_ty));
+                }
+                discover_signature_proofs(&receiver_sig)
+            } else {
+                Ok(None)
+            };
+            match receiver_proofs {
+                Ok(Some(proofs)) => (proofs, true),
+                Ok(None) => {
+                    return missing_token_error(
+                        &input_fn.sig,
+                        macro_name,
+                        &format!(
+                            ". Supported forms:\n\
+                             - Concrete: `token: X64V3Token` or `And<X64V3Token, X64GfniToken>`\n\
+                             - impl Trait: `token: impl HasX64V2`\n\
+                             - Generic: `fn foo<T: HasX64V2>(token: T, ...)`\n\
+                             - With self: `#[{macro_name}(_self = Type)] fn method(&self, token: impl HasNeon, ...)`"
+                        ),
+                    );
+                }
+                Err(err) => return err.to_compile_error(),
+            }
         }
-        let mut receiver_sig = input_fn.sig.clone();
-        receiver_sig.inputs.clear();
-        receiver_sig.inputs.push(syn::parse_quote!(_self: #self_ty));
-        find_token_param(&receiver_sig)
-    }) {
-        Some(result) => result,
-        None => {
-            return missing_token_error(
-                &input_fn.sig,
-                macro_name,
-                &format!(
-                    ". Supported forms:\n\
-                     - Concrete: `token: X64V3Token`\n\
-                     - impl Trait: `token: impl HasX64V2`\n\
-                     - Generic: `fn foo<T: HasX64V2>(token: T, ...)`\n\
-                     - With self: `#[{macro_name}(_self = Type)] fn method(&self, token: impl HasNeon, ...)`"
-                ),
-            );
-        }
+        Err(err) => return err.to_compile_error(),
     };
-
-    // One token decides the features. Two would have been resolved by position,
-    // which is the surprising rule issue #122 reports.
-    let token_params = token_param_idents(&input_fn.sig);
-    if token_params.len() > 1 {
-        return multiple_tokens_error(&input_fn.sig, macro_name, &token_params);
+    if from_self_receiver {
+        proofs.mark_receiver_source();
     }
 
     // import_intrinsics with AVX-512 features needs archmage's avx512 feature
@@ -141,18 +116,18 @@ pub(crate) fn expand(
     if let Some(err) = avx512_import_error(
         &input_fn.sig,
         args.shared.import_intrinsics,
-        &features,
-        token_type_name.as_deref().unwrap_or("an AVX-512 token"),
+        &proofs.features,
+        proofs.single_concrete_name().unwrap_or("an AVX-512 token"),
     ) {
         return err;
     }
 
     // Prepend import statements to body if requested
-    prepend_to_body(
-        &mut input_fn.body,
+    prepend_to_block(
+        &mut input_fn.block,
         generate_imports(
-            target_arch,
-            magetypes_namespace,
+            proofs.target_arch,
+            proofs.magetypes_namespace,
             args.shared.import_intrinsics,
             args.shared.import_magetypes,
         ),
@@ -167,48 +142,52 @@ pub(crate) fn expand(
         crate::common::rename_underscore_params(&mut sig);
         sig
     };
-    let wrapper_token_ident = find_token_param(&wrapper_sig)
-        .map(|info| info.ident)
-        .unwrap_or_else(|| _token_ident.clone());
+    let mut primary_token_ident = proofs.primary_ident.clone();
     if let Some(ident) = rename_wildcard_token(&mut input_fn.sig) {
-        _token_ident = ident;
+        primary_token_ident = ident;
     }
 
-    // Rewrite incant!() calls in the body to direct tier calls.
-    // Only for concrete tokens where we can determine the tier suffix.
-    if let Some(ref type_name) = token_type_name
-        && let Some(tier_suffix) = crate::generated::canonical_token_to_tier_suffix(type_name)
+    // Rewrite incant!() calls in the body to direct tier calls or contextual calls.
+    if let Some(tier_suffix) = proofs.single_tier_suffix()
         && let Some(tier) = crate::tiers::find_tier(tier_suffix)
     {
         let ctx = crate::rewrite::CallerContext {
             tier_suffix,
             target_arch: tier.target_arch,
-            token_ident: _token_ident.clone(),
+            token_ident: primary_token_ident,
             has_token: true,
             derive_token: false,
         };
-        input_fn.body =
-            crate::rewrite::rewrite_incant_in_function(input_fn.body, &ctx, Some(&input_fn.sig));
-    }
-
-    if token_type_name.is_none() {
-        input_fn.body = crate::attune::call::rewrite_context(
-            input_fn.body,
+        let rewritten = crate::rewrite::rewrite_incant_in_function(
+            block_inner_tokens(&input_fn.block),
+            &ctx,
+            Some(&input_fn.sig),
+        );
+        if let Err(err) = set_block_inner_tokens(&mut input_fn.block, rewritten) {
+            return err.to_compile_error();
+        }
+    } else {
+        let rewritten = crate::attune::call::rewrite_context(
+            block_inner_tokens(&input_fn.block),
             crate::attune::call::Context {
-                features: &features,
-                target_arch,
+                features: &proofs.features,
+                target_arch: proofs.target_arch,
             },
             Some(&input_fn.sig),
         );
+        if let Err(err) = set_block_inner_tokens(&mut input_fn.block, rewritten) {
+            return err.to_compile_error();
+        }
     }
 
     // Build a single target_feature attribute with all features comma-joined
-    let features_csv = features_csv(token_type_name.as_deref(), &features);
-    if args.body_inline == Some(InlinePolicy::Always) && !features.is_empty() {
+    let features_csv = features_csv(proofs.single_concrete_name(), &proofs.features);
+    if args.body_inline == Some(InlinePolicy::Always) && !proofs.features.is_empty() {
         return syn::Error::new_spanned(
             &input_fn.sig.ident,
             "inline(always) on target-feature bodies requires nightly; use inline(hint) or inline(never)",
-        ).to_compile_error();
+        )
+        .to_compile_error();
     }
     // The operation's visibility determines the body policy. Native lowering
     // makes the implementation private without changing its inlining needs.
@@ -222,49 +201,122 @@ pub(crate) fn expand(
         .attribute(&input_fn.vis);
 
     // Scalar has no instruction-set boundary. Preserve its signature and body
-    // without emitting the invalid #[target_feature(enable = "")].
+    // without emitting the invalid #[target_feature(enable = "")], while still
+    // verifying token/And type tags so local shadow structs cannot spoof them.
+    // When `_self = Type` is used (`args.nested`), route through `emit_boundary`
+    // (with safe_callee) so `self` is constrained to `#self_ty` and `Self` is substituted.
     if features_csv.is_empty() {
+        if args.nested && args.self_type.is_some() {
+            let cfg_guard = gen_cfg_guard(None, args.shared.cfg_feature.as_deref());
+            drop_attrs_equal_to(&mut input_fn.attrs, &cfg_guard);
+            let proof_assertions = proofs.gen_assertions(&wrapper_sig);
+            let callee = format!("__simd_inner_{}", input_fn.sig.ident);
+            if let Some(err) = reserved_param_error(&input_fn.sig, &callee, macro_name)
+                .or_else(|| reserved_param_error(&wrapper_sig, &callee, macro_name))
+            {
+                return err;
+            }
+            let parts = BoundaryParts {
+                cfg_guard,
+                target_feature_attrs: Vec::new(),
+                inline_attr,
+                proof_assertions,
+                wrapper_sig,
+                safe_callee: true,
+            };
+            return emit_boundary(input_fn, &args, parts);
+        }
+        let rebinds =
+            normalize_single_fn_token_params(&mut input_fn.sig, &proofs.token_param_indices);
+        let assertions = proofs.gen_assertions(&input_fn.sig);
+        prepend_to_block(
+            &mut input_fn.block,
+            quote! {
+                #assertions
+                #(#rebinds)*
+            },
+        );
         let vis = &input_fn.vis;
         let sig = &input_fn.sig;
         let attrs = filter_inline_attrs(&input_fn.attrs);
-        let body = &input_fn.body;
-        let self_binding = args
-            .self_type
-            .as_ref()
-            .map(|_| quote! { let _self = self; });
+        let body = block_inner_tokens(&input_fn.block);
         let cfg = gen_cfg_guard(None, args.shared.cfg_feature.as_deref());
-        return quote! { #cfg #(#attrs)* #inline_attr #vis #sig { #self_binding #body } };
+        return quote! { #cfg #(#attrs)* #inline_attr #vis #sig { #body } };
     }
     let target_feature_attrs: Vec<Attribute> =
         vec![parse_quote!(#[target_feature(enable = #features_csv)])];
 
     // On wasm32, #[target_feature(enable = "simd128")] functions are safe (Rust 1.54+).
-    // The wasm validation model guarantees unsupported instructions trap deterministically,
-    // so there's no UB from feature mismatch. Skip the unsafe wrapper entirely.
-    if target_arch == Some("wasm32") {
-        return arcane_impl_wasm_safe(input_fn, &args, target_feature_attrs, inline_attr);
+    // Authenticate all concrete, `And`, and `Has*` trait proofs unconditionally so
+    // shadowed types or traits can never bypass proof checking on wasm32.
+    // When `_self = Type` is used, route through `emit_boundary` (with safe_callee)
+    // so `self` is checked against `#self_ty`, `Self` is substituted, and shadowed
+    // traits / unrelated structs cannot slip past `_self = ...`.
+    if proofs.target_arch == Some("wasm32") {
+        if args.nested && args.self_type.is_some() {
+            let cfg_guard = gen_target_cfg_guard(
+                Some("wasm32"),
+                args.shared.cfg_feature.as_deref(),
+                &proofs.features,
+            );
+            drop_attrs_equal_to(&mut input_fn.attrs, &cfg_guard);
+            drop_attrs_equal_to(
+                &mut input_fn.attrs,
+                &gen_cfg_guard(Some("wasm32"), args.shared.cfg_feature.as_deref()),
+            );
+            let proof_assertions = proofs.gen_assertions(&wrapper_sig);
+            let callee = format!("__simd_inner_{}", input_fn.sig.ident);
+            if let Some(err) = reserved_param_error(&input_fn.sig, &callee, macro_name)
+                .or_else(|| reserved_param_error(&wrapper_sig, &callee, macro_name))
+            {
+                return err;
+            }
+            let parts = BoundaryParts {
+                cfg_guard,
+                target_feature_attrs,
+                inline_attr,
+                proof_assertions,
+                wrapper_sig,
+                safe_callee: true,
+            };
+            return emit_boundary(input_fn, &args, parts);
+        }
+        let rebinds =
+            normalize_single_fn_token_params(&mut input_fn.sig, &proofs.token_param_indices);
+        let assertions = proofs.gen_assertions(&input_fn.sig);
+        let prefix = quote! {
+            #assertions
+            #(#rebinds)*
+        };
+        prepend_to_block(&mut input_fn.block, prefix);
+        return arcane_impl_wasm_safe(
+            input_fn,
+            &args,
+            &proofs.features,
+            target_feature_attrs,
+            inline_attr,
+        );
     }
 
-    let cfg_guard = gen_cfg_guard(target_arch, args.shared.cfg_feature.as_deref());
+    let cfg_guard = gen_cfg_guard(proofs.target_arch, args.shared.cfg_feature.as_deref());
     drop_attrs_equal_to(&mut input_fn.attrs, &cfg_guard);
+    let proof_assertions = proofs.gen_assertions(&wrapper_sig);
     let parts = BoundaryParts {
         cfg_guard,
         target_feature_attrs,
         inline_attr,
-        token_assertion: gen_token_assertion(
-            &token_type_name,
-            &token_type,
-            args.suppress_const_test,
-        ),
-        tier_trait_assertion: gen_tier_trait_assertion(&tier_traits, &wrapper_token_ident),
+        proof_assertions,
         wrapper_sig,
+        safe_callee: false,
     };
     let callee = if args.nested {
         format!("__simd_inner_{}", input_fn.sig.ident)
     } else {
         format!("__arcane_{}", input_fn.sig.ident)
     };
-    if let Some(err) = reserved_param_error(&input_fn.sig, &callee, macro_name) {
+    if let Some(err) = reserved_param_error(&input_fn.sig, &callee, macro_name)
+        .or_else(|| reserved_param_error(&parts.wrapper_sig, &callee, macro_name))
+    {
         return err;
     }
     emit_boundary(input_fn, &args, parts)
@@ -297,31 +349,28 @@ pub(crate) fn reserved_param_error(
 }
 
 /// The pieces every boundary expansion emits: the cfg guard on both halves,
-/// the attributes of the feature-enabled half, and the two assertions that
-/// authenticate the token before the one `unsafe` call.
+/// the attributes of the feature-enabled half, and the assertions that
+/// authenticate every token proof before calling the body.
 struct BoundaryParts {
     cfg_guard: TokenStream,
     target_feature_attrs: Vec<Attribute>,
     inline_attr: Option<Attribute>,
-    token_assertion: TokenStream,
-    tier_trait_assertion: TokenStream,
+    proof_assertions: TokenStream,
     wrapper_sig: syn::Signature,
+    safe_callee: bool,
 }
 
 /// WASM-safe expansion: emits rite-style output (no unsafe wrapper).
-///
-/// On wasm32, `#[target_feature(enable = "simd128")]` is safe — the wasm validation
-/// model traps deterministically on unsupported instructions, so there's no UB.
-/// We emit the function directly with `#[target_feature]` + `#[inline]`, like `#[rite]`.
-///
-/// If `_self = Type` is set, we inject `let _self = self;` at the top of the body
-/// (the function stays in impl scope, so `Self` resolves naturally — no replacement needed).
 pub(crate) fn arcane_impl_wasm_safe(
-    mut input_fn: LightFn,
+    mut input_fn: syn::ItemFn,
     args: &BoundaryOptions,
+    features: &[&str],
     target_feature_attrs: Vec<Attribute>,
     inline_attr: Option<Attribute>,
 ) -> TokenStream {
+    let cfg_guard =
+        gen_target_cfg_guard(Some("wasm32"), args.shared.cfg_feature.as_deref(), features);
+    drop_attrs_equal_to(&mut input_fn.attrs, &cfg_guard);
     drop_attrs_equal_to(
         &mut input_fn.attrs,
         &gen_cfg_guard(Some("wasm32"), args.shared.cfg_feature.as_deref()),
@@ -330,18 +379,7 @@ pub(crate) fn arcane_impl_wasm_safe(
     let sig = &input_fn.sig;
     let attrs = &input_fn.attrs;
 
-    // If _self = Type is set, inject `let _self = self;` at top of body so user code
-    // referencing `_self` works. The function remains in impl scope, so `Self` resolves
-    // naturally — no Self replacement needed (unlike nested mode's inner fn).
-    let body = if args.self_type.is_some() {
-        let original_body = &input_fn.body;
-        quote! {
-            let _self = self;
-            #original_body
-        }
-    } else {
-        input_fn.body.clone()
-    };
+    let body = block_inner_tokens(&input_fn.block);
 
     // Prepend target_feature + inline attrs, filtering user #[inline] to avoid duplicates
     let mut new_attrs = target_feature_attrs;
@@ -352,7 +390,6 @@ pub(crate) fn arcane_impl_wasm_safe(
         new_attrs.push(attr.clone());
     }
 
-    let cfg_guard = gen_cfg_guard(Some("wasm32"), args.shared.cfg_feature.as_deref());
     quote! {
         #cfg_guard
         #(#new_attrs)*
@@ -362,26 +399,28 @@ pub(crate) fn arcane_impl_wasm_safe(
     }
 }
 
-/// One boundary emitter for sibling and nested placement. Placement changes
-/// name resolution and the receiver representation, never the proof obligation.
-fn emit_boundary(input: LightFn, options: &BoundaryOptions, parts: BoundaryParts) -> TokenStream {
+/// One boundary emitter for sibling and nested placement.
+fn emit_boundary(
+    mut input: syn::ItemFn,
+    options: &BoundaryOptions,
+    parts: BoundaryParts,
+) -> TokenStream {
     let BoundaryParts {
         cfg_guard,
         target_feature_attrs,
         inline_attr,
-        token_assertion,
-        tier_trait_assertion,
+        proof_assertions,
         wrapper_sig,
+        safe_callee,
     } = parts;
-    let sig = &input.sig;
-    let generics = &sig.generics;
-    let vis = &input.vis;
+    let generics = input.sig.generics.clone();
+    let vis = input.vis.clone();
     let name = if options.nested {
-        format_ident!("__simd_inner_{}", sig.ident)
+        format_ident!("__simd_inner_{}", input.sig.ident)
     } else {
-        format_ident!("__arcane_{}", sig.ident)
+        format_ident!("__arcane_{}", input.sig.ident)
     };
-    let unsafety = &sig.safety;
+    let unsafety = input.sig.safety.clone();
     let attrs = if options.nested {
         filter_inline_attrs(&input.attrs)
             .into_iter()
@@ -391,8 +430,8 @@ fn emit_boundary(input: LightFn, options: &BoundaryOptions, parts: BoundaryParts
         expect_as_allow(filter_inline_attrs(&input.attrs))
     };
     let body_attrs = body_attrs(&input.attrs, !options.nested);
-    let turbofish = build_turbofish(generics);
-    let has_self = sig
+    let has_self = input
+        .sig
         .inputs
         .iter()
         .any(|arg| matches!(arg, FnArg::Receiver(_)));
@@ -408,39 +447,25 @@ fn emit_boundary(input: LightFn, options: &BoundaryOptions, parts: BoundaryParts
             },
         })
         .collect();
-    let params = if options.nested {
-        let params: Vec<_> = sig
-            .inputs
-            .iter()
-            .map(|arg| match arg {
-                FnArg::Receiver(receiver) => {
-                    let ty = options
-                        .self_type
-                        .as_ref()
-                        .expect("nested receiver validated before emission");
-                    nested_self_param(receiver, ty).to_token_stream()
-                }
-                FnArg::Typed(param) => options.self_type.as_ref().map_or_else(
-                    || quote!(#param),
-                    |ty| replace_self_in_tokens(quote!(#param), ty),
-                ),
-            })
-            .collect();
-        quote!(#(#params),*)
-    } else {
-        sig.inputs.to_token_stream()
-    };
-    let mut output = sig.output.to_token_stream();
-    let mut where_clause = generics.where_clause.to_token_stream();
-    let mut body = input.body;
+
     if options.nested
         && let Some(ty) = &options.self_type
     {
-        output = replace_self_in_tokens(output, ty);
-        where_clause = replace_self_in_tokens(where_clause, ty);
-        body =
-            replace_self_value_in_tokens(replace_self_in_tokens(body, ty), &format_ident!("_self"));
+        for arg in input.sig.inputs.iter_mut() {
+            if let FnArg::Receiver(receiver) = arg {
+                *arg = nested_self_param(receiver, ty);
+            }
+        }
+        replace_self_in_item_fn(&mut input, ty, Some(&format_ident!("_self")));
     }
+
+    let inner_sig = &input.sig;
+    let turbofish = build_turbofish(&inner_sig.generics);
+    let params = &inner_sig.inputs;
+    let output = &inner_sig.output;
+    let where_clause = &inner_sig.generics.where_clause;
+    let body = block_inner_tokens(&input.block);
+
     let call = if options.nested {
         quote!(#name #turbofish(#(#forwarded),*))
     } else if has_self {
@@ -450,8 +475,7 @@ fn emit_boundary(input: LightFn, options: &BoundaryOptions, parts: BoundaryParts
     } else {
         quote!(#name #turbofish(#(#forwarded),*))
     };
-    // Keep legacy attribute order, including lint expectations. The body is
-    // emitted once; only its lexical placement differs between these policies.
+
     let before = if options.nested {
         quote!()
     } else {
@@ -466,21 +490,20 @@ fn emit_boundary(input: LightFn, options: &BoundaryOptions, parts: BoundaryParts
         #before #(#target_feature_attrs)* #inline_attr #after
         #unsafety fn #name #generics (#params) #output #where_clause { #body }
     };
-    let proof_call = proof_call(call);
+    let call_stmt = if safe_callee && !matches!(unsafety, syn::Safety::Unsafe(_)) {
+        call
+    } else {
+        proof_call(call)
+    };
     let sibling = (!options.nested).then_some(&inner);
     let sibling_cfg = (!options.nested).then_some(&cfg_guard);
     let nested = options.nested.then_some(&inner);
-    // The wrapper's parameters carry reserved names for any `_name` the author
-    // wrote (`rename_underscore_params`), so forwarding them trips no lint; in
-    // nested mode the author's body (the inner fn) keeps its own names. Clippy
-    // does not report `inline_always` on this macro-spanned wrapper, so it
-    // carries no lint levels of its own (measured 2026-10-24).
     let wrapper_attrs = &options.wrapper_attrs;
     quote! {
         #sibling_cfg #sibling
         #cfg_guard #(#attrs)* #(#wrapper_attrs)* #[inline(always)]
         #vis #wrapper_sig {
-            #nested #token_assertion #tier_trait_assertion #proof_call
+            #nested #proof_assertions #call_stmt
         }
     }
 }
@@ -500,15 +523,24 @@ mod assertion_tests {
 
     #[test]
     fn concrete_checks_are_a_single_shared_lookup() {
-        let ty = Some(parse_quote!(renamed::X64V3Token));
-        let check = gen_token_assertion(&Some("X64V3Token".into()), &ty, false);
+        let ty: Type = parse_quote!(renamed::X64V3Token);
+        let check = gen_concrete_token_assertion("X64V3Token", &ty);
         assert_eq!(
             check.to_string(),
             quote!(let _: () = <renamed::X64V3Token>::__ARCHMAGE_ASSERT_TIER_F38B284B;).to_string()
         );
-        // No fresh const initializer, comparison, indexing, or branch per call.
-        assert!(gen_token_assertion(&None, &None, false).is_empty());
-        assert!(gen_token_assertion(&Some("X64V3Token".into()), &ty, true).is_empty());
+    }
+
+    #[test]
+    fn and_checks_emit_and_tag_and_component_checks() {
+        let sig: syn::Signature =
+            parse_quote!(fn f(t: archmage::And<renamed::X64V3Token, X64GfniToken>));
+        let proofs = discover_signature_proofs(&sig).unwrap().unwrap();
+        let assertions = proofs.gen_assertions(&sig);
+        let s = assertions.to_string();
+        assert!(s.contains("__ARCHMAGE_ASSERT_AND_71B5ED46"));
+        assert!(s.contains("__ARCHMAGE_ASSERT_TIER_F38B284B"));
+        assert!(s.contains("__ARCHMAGE_ASSERT_TIER_2713339E"));
     }
 
     #[test]

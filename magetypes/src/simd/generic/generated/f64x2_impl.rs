@@ -81,7 +81,7 @@ const _: () = {
     );
 };
 
-#[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+#[cfg(target_arch = "wasm32")]
 const _: () = {
     assert!(
         size_of::<f64x2<archmage::Wasm128Token>>()
@@ -656,6 +656,53 @@ impl<T: F64x2Backend> core::fmt::Debug for f64x2<T> {
 }
 
 // ============================================================================
+// Cross-type conversions (f64x2 ↔ low 2 lanes of i32x4)
+// ============================================================================
+
+impl<T: crate::simd::backends::F64x2Convert> f64x2<T> {
+    /// Convert the 2 lanes of `self` to the low 2 lanes of `i32x4` with
+    /// truncation toward zero (lanes 2 and 3 of the result are zero).
+    ///
+    /// **Out-of-range and NaN lanes DIVERGE per backend** (issue #80):
+    /// x86's `cvttpd` yields `i32::MIN` for overflow in both directions
+    /// and for NaN, while NEON/WASM/scalar saturate with NaN→0. Keep
+    /// lanes in `i32` range, or use
+    /// [`to_i32_low_saturating`](Self::to_i32_low_saturating) for uniform
+    /// semantics.
+    #[inline(always)]
+    pub fn to_i32_low(self) -> super::i32x4<T> {
+        super::i32x4::from_repr_unchecked(self.1, T::convert_f64_to_i32_low(self.1, self.0))
+    }
+
+    /// Convert the 2 lanes of `self` to the low 2 lanes of `i32x4` with
+    /// truncation and UNIFORM saturation (lanes 2 and 3 are zero):
+    /// out-of-range lanes clamp to `i32::MIN`/`i32::MAX` and NaN lanes
+    /// become 0, identically on every backend — the semantics of Rust
+    /// scalar `as`. Native on NEON/WASM/scalar; on x86 a compare/blend
+    /// fixup over `cvttpd` (issue #80).
+    #[inline(always)]
+    pub fn to_i32_low_saturating(self) -> super::i32x4<T> {
+        super::i32x4::from_repr_unchecked(
+            self.1,
+            T::convert_f64_to_i32_low_saturating(self.1, self.0),
+        )
+    }
+
+    /// Convert the 2 lanes of `self` to the low 2 lanes of `i32x4` with
+    /// rounding to nearest (lanes 2 and 3 of the result are zero).
+    #[inline(always)]
+    pub fn to_i32_low_round(self) -> super::i32x4<T> {
+        super::i32x4::from_repr_unchecked(self.1, T::convert_f64_to_i32_low_round(self.1, self.0))
+    }
+
+    /// Create `f64x2` by converting the low 2 lanes of `i32x4`.
+    #[inline(always)]
+    pub fn from_i32_low_t(token: T, v: super::i32x4<T>) -> Self {
+        Self(T::convert_i32_low_to_f64(token, v.into_repr()), token)
+    }
+}
+
+// ============================================================================
 // Platform-specific concrete impls
 // ============================================================================
 
@@ -681,7 +728,7 @@ impl f64x2<archmage::X64V3Token> {
 
     /// Deprecated spelling of [`Self::from_raw_t`].
     #[deprecated(
-        note = "Use from_raw_t(token, v), or from_raw(v) in a matching feature context; from_m128d is removed in magetypes 0.10."
+        note = "Use from_raw_t(token, v), or from_raw(v) in a matching feature context; from_m128d is removed in magetypes 0.11."
     )]
     #[inline(always)]
     pub fn from_m128d(token: archmage::X64V3Token, v: core::arch::x86_64::__m128d) -> Self {
@@ -787,6 +834,7 @@ impl f64x2<archmage::Wasm128Token> {
     /// # Safety
     /// The CPU must support the enabled target features. Safe calls require a
     /// matching or stronger feature context, which Rust checks.
+    #[cfg(target_feature = "simd128")]
     #[target_feature(enable = "simd128")]
     #[inline]
     pub fn from_raw(value: core::arch::wasm32::v128) -> Self {
@@ -796,69 +844,80 @@ impl f64x2<archmage::Wasm128Token> {
 // Generated deprecated token-constructor forwarders. Do not edit.
 impl<T: F64x2Backend> f64x2<T> {
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::splat_t`].\n\nUse `splat_t` to keep explicit-token construction when `splat` becomes tokenless in magetypes 0.10."]
-    #[deprecated(note = "Use splat_t(token, v); splat becomes tokenless in magetypes 0.10.")]
+    #[doc = "Deprecated token-taking spelling of [`Self::splat_t`].\n\nUse `splat_t` to keep explicit-token construction when `splat` becomes tokenless in magetypes 0.11."]
+    #[deprecated(note = "Use splat_t(token, v); splat becomes tokenless in magetypes 0.11.")]
     #[forbid(unsafe_code)]
     pub fn splat(token: T, v: f64) -> Self {
         Self::splat_t(token, v)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::zero_t`].\n\nUse `zero_t` to keep explicit-token construction when `zero` becomes tokenless in magetypes 0.10."]
-    #[deprecated(note = "Use zero_t(token); zero becomes tokenless in magetypes 0.10.")]
+    #[doc = "Deprecated token-taking spelling of [`Self::zero_t`].\n\nUse `zero_t` to keep explicit-token construction when `zero` becomes tokenless in magetypes 0.11."]
+    #[deprecated(note = "Use zero_t(token); zero becomes tokenless in magetypes 0.11.")]
     #[forbid(unsafe_code)]
     pub fn zero(token: T) -> Self {
         Self::zero_t(token)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::load_t`].\n\nUse `load_t` to keep explicit-token construction when `load` becomes tokenless in magetypes 0.10."]
-    #[deprecated(note = "Use load_t(token, data); load becomes tokenless in magetypes 0.10.")]
+    #[doc = "Deprecated token-taking spelling of [`Self::load_t`].\n\nUse `load_t` to keep explicit-token construction when `load` becomes tokenless in magetypes 0.11."]
+    #[deprecated(note = "Use load_t(token, data); load becomes tokenless in magetypes 0.11.")]
     #[forbid(unsafe_code)]
     pub fn load(token: T, data: &[f64; 2]) -> Self {
         Self::load_t(token, data)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::from_array_t`].\n\nUse `from_array_t` to keep explicit-token construction when `from_array` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::from_array_t`].\n\nUse `from_array_t` to keep explicit-token construction when `from_array` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use from_array_t(token, arr); from_array becomes tokenless in magetypes 0.10."
+        note = "Use from_array_t(token, arr); from_array becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn from_array(token: T, arr: [f64; 2]) -> Self {
         Self::from_array_t(token, arr)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::from_slice_t`].\n\nUse `from_slice_t` to keep explicit-token construction when `from_slice` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::from_slice_t`].\n\nUse `from_slice_t` to keep explicit-token construction when `from_slice` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use from_slice_t(token, slice); from_slice becomes tokenless in magetypes 0.10."
+        note = "Use from_slice_t(token, slice); from_slice becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn from_slice(token: T, slice: &[f64]) -> Self {
         Self::from_slice_t(token, slice)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::partition_slice_t`].\n\nUse `partition_slice_t` to keep explicit-token construction when `partition_slice` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::partition_slice_t`].\n\nUse `partition_slice_t` to keep explicit-token construction when `partition_slice` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use partition_slice_t(token, data); partition_slice becomes tokenless in magetypes 0.10."
+        note = "Use partition_slice_t(token, data); partition_slice becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn partition_slice(token: T, data: &[f64]) -> (&[[f64; 2]], &[f64]) {
         Self::partition_slice_t(token, data)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::partition_slice_mut_t`].\n\nUse `partition_slice_mut_t` to keep explicit-token construction when `partition_slice_mut` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::partition_slice_mut_t`].\n\nUse `partition_slice_mut_t` to keep explicit-token construction when `partition_slice_mut` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use partition_slice_mut_t(token, data); partition_slice_mut becomes tokenless in magetypes 0.10."
+        note = "Use partition_slice_mut_t(token, data); partition_slice_mut becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn partition_slice_mut(token: T, data: &mut [f64]) -> (&mut [[f64; 2]], &mut [f64]) {
         Self::partition_slice_mut_t(token, data)
     }
     #[inline(always)]
-    #[doc = "Deprecated token-taking spelling of [`Self::from_repr_t`].\n\nUse `from_repr_t` to keep explicit-token construction when `from_repr` becomes tokenless in magetypes 0.10."]
+    #[doc = "Deprecated token-taking spelling of [`Self::from_repr_t`].\n\nUse `from_repr_t` to keep explicit-token construction when `from_repr` becomes tokenless in magetypes 0.11."]
     #[deprecated(
-        note = "Use from_repr_t(token, repr); from_repr becomes tokenless in magetypes 0.10."
+        note = "Use from_repr_t(token, repr); from_repr becomes tokenless in magetypes 0.11."
     )]
     #[forbid(unsafe_code)]
     pub fn from_repr(token: T, repr: T::Repr) -> Self {
         Self::from_repr_t(token, repr)
+    }
+}
+impl<T: crate::simd::backends::F64x2Convert> f64x2<T> {
+    #[inline(always)]
+    #[doc = "Deprecated token-taking spelling of [`Self::from_i32_low_t`].\n\nUse `from_i32_low_t` to keep explicit-token construction when `from_i32_low` becomes tokenless in magetypes 0.11."]
+    #[deprecated(
+        note = "Use from_i32_low_t(token, v); from_i32_low becomes tokenless in magetypes 0.11."
+    )]
+    #[forbid(unsafe_code)]
+    pub fn from_i32_low(token: T, v: super::i32x4<T>) -> Self {
+        Self::from_i32_low_t(token, v)
     }
 }

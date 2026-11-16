@@ -3,7 +3,7 @@
 Proof that the full modern ARM SIMD feature set is available (Arm64-v3).
 
 **Architecture:** aarch64 | **Features:** neon, crc, rdm, dotprod, fp16, aes, sha2, fhm, fcma, sha3, i8mm, bf16
-**Total intrinsics:** 99 (99 safe, 0 unsafe, 24 stable, 75 unstable/unknown)
+**Total intrinsics:** 4 (4 safe, 0 unsafe, 0 stable, 4 unstable/unknown)
 
 ## Usage
 
@@ -34,113 +34,13 @@ fn process_chunk(_: Arm64V3Token, chunk: &mut [f32; 4]) {
 
 ## All Intrinsics
 
-### Stable, Safe (24 intrinsics)
-
-| Name | Description | Instruction | Timing (H/Z4) |
-|------|-------------|-------------|---------------|
-| `vfmlal_high_f16` | Floating-point fused Multiply-Add Long to accumulator (vecto... | fmlal2 | — |
-| `vfmlal_lane_high_f16` | Floating-point fused Multiply-Add Long to accumulator (by el... |  | — |
-| `vfmlal_lane_low_f16` | Floating-point fused Multiply-Add Long to accumulator (by el... |  | — |
-| `vfmlal_laneq_high_f16` | Floating-point fused Multiply-Add Long to accumulator (by el... |  | — |
-| `vfmlal_laneq_low_f16` | Floating-point fused Multiply-Add Long to accumulator (by el... |  | — |
-| `vfmlal_low_f16` | Floating-point fused Multiply-Add Long to accumulator (vecto... | fmlal | — |
-| `vfmlalq_high_f16` | Floating-point fused Multiply-Add Long to accumulator (vecto... | fmlal2 | — |
-| `vfmlalq_lane_high_f16` | Floating-point fused Multiply-Add Long to accumulator (by el... |  | — |
-| `vfmlalq_lane_low_f16` | Floating-point fused Multiply-Add Long to accumulator (by el... |  | — |
-| `vfmlalq_laneq_high_f16` | Floating-point fused Multiply-Add Long to accumulator (by el... |  | — |
-| `vfmlalq_laneq_low_f16` | Floating-point fused Multiply-Add Long to accumulator (by el... |  | — |
-| `vfmlalq_low_f16` | Floating-point fused Multiply-Add Long to accumulator (vecto... | fmlal | — |
-| `vfmlsl_high_f16` | Floating-point fused Multiply-Subtract Long from accumulator... | fmlsl2 | — |
-| `vfmlsl_lane_high_f16` | Floating-point fused Multiply-Subtract Long from accumulator... |  | — |
-| `vfmlsl_lane_low_f16` | Floating-point fused Multiply-Subtract Long from accumulator... |  | — |
-| `vfmlsl_laneq_high_f16` | Floating-point fused Multiply-Subtract Long from accumulator... |  | — |
-| `vfmlsl_laneq_low_f16` | Floating-point fused Multiply-Subtract Long from accumulator... |  | — |
-| `vfmlsl_low_f16` | Floating-point fused Multiply-Subtract Long from accumulator... | fmlsl | — |
-| `vfmlslq_high_f16` | Floating-point fused Multiply-Subtract Long from accumulator... | fmlsl2 | — |
-| `vfmlslq_lane_high_f16` | Floating-point fused Multiply-Subtract Long from accumulator... |  | — |
-| `vfmlslq_lane_low_f16` | Floating-point fused Multiply-Subtract Long from accumulator... |  | — |
-| `vfmlslq_laneq_high_f16` | Floating-point fused Multiply-Subtract Long from accumulator... |  | — |
-| `vfmlslq_laneq_low_f16` | Floating-point fused Multiply-Subtract Long from accumulator... |  | — |
-| `vfmlslq_low_f16` | Floating-point fused Multiply-Subtract Long from accumulator... | fmlsl | — |
-
-### Unstable/Nightly (75 intrinsics)
+### Unstable/Nightly (4 intrinsics)
 
 | Name | Description | Instruction |
 |------|-------------|-------------|
 | `vcadd_rot270_f16` | Floating-point complex add | fcadd |
-| `vcadd_rot270_f32` | Floating-point complex add | fcadd |
 | `vcadd_rot90_f16` | Floating-point complex add | fcadd |
-| `vcadd_rot90_f32` | Floating-point complex add | fcadd |
 | `vcaddq_rot270_f16` | Floating-point complex add | fcadd |
-| `vcaddq_rot270_f32` | Floating-point complex add | fcadd |
-| `vcaddq_rot270_f64` | Floating-point complex add | fcadd |
 | `vcaddq_rot90_f16` | Floating-point complex add | fcadd |
-| `vcaddq_rot90_f32` | Floating-point complex add | fcadd |
-| `vcaddq_rot90_f64` | Floating-point complex add | fcadd |
-| `vcmla_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_lane_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_lane_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_laneq_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_laneq_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot180_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot180_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot180_lane_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot180_lane_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot180_laneq_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot180_laneq_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot270_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot270_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot270_lane_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot270_lane_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot270_laneq_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot270_laneq_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot90_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot90_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot90_lane_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot90_lane_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot90_laneq_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmla_rot90_laneq_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_f64` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_lane_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_lane_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_laneq_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_laneq_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot180_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot180_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot180_f64` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot180_lane_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot180_lane_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot180_laneq_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot180_laneq_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot270_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot270_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot270_f64` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot270_lane_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot270_lane_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot270_laneq_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot270_laneq_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot90_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot90_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot90_f64` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot90_lane_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot90_lane_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot90_laneq_f16` | Floating-point complex multiply accumulate | fcmla |
-| `vcmlaq_rot90_laneq_f32` | Floating-point complex multiply accumulate | fcmla |
-| `vmmlaq_s32` | 8-bit integer matrix multiply-accumulate | nop |
-| `vmmlaq_u32` | 8-bit integer matrix multiply-accumulate | nop |
-| `vsudot_lane_s32` | Dot product index form with signed and unsigned integers | vsudot |
-| `vsudot_laneq_s32` | Dot product index form with signed and unsigned integers | vsudot |
-| `vsudotq_lane_s32` | Dot product index form with signed and unsigned integers | vsudot |
-| `vsudotq_laneq_s32` | Dot product index form with signed and unsigned integers | vsudot |
-| `vusdot_lane_s32` | Dot product index form with unsigned and signed integers | vusdot |
-| `vusdot_laneq_s32` | Dot product index form with unsigned and signed integers | vusdot |
-| `vusdot_s32` | Dot product vector form with unsigned and signed integers | vusdot |
-| `vusdotq_lane_s32` | Dot product index form with unsigned and signed integers | vusdot |
-| `vusdotq_laneq_s32` | Dot product index form with unsigned and signed integers | vusdot |
-| `vusdotq_s32` | Dot product vector form with unsigned and signed integers | vusdot |
-| `vusmmlaq_s32` | Unsigned and signed 8-bit integer matrix multiply-accumulate | nop |
 
 

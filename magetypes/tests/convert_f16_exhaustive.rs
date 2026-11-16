@@ -741,8 +741,7 @@ mod x86_f16c {
 // does not itself implement the (`F32x4Convert`-bounded) `F16Convert` trait;
 // the `.v3()` extractor is sound since V4 ⊃ V3.
 //
-// On an x86_64 host without AVX-512 (pre-Skylake-X, or AMD pre-Zen 4 — and note
-// the dev 7950X has AVX-512F but *not* avx512fp16) the `X64V4Token` is absent,
+// Note: AMD Zen 4 (7950X) has AVX-512F but *not* avx512fp16, so `Avx512Fp16Token` is absent,
 // the selector stays on the 8-wide F16C path, and these tests print a notice and
 // pass — the `x86_f16c` suite covers that host.
 // ============================================================================

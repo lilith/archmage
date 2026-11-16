@@ -71,6 +71,20 @@ pub trait F64x8Backend: SimdToken + Sealed + Copy + 'static {
     /// Lane-wise maximum.
     fn max(self, a: Self::Repr, b: Self::Repr) -> Self::Repr;
 
+    /// Fast single-instruction lane-wise minimum (NaN and `-0.0`/`+0.0`
+    /// tie-breaking are unspecified). Defaults to [`min`](Self::min).
+    #[inline(always)]
+    fn min_fast(self, a: Self::Repr, b: Self::Repr) -> Self::Repr {
+        <Self as F64x8Backend>::min(self, a, b)
+    }
+
+    /// Fast single-instruction lane-wise maximum (NaN and `-0.0`/`+0.0`
+    /// tie-breaking are unspecified). Defaults to [`max`](Self::max).
+    #[inline(always)]
+    fn max_fast(self, a: Self::Repr, b: Self::Repr) -> Self::Repr {
+        <Self as F64x8Backend>::max(self, a, b)
+    }
+
     /// Square root.
     fn sqrt(self, a: Self::Repr) -> Self::Repr;
 
@@ -155,7 +169,7 @@ pub trait F64x8Backend: SimdToken + Sealed + Copy + 'static {
         a
     }
 
-    /// Fast reciprocal square root approximation — see [`rcp_approx`].
+    /// Fast reciprocal square root approximation — see [`Self::rcp_approx`].
     #[inline(always)]
     fn rsqrt_approx(self, a: Self::Repr) -> Self::Repr {
         a
@@ -190,7 +204,7 @@ pub trait F64x8Backend: SimdToken + Sealed + Copy + 'static {
         Self::rcp_approx(self, a)
     }
 
-    /// Precise reciprocal square root — see [`recip`].
+    /// Precise reciprocal square root — see [`Self::recip`].
     #[inline(always)]
     fn rsqrt(self, a: Self::Repr) -> Self::Repr {
         Self::rsqrt_approx(self, a)

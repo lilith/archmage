@@ -6,7 +6,7 @@
 //!
 //! For implementation_name() tests covering all magetypes SIMD types,
 //! see magetypes' own exhaustive_intrinsics test.
-// Covers the deprecated `Avx2FmaToken` alias alongside the current names.
+// Tests all major tokens and type aliases across x86, ARM, and WASM.
 #![allow(deprecated)]
 
 use archmage::SimdToken;
@@ -20,14 +20,13 @@ use archmage::SimdToken;
 #[test]
 fn test_cross_platform_token_types_exist() {
     // x86 tier tokens - should compile on ARM/WASM, summon returns None there
-    use archmage::{Avx2FmaToken, Desktop64, X64V2Token, X64V3Token};
     #[cfg(feature = "avx512")]
     use archmage::{Avx512Token, X64V4Token};
+    use archmage::{Desktop64, X64V2Token, X64V3Token};
 
     // Verify tokens are zero-sized
     assert_eq!(core::mem::size_of::<X64V2Token>(), 0);
     assert_eq!(core::mem::size_of::<X64V3Token>(), 0);
-    assert_eq!(core::mem::size_of::<Avx2FmaToken>(), 0);
     assert_eq!(core::mem::size_of::<Desktop64>(), 0);
     #[cfg(feature = "avx512")]
     assert_eq!(core::mem::size_of::<X64V4Token>(), 0);
@@ -177,14 +176,13 @@ fn test_cross_platform_dispatch_pattern() {
 #[test]
 fn test_token_names() {
     use archmage::{
-        Arm64, Avx2FmaToken, Desktop64, NeonAesToken, NeonCrcToken, NeonSha3Token, NeonToken,
-        Wasm128Token, X64V2Token, X64V3Token,
+        Arm64, Desktop64, NeonAesToken, NeonCrcToken, NeonSha3Token, NeonToken, Wasm128Token,
+        X64V2Token, X64V3Token,
     };
 
     // x86 tier tokens
     assert_eq!(X64V2Token::NAME, "x86-64-v2");
     assert_eq!(X64V3Token::NAME, "x86-64-v3");
-    assert_eq!(Avx2FmaToken::NAME, "x86-64-v3"); // alias for X64V3Token
 
     // AVX-512 tokens (requires avx512 feature)
     #[cfg(feature = "avx512")]
@@ -197,7 +195,6 @@ fn test_token_names() {
 
     // Verify aliases share the same NAME
     assert_eq!(Desktop64::NAME, X64V3Token::NAME);
-    assert_eq!(Avx2FmaToken::NAME, X64V3Token::NAME);
 
     // ARM tokens
     assert_eq!(NeonToken::NAME, "NEON");
@@ -218,7 +215,6 @@ fn print_all_token_names() {
     println!("    X64V2Token:        {}", archmage::X64V2Token::NAME);
     println!("    X64V3Token:        {}", archmage::X64V3Token::NAME);
     println!("    Desktop64:         {}", archmage::Desktop64::NAME);
-    println!("    Avx2FmaToken:      {}", archmage::Avx2FmaToken::NAME);
     #[cfg(feature = "avx512")]
     {
         println!("    X64V4Token:        {}", archmage::X64V4Token::NAME);
