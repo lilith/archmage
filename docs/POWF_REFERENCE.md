@@ -1,8 +1,8 @@
 # Magetypes powf portability accuracy and performance
 
 
-The [fresh local follow-up](../benchmarks/powf_module_2026-11-07/QUIET-LOCAL.md) records the final scalar-only optimization, clean ns/bar comparisons, rejected native conversion experiment and remaining software-FMA cost.
-Updated 2026-11-09. Canonical HIGHP now has scalar and packed implementations. Legacy power methods retain ordinary valid-domain behavior; [the NEON numeric min/max ledger](../benchmarks/powf_module_2026-11-07/NEON-NUMERIC.md) records the accepted exceptional changes. Performance observations below identify the actual implementation and machine; exploratory intervals cannot satisfy the promotion gate.
+The fresh local follow-up (external benchmark archive `powf_module_2026-11-07/QUIET-LOCAL.md`) records the final scalar-only optimization, clean ns/bar comparisons, rejected native conversion experiment and remaining software-FMA cost.
+Updated 2026-11-09. Canonical HIGHP now has scalar and packed implementations. Legacy power methods retain ordinary valid-domain behavior; the NEON numeric min/max ledger (external benchmark archive `powf_module_2026-11-07/NEON-NUMERIC.md`) records the accepted exceptional changes. Performance observations below identify the actual implementation and machine; exploratory intervals cannot satisfy the promotion gate.
 
 ## Relationship to earlier work
 
@@ -53,7 +53,7 @@ assumed preset also removes validation. Matching native portable/backend and
 Caller/Automatic variants intentionally collapse to the same arithmetic.
 Declining automatic upgrades can make portable software FMA expensive.
 
-See the [complete bounded replacement report](../benchmarks/powf_module_2026-11-07/MIDLOW.md)
+See the complete bounded replacement report (external benchmark archive `powf_module_2026-11-07/MIDLOW.md`)
 for scalar, packed, tail and fallback costs on each measured ISA.
 
 The latest bounded matrix retains 118 cells with 50 paired rounds each. At
@@ -67,7 +67,7 @@ methods, paired intervals, zenbench bars, all policy rankings and logged cost
 failures. Native Intel, N1, strict/relaxed WASM and i686 have no latest bounded
 timing result; their correctness coverage must not be read as a speed claim.
 
-The later [debug compiler resource addendum](../benchmarks/powf_module_2026-11-07/MIDLOW-DEBUG.md) keeps release arithmetic unchanged: the fresh complete strict-WASM CI command passes at 3.28 GiB peak RSS under a 6 GiB cap. Tests compare packed and scalar outputs chunk by chunk.
+The later debug compiler resource addendum (external benchmark archive `powf_module_2026-11-07/MIDLOW-DEBUG.md`) keeps release arithmetic unchanged: the fresh complete strict-WASM CI command passes at 3.28 GiB peak RSS under a 6 GiB cap. Tests compare packed and scalar outputs chunk by chunk.
 
 ## ISA implementations and measured coverage
 
@@ -93,9 +93,9 @@ The corpus runs cover widths 1/4/8/16, broadcasts and mixed bases. They found ze
 | New canonical HIGHP, 27,909-pair broad sample, positive finite reference subset | 0.506155662239 ULP | 17; same outputs as the prior scalar Arm graph and Linux std on this sample |
 | New canonical V3 and V4x HIGHP, 515 hard witnesses | 0.500007618219 ULP | 110; identical to the prior scalar graph |
 | New Full, checked Gamma and assumed Gamma HIGHP on V3/V4x, 8,698 Gamma pairs | 0.501247502864 ULP | Eight per implementation and width |
-| Existing canonical MIDP, expanded Gamma sample | Below 47.902 ULP | See the [replacement study](../benchmarks/powf_module_2026-11-07/REPLACEMENTS.md) |
+| Existing canonical MIDP, expanded Gamma sample | Below 47.902 ULP | External archive `powf_module_2026-11-07/REPLACEMENTS.md` |
 
-These are observed maxima, not whole-domain bounds. Older provider comparisons, including libm, libmvec, SLEEF, Arm C and AOCL, retain their separate [provider evidence](../benchmarks/powf_providers_2026-11-09/README.md) and complete variance inventories.
+These are observed maxima, not whole-domain bounds. Older provider comparisons, including libm, libmvec, SLEEF, Arm C and AOCL, retain their separate provider evidence (external archive `powf_providers_2026-11-09/README.md`) and complete variance inventories.
 
 ## M6 NEON performance
 
@@ -224,4 +224,4 @@ Full CI on the recipe-corrected source `28276c44` passes all 19 checks in 682 s,
 
 ## Evidence and updates
 
-The current integration evidence is sealed under `powf-highp-simd-2026-11-09`: 1,278 files verify on the independent mirror, with [manifest identity and contents](../benchmarks/powf_providers_2026-11-09/ARTIFACTS.md#canonical-highp-integration-and-packed-kernels). It remains separate from the sealed [scalar port study](../benchmarks/powf_providers_2026-11-09/ARM-RESULTS.md) and [earlier M6 study](../benchmarks/powf_providers_2026-11-09/M6-NEON.md). New results update this reference with exact source/binary identity, flags, ISA, input domain, workload, ns denominator, paired interval, admission status, resource summary and variance-ledger link. Superseded measurements remain identifiable.
+The current integration evidence is sealed under `powf-highp-simd-2026-11-09`: 1,278 files verify on the independent mirror (external archive `powf_providers_2026-11-09/ARTIFACTS.md#canonical-highp-integration-and-packed-kernels`). It remains separate from the sealed scalar port study (`powf_providers_2026-11-09/ARM-RESULTS.md`) and earlier M6 study (`powf_providers_2026-11-09/M6-NEON.md`). New results update this reference with exact source/binary identity, flags, ISA, input domain, workload, ns denominator, paired interval, admission status, resource summary and variance-ledger link. Superseded measurements remain identifiable.

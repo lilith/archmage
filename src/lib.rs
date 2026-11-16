@@ -1,12 +1,12 @@
 //! # archmage
 //!
-//! [Guide](https://imazen.github.io/archmage/) · [Intrinsics browser](https://imazen.github.io/archmage/intrinsics/) · [Archmage API](https://docs.rs/archmage/latest/archmage/) · [Magetypes API](https://docs.rs/magetypes/latest/magetypes/)
+//! [Guide](https://lilith.github.io/archmage/) · [Intrinsics browser](https://lilith.github.io/archmage/intrinsics/) · [Archmage API](https://docs.rs/archmage/latest/archmage/) · [Magetypes API](https://docs.rs/magetypes/latest/magetypes/)
 //!
 //! Archmage provides CPU-capability tokens, feature-enabled functions, and dispatch.
 //! The `#[magetypes]` attribute belongs to archmage; the
 //! [magetypes crate](https://docs.rs/magetypes/latest/magetypes/) provides the vectors.
-//! Start with the [complete portable kernel](https://imazen.github.io/archmage/archmage/getting-started/first-simd/)
-//! and [generic specialization](https://imazen.github.io/archmage/magetypes/dispatch/types-and-dispatch/).
+//! Start with the [complete portable kernel](https://lilith.github.io/archmage/archmage/getting-started/first-simd/)
+//! and [generic specialization](https://lilith.github.io/archmage/magetypes/dispatch/types-and-dispatch/).
 //!
 //! For a direct-intrinsic specialization, keep the full loop behind an entry:
 //!

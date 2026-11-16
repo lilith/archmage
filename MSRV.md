@@ -108,7 +108,7 @@ This was the big one. Before 1.89, writing `#[target_feature(enable = "avx512f")
 
 Plus mask types (`__mmask8/16/32/64`), mask operations (`_kadd_mask*`, `_kand_mask*`, etc.), comparison enums (`_MM_CMPINT_*`), and 256 permutation constants (`_MM_PERM_*`).
 
-[Full intrinsics-per-module breakdown →](https://imazen.github.io/archmage/archmage/reference/rust-189-simd/)
+[Full intrinsics-per-module breakdown →](https://lilith.github.io/archmage/archmage/reference/rust-189-simd/)
 
 ### `sha512_sm_x86` — 3 target features, 10 intrinsics
 

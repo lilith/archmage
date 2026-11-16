@@ -8,42 +8,42 @@ This document captures the architectural design review (assumptions, gaps, footg
 ## 1. Architectural Review: Gaps, Footguns & Scaling Concerns
 
 ### H1. `And<Base, Extra>` conjunction proofs vs `incant!(.. with token)` & `SimdTypes`
-- **Status:** Tracked
-- **Symptom:**
-  - `src/tokens/generated/traits.rs` (`impl<Base, Extra> IntoConcreteToken for And<Base, Extra>`) overrides only `as_scalar()` (forwarding `self.base().as_scalar()`), leaving all SIMD `as_*` methods (`as_x64v3`, `as_x64v4`, `as_neon`, `as_wasm128`, etc.) returning `None`. Passing `X64V3Token.and(X64GfniToken)` to `incant!(f(x) with tok, [v3, scalar])` panics at runtime (or falls into `default` if present), whereas `ScalarToken.and(ScalarToken)` succeeds on `[..., scalar]`. Note: existing tests (`tests/conjunction_and_clumps.rs` and `tests/incant_macro.rs`) pin exact-type `incant!(.. with token)` and `ScalarToken.and(ScalarToken)` behavior, so altering `IntoConcreteToken` for `And<Base, Extra>` requires an explicit design/contract decision.
-  - `magetypes/src/types.rs` implements `SimdTypes` for only 21 individual concrete tokens, omitting `And<Base, Extra>`, `X64Avx512Bf16Token`, and several x86/NEON leaf tokens even though `MagetypesToken` in `magetypes/src/simd/generic/subtiers.rs` supports all concrete tokens and `And<Base, Extra>`.
+- **Status:** Partially Fixed (`SimdTypes` fixed; `IntoConcreteToken` tracked)
+- **Details:**
+  - `src/tokens/generated/traits.rs` (`impl<Base, Extra> IntoConcreteToken for And<Base, Extra>`) overrides only `as_scalar()` (forwarding `self.base().as_scalar()`), leaving all SIMD `as_*` methods (`as_x64v3`, `as_x64v4`, `as_neon`, `as_wasm128`, etc.) returning `None`. Passing `X64V3Token.and(X64GfniToken)` to `incant!(f(x) with tok, [v3, scalar])` panics at runtime (or falls into `default` if present), whereas `ScalarToken.and(ScalarToken)` succeeds on `[..., scalar]`. Existing tests (`tests/conjunction_and_clumps.rs` and `tests/incant_macro.rs`) intentionally assert exact-type `incant!(.. with token)` and `ScalarToken.and(ScalarToken)` behavior, so changing `IntoConcreteToken` for `And<Base, Extra>` requires an explicit design decision (**Tracked**).
+  - `SimdTypes` in `magetypes/src/types.rs` previously covered only 21 individual concrete tokens; **Fixed** via blanket `impl<T> crate::SimdTypes for T` in `magetypes/src/simd/backends/sealed.rs` (`xtask/src/simd_types/unify_gen.rs`), covering all 39 concrete leaf tokens and all `And<Base, Extra>` conjunctions with `docs/public-api/` regenerated.
 
 ### H2. `tests/downstream-compat` version skew against `0.10.0`
-- **Status:** Tracked
-- `tests/downstream-compat/{linear-srgb,zensim,zenpixels-convert}/Cargo.toml` patch published `^0.9` crates via `[patch.crates-io]` with workspace `0.10.0` crates, which Cargo rejects until those downstream crates target `0.10`. Meanwhile, `.github/workflows/ci.yml` invokes `cargo test` in those directories.
+- **Status:** Tracked (`tier-modifiers` & `mixed-avx512` Fixed)
+- `tests/downstream-compat/{linear-srgb,zensim,zenpixels-convert}/Cargo.toml` patch published `^0.9` crates via `[patch.crates-io]` with workspace `0.10.0` crates; Cargo ignores unused `0.10.0` patches with a warning and resolves `archmage v0.9.31` from crates.io instead of testing local `0.10.0` until those downstream crates release `0.10`-compatible versions (affects `.github/workflows/ci.yml` downstream compat checks).
+- `tests/downstream-compat/tier-modifiers/with-avx512/Cargo.toml` was missing its `[features] default = ["avx512"]` / `avx512 = ["archmage/avx512"]` declaration (**Fixed**), and `mixed-avx512` now compiles warning-free under `#![deny(warnings)]` after fixing `#[allow(unexpected_cfgs)]` placement in `archmage-macros`.
 
 ### H3. `is_and_path` name collision & `#[autoversion]` token-rejection gap in `archmage-macros`
-- **Status:** Tracked
-- `archmage-macros/src/token_discovery.rs`: `is_and_path` matches any type path whose last segment is `And<L, R>` (not just `archmage::And`), recurses into both type parameters mutating `ProofAccumulator`, and emits a compile error whenever `left_ok || right_ok` — rejecting unrelated user types such as `my_mod::And<X64V3Token, Foo>`.
-- `archmage-macros/src/autoversion.rs`: `find_autoversion_token_param` only inspects bare `Type::Path` leaf tokens (`X64V3Token`), missing `&X64V3Token`, `(X64V3Token, X64GfniToken)`, `And<...>`, and `impl Has*`.
+- **Status:** Fixed
+- `archmage-macros/src/token_discovery.rs`: `is_and_path` now matches only `And`, `archmage::And`, or `archmage::tokens::And` (ignoring unrelated paths such as `my_mod::And<X64V3Token, Foo>`), and `discover_in_type` evaluates conjunction arguments in a scratch `ProofAccumulator` before committing.
+- `archmage-macros/src/autoversion.rs`: `find_autoversion_token_param` now delegates to `discover_signature_proofs` and `diagnose_featureless_token`, catching `&Token`, tuples, `And<...>`, `impl Has*`, `T: Has*`, and featureless token bounds while preserving `SimdToken` and bare `ScalarToken` handling.
 
 ### H4. Default tier divergence (`incant!`/`#[autoversion]` vs `attuned!`) & feature unification
-- **Status:** Tracked
-- `archmage-macros/src/tiers.rs` sets `DEFAULT_TIER_NAMES = ["v4", "v3", "neon", "wasm128", "scalar"]`, whereas `docs/ATTUNE.md` notes elided `attuned!(work(data))` excludes `v4`/`v4x` even when `avx512` is enabled; neither default list includes `wasm128_relaxed_fma`, `arm_v2`, `arm_v3`, or `v3_vnni`.
-- Workspace feature unification can enable `magetypes/avx512` while `magemath/avx512` stays off, causing `magemath/src/token_canon.rs` to downgrade `X64V4Token`/`X64V4xToken` to `.v3()`. Similarly, sibling crates without `avx512` inherit `archmage-macros/avx512` unless they gate `v4(cfg(avx512))` explicitly.
+- **Status:** Partially Fixed (`incant!` & rewrite `#[allow(unexpected_cfgs)]` fixed; tier list divergence tracked)
+- `archmage-macros/src/tiers.rs` sets `DEFAULT_TIER_NAMES = ["v4", "v3", "neon", "wasm128", "scalar"]`, whereas `docs/ATTUNE.md` notes elided `attuned!(work(data))` excludes `v4`/`v4x` even when `avx512` is enabled; neither default list includes `wasm128_relaxed_fma`, `arm_v2`, `arm_v3`, or `v3_vnni` (**Tracked**).
+- **Fixed (`incant!` / `rewrite`):** `archmage-macros/src/tiers.rs` (`wrap_unexpected_cfg`) and `archmage-macros/src/rewrite.rs` now wrap implied `#[cfg(feature = "...")]` gates inside enclosing `#[allow(unexpected_cfgs)] { ... }` blocks so crates without `[features] avx512` compile warning-free under `#![deny(warnings)]` (note: item-level `#[cfg(feature = "avx512")]` on `#[magetypes]` variants still cannot suppress `unexpected_cfgs` via a same-item `#[allow]`).
+- Workspace feature unification can still enable `magetypes/avx512` while `magemath/avx512` stays off, causing `magemath/src/token_canon.rs` to downgrade `X64V4Token`/`X64V4xToken` to `.v3()` (**Tracked**).
 
 ### H5. Compile-time & arity ceiling in `caps.rs` / `sealed.rs`
 - **Status:** Tracked (Architectural)
-- `src/tokens/generated/caps.rs` (~2,092 lines) uses an 18-slot `X64CapSet<C0..C17>` tuple of `Flag` markers (`Yes`/`No`), and `magetypes/src/simd/backends/sealed.rs` (~3,897 lines) expands `SealedFromCaps<T>` across that representation. Adding new orthogonal ISAs increases tuple arity, trait-solver work, and generated line count near `COMPILE_BUDGETS` in `xtask/src/main.rs` (`41,500` on `x86_64`, `38,500` on `aarch64`).
+- `src/tokens/generated/caps.rs` and `magetypes/src/simd/backends/sealed.rs` expand `X64CapSet<C0..C17>` and `SealedFromCaps<T>`. Current generated backend line counts stay within `COMPILE_BUDGETS` in `xtask/src/main.rs` (`x86_64 40,875 / 41,500`, `aarch64 37,664 / 38,500`, `wasm32 37,515 / 38,500`, `generic/generated 28,492 / 29,500` measured by `cargo run -p xtask -- validate`). Adding new orthogonal ISAs remains a long-term scaling constraint.
 
 ### H6. Implementation & documentation rough edges (`magemath`, `magetypes`, `xtask`, docs)
-- **Dead `LEGACY` bit & stale coeff docs (`magemath`):** `ExpfOptions::LEGACY = 64` and `LogfOptions::LEGACY = 64` are excluded by `valid(bits)` (`bits & !0b11_1101 == 0`) yet still branched on in `expf/graph.rs` and `logf/graph.rs`. Because bit 6 is always zero, `expf`/`logf` use refitted coefficients while `powf/graph.rs` and deprecated `magetypes` transcendentals keep older coefficients, and `expf/options.rs` / `logf/options.rs` comments still claim `"Existing MIDP coefficients"`.
-- **`try_log1p_*` ignores `BackendDependent` & scalarizes vectors:** `magemath/src/logf/mod.rs` and `logf/const_api.rs` extract lanes via `.to_array()` -> scalar `log1p_parts` and hardcode `.mul_add_fused(LN_2, c)`, ignoring `LogfPortability::BackendDependent` for the final multiply-add.
-- **Duplicate WASM FMA probe caches:** `magetypes/src/wasm_fma.rs` and `magemath/src/wasm_fma.rs` maintain separate `AtomicU8` runtime probe caches and software round-to-odd FMA helpers.
-- **Missing `*_f32xN_runtime` wrappers on `expf`/`logf`/`cbrtf`:** Present on `powf`, absent on the other three modules.
-- **`try_exp` pre-check scaling:** `magemath/src/expf/mod.rs` multiplies `x * LOG2_E` before range checking, so finite `|x|` large enough that `x * LOG2_E` overflows to `±inf` is rejected as `InvalidInput` under `Bounded`. (Pinned by `magemath/tests/scalar_vector_parity_expf_cbrtf.rs`.)
-- **`ScalarToken` `f32x16` `min`/`max` NaN quirk:** `magetypes/src/simd/impls/scalar.rs` uses `<` comparisons for `f32x16::min`/`max` (`min(1.0, qNaN) -> qNaN`) while `f32x4`/`f32x8` use `f32::min`/`f32::max` (`1.0`). (Documented in `docs/site/content/magetypes/isa-quirks.md`.)
-- **Soundness scanner & doc/link drift:**
-  - `xtask/src/soundness.rs` and `xtask/src/soundness/raw_context.rs` rely on brace/regex text scanning and fail closed on non-single-tier attribute forms for `from_context()`.
-  - `src/lib.rs` mixes `imazen.github.io` and `lilith.github.io` links.
-  - `docs/POWF.md` and `docs/POWF_REFERENCE.md` link to missing `../benchmarks/powf_module_2026-11-07/...` reports.
-  - Constructor deprecation notes say `0.11` (`f32x4_impl.rs`) while `docs/TOKEN-CONSTRUCTOR-MIGRATION.md` says `0.11+` future plan.
-  - `magemath/src/powf/highp_data.rs:3` references `magetypes/LICENSE-ARM` instead of `magemath/LICENSE-ARM`.
+- **Dead `LEGACY` bit & stale coeff docs (`magemath`) — Fixed:** Removed dead `ExpfOptions::LEGACY` and `LogfOptions::LEGACY` branches in `expf/graph.rs` and `logf/graph.rs`, and updated `expf/options.rs` / `logf/options.rs` comments (`Refitted MIDP/LOWP`, `Rational P2/Q2`).
+- **`try_log1p_*` ignores `BackendDependent` & scalarizes vectors — Fixed:** Vectorized `log1p_parts` in `magemath/src/logf/const_api.rs` and made the final `LN_2` multiply-add honor `LogfOptions::BACKEND` (`mul_add_relaxed` vs `mul_add_fused`).
+- **License & documentation links — Fixed:** Fixed `magemath/LICENSE-ARM` references in `magemath/src/powf/highp_data.rs` and `docs/POWF.md`, aligned `src/lib.rs` and `MSRV.md` guide links to `https://lilith.github.io/archmage/`, and replaced dead relative `../benchmarks/powf_*` links in `docs/POWF.md` and `docs/POWF_REFERENCE.md` with plain external archive citations.
+- **Remaining tracked rough edges:**
+  - Duplicate WASM FMA probe caches in `magetypes/src/wasm_fma.rs` and `magemath/src/wasm_fma.rs`.
+  - Missing `*_f32xN_runtime` vector wrappers on `expf`/`logf`/`cbrtf` (present on `powf`).
+  - `try_exp` pre-check scaling (`x * LOG2_E` overflows to `±inf` before domain check; pinned by `magemath/tests/scalar_vector_parity_expf_cbrtf.rs`).
+  - `ScalarToken` `f32x16::min`/`max` `<` vs `f32::min`/`f32::max` NaN divergence (`docs/site/content/magetypes/isa-quirks.md`).
+  - `xtask/src/soundness.rs` and `xtask/src/soundness/raw_context.rs` brace/regex scanning and non-single-tier fail-closed `from_context()` checks.
+  - Constructor deprecation wording (`0.11` in generated docs vs `0.11+` in `docs/TOKEN-CONSTRUCTOR-MIGRATION.md`).
 
 ---
 
@@ -57,7 +57,7 @@ All four modules expose const `.bits()` builders (`PowfOptions`, `ExpfOptions`, 
 |---|---|---|---|---|
 | **Domain** | `PositiveNormal` (default), `NonNegativeNormal`, `Gamma` (`+0` or `[2^-16, 2^16]`, exp `[0, 4]`), `PositiveGamma` (nonzero), `Full` (HIGHP only) | `Bounded` (default: rejects `NaN`/`±inf`; clamps finite `[-126, 127.99]` lowp / `[-126, 128)` midp), `Full` (`NaN→qNaN`, `+inf→+inf`, `-inf→0`) | `Positive` (default: finite normal `> 0`), `Specials` (`±0→-inf`, `<0→NaN`, `+inf→+inf`; subnormals inaccurate; `log1p` checks `u=1+x`, preserves `±0.0`) | `Bounded` (default: `±0.0` and normals `< f32::MAX / 3`), `Full` (subnormals `×2^24`/`2^-8`, `>=1e36` `×0.125`/`2`, `±0`, `±inf`, `qNaN`) |
 | **Precision & Accuracy** | `Midp` (default, documented corpus max `47.902 ULP` Gamma / `< 438.504 ULP` PositiveNormal), `Lowp`, `Highp` (Arm v26.07 binary64 `TOINT=0` graph: `<= 0.506156 ULP` on 27,909 pairs, `<= 0.500008 ULP` on 515 hard witnesses per `docs/POWF_REFERENCE.md`) | `Midp` (default, target `<= 1.9 ULP` for `exp2 < 127.5`), `Lowp` (target `<= 0.56%` rel err) | `Midp` (default, target `<= 4.5 ULP` normal domain), `Lowp` (rational P2/Q2, `~6e-6` abs error; larger rel err near `1`) | `Midp` (default, test-asserted `<= 3.2 ULP`), `Lowp` (test-asserted `<= 259.0 ULP`, `~3e-5` rel err in `magemath/src/cbrtf/tests.rs`) |
-| **Portability** | `BitExact` (default: fused single-rounding everywhere; runtime WASM `relaxed_madd` probe; `std` screens `mul_add`), `BackendDependent` (`mul_add_relaxed`, or `std` `f32::powf` for `Highp`+`std`) | `BitExact` (default: `mul_add_fused`), `BackendDependent` (`mul_add_relaxed`) | `BitExact` (default: `mul_add_fused`), `BackendDependent` (`mul_add_relaxed`; *caveat*: `log1p` final `LN_2` step currently uses `mul_add_fused`) | `BitExact` (default: explicit `(y³ + 2x)/(2y³ + x)`), `BackendDependent` (`mul_add_relaxed` in Halley step) |
+| **Portability** | `BitExact` (default: fused single-rounding everywhere; runtime WASM `relaxed_madd` probe; `std` screens `mul_add`), `BackendDependent` (`mul_add_relaxed`, or `std` `f32::powf` for `Highp`+`std`) | `BitExact` (default: `mul_add_fused`), `BackendDependent` (`mul_add_relaxed`) | `BitExact` (default: `mul_add_fused`), `BackendDependent` (`mul_add_relaxed`, including `log1p` final `LN_2` step) | `BitExact` (default: explicit `(y³ + 2x)/(2y³ + x)`), `BackendDependent` (`mul_add_relaxed` in Halley step) |
 | **Validation** | `Checked` (default) / `AssumeValid` | `Checked` / `AssumeValid` | `Checked` / `AssumeValid` | `Checked` / `AssumeValid` |
 | **Execution** | `Automatic` (default: upgrades scalar once to V3/NEON/Wasm128, or `Plan::Std`) / `Caller` (retains caller token for tails) | `Automatic` / `Caller` | `Automatic` / `Caller` | `Automatic` / `Caller` |
 

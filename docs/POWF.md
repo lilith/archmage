@@ -91,11 +91,10 @@ pairs. Its largest measured canonical errors were below 438.504 ULP for
 `Gamma`. These replace the earlier sampled maxima of 91.258, 92.613 and
 25.397 ULP; none is a worst-case guarantee. Scalar and V3 canonical bits
 agree. On this corpus, std f32 power stays below 0.507 ULP on Linux x86
-and below 0.511 ULP on Apple ARM. See the
-[replacement comparison](../benchmarks/powf_module_2026-11-07/REPLACEMENTS.md)
-for accuracy/performance tradeoffs against the actual legacy/std methods. See the
-[study](../benchmarks/powf_module_2026-11-07/MATRIX.md) for frozen cost gates and
-missing performance coverage. The API remains a draft pending its review and
+and below 0.511 ULP on Apple ARM. See the external benchmark archive
+(`powf_module_2026-11-07/REPLACEMENTS.md`) for accuracy/performance tradeoffs
+against the actual legacy/std methods, and `powf_module_2026-11-07/MATRIX.md`
+for frozen cost gates and missing performance coverage. The API remains a draft pending its review and
 performance evidence.
 
 ## Quality and portability presets
@@ -170,13 +169,13 @@ a validation choice nor extra precision/range. A replacement must explicitly
 choose whether it preserves those legacy special cases or uses the new
 checked zero convention above.
 
-The controlled [non-fused study](../benchmarks/powf_module_2026-11-07/NONFUSED-PLAN.md)
+The controlled non-fused study (external benchmark archive `powf_module_2026-11-07/NONFUSED-PLAN.md`)
 compares both rounding paths against independent rational graphs and MPFR.
 Gamma's exponent bound is essential: LOWP's log bias near 1 can be magnified
 catastrophically by large exponents even when its computed result remains in
 normal range. PositiveNormal alone is therefore not a LOWP accuracy preset.
 
-The [public policy comparison](../benchmarks/powf_module_2026-11-07/POLICIES.md)
+The public policy comparison (external benchmark archive `powf_module_2026-11-07/POLICIES.md`)
 compared its frozen set of 64 then-supported configurations and records where flags save work,
 collapse to identical native graphs, or trade validation/dispatch cost against
 arithmetic cost. BackendDependent HIGHP inherits the [std power precision contract](https://doc.rust-lang.org/std/primitive.f32.html#method.powf),
@@ -195,7 +194,7 @@ The HIGHP graph is a safe Rust port of Arm Optimized Routines v26.07
 (commit `4be260a5`), using the unscaled TOINT=0 reduction and exact
 binary64 coefficients. Its nine fused nodes retain their ordering; other
 adds and multiplies remain separately rounded. The final conversion rounds
-to binary32. The Arm MIT license ships in `magetypes/LICENSE-ARM`.
+to binary32. The Arm MIT license ships in `magemath/LICENSE-ARM`.
 
 Expected canonical HIGHP graph bits are verified against exact rational IEEE
 rounding and independently extracted C-reference coefficients; no host pow
@@ -243,7 +242,7 @@ requires that matching token: the no-token scalar API uses ScalarToken and can
 choose separate rounding, while a native vector uses FMA. Automatic can upgrade
 both forms; BitExact preserves its fused graph even through software fallback.
 
-The [replacement matrix](../benchmarks/powf_module_2026-11-07/MIDLOW.md)
+The replacement matrix (external benchmark archive `powf_module_2026-11-07/MIDLOW.md`)
 reports exact methods, ranges, validation, ns and retained admission results.
 
 
