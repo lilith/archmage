@@ -20,6 +20,7 @@ fn pass_through<T: IntoConcreteToken>(token: T, x: f32) -> f32 {
         use archmage::IntoConcreteToken;
         let __incant_token = token;
         {
+            #[allow(unexpected_cfgs)] {}
             if let Some(__t) = __incant_token.as_x64v3() {
                 break '__incant inner_v3(__t, x);
             }

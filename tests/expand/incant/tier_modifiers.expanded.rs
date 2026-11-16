@@ -33,6 +33,7 @@ fn dispatch(x: f32) -> f32 {
         #[allow(unused_imports)]
         use archmage::SimdToken;
         {
+            #[allow(unexpected_cfgs)] {}
             if let Some(__t) = archmage::X64V3Token::summon() {
                 break '__incant inner_v3(__t, x);
             }

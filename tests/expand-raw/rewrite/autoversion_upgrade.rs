@@ -53,10 +53,13 @@ fn outer(x: f32) -> f32 {
 fn __arcane_outer_v3(_token: archmage::X64V3Token, x: f32) -> f32 {
     '__incant_rewrite: {
         use archmage::SimdToken;
-        #[allow(unexpected_cfgs)] #[cfg(feature = "avx512")]
+        #[allow(unexpected_cfgs)]
         {
-            if let Some(__t) = archmage::X64V4Token::summon() {
-                break '__incant_rewrite inner_v4(__t, x);
+            #[cfg(feature = "avx512")]
+            {
+                if let Some(__t) = archmage::X64V4Token::summon() {
+                    break '__incant_rewrite inner_v4(__t, x);
+                }
             }
         }
         inner_v3(_token, x)
@@ -76,10 +79,13 @@ fn outer_scalar(_token: archmage::ScalarToken, x: f32) -> f32 {
         use archmage::SimdToken;
         #[cfg(target_arch = "x86_64")]
         {
-            #[allow(unexpected_cfgs)] #[cfg(feature = "avx512")]
+            #[allow(unexpected_cfgs)]
             {
-                if let Some(__t) = archmage::X64V4Token::summon() {
-                    break '__incant inner_v4(__t, x);
+                #[cfg(feature = "avx512")]
+                {
+                    if let Some(__t) = archmage::X64V4Token::summon() {
+                        break '__incant inner_v4(__t, x);
+                    }
                 }
             }
             if let Some(__t) = archmage::X64V3Token::summon() {

@@ -171,6 +171,27 @@ impl ResolvedTier {
     }
 }
 
+/// Wrap a `#[cfg(...)]`-guarded token stream in `#[allow(unexpected_cfgs)] { ... }`
+/// when `allow_unexpected` is true.
+///
+/// An enclosing block is required because rustc strips a `#[cfg]`-gated node
+/// together with attributes attached directly to that same node, so a sibling
+/// `#[allow(unexpected_cfgs)]` would not suppress the warning when the feature
+/// is undeclared and false.
+pub(crate) fn wrap_unexpected_cfg(
+    allow_unexpected: bool,
+    gated: proc_macro2::TokenStream,
+) -> proc_macro2::TokenStream {
+    if allow_unexpected {
+        quote::quote! {
+            #[allow(unexpected_cfgs)]
+            { #gated }
+        }
+    } else {
+        gated
+    }
+}
+
 /// Build the dispatch arms for the non-fallback tiers. `check(tier)` produces
 /// one tier's test-and-call; each is wrapped in its `#[cfg(feature)]` gate
 /// (and WASM `target_feature` gate), and the tiers of one architecture share a
@@ -204,20 +225,17 @@ pub(crate) fn gen_dispatch_arms(
                 preds.push(quote::quote! { feature = #feat });
             }
             if !preds.is_empty() {
-                let allow_attr = if rt.allow_unexpected_cfg && rt.feature_gate.is_some() {
-                    quote::quote! { #[allow(unexpected_cfgs)] }
-                } else {
-                    quote::quote! {}
-                };
                 let cfg_attr = match preds.as_slice() {
                     [only] => quote::quote! { #[cfg(#only)] },
                     many => quote::quote! { #[cfg(all(#(#many),*))] },
                 };
-                tier_checks.push(quote::quote! {
-                    #allow_attr
-                    #cfg_attr
-                    { #check }
-                });
+                tier_checks.push(wrap_unexpected_cfg(
+                    rt.allow_unexpected_cfg && rt.feature_gate.is_some(),
+                    quote::quote! {
+                        #cfg_attr
+                        { #check }
+                    },
+                ));
             } else {
                 tier_checks.push(check);
             }

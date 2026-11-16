@@ -46,6 +46,7 @@ fn outer(x: f32) -> f32 {
 fn __arcane_outer_v3(_token: archmage::X64V3Token, x: f32) -> f32 {
     '__incant_rewrite: {
         use archmage::SimdToken;
+        #[allow(unexpected_cfgs)] {}
         inner_v3(_token, x)
     }
 }
@@ -61,6 +62,7 @@ fn outer_scalar(_token: archmage::ScalarToken, x: f32) -> f32 {
         #[allow(unused_imports)]
         use archmage::SimdToken;
         {
+            #[allow(unexpected_cfgs)] {}
             if let Some(__t) = archmage::X64V3Token::summon() {
                 break '__incant inner_v3(__t, x);
             }

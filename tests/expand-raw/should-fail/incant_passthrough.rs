@@ -37,10 +37,13 @@ fn pass_through<T: IntoConcreteToken>(token: T, x: f32) -> f32 {
         let __incant_token = token;
         #[cfg(target_arch = "x86_64")]
         {
-            #[allow(unexpected_cfgs)] #[cfg(feature = "avx512")]
+            #[allow(unexpected_cfgs)]
             {
-                if let Some(__t) = __incant_token.as_x64v4() {
-                    break '__incant inner_v4(__t, x);
+                #[cfg(feature = "avx512")]
+                {
+                    if let Some(__t) = __incant_token.as_x64v4() {
+                        break '__incant inner_v4(__t, x);
+                    }
                 }
             }
             if let Some(__t) = __incant_token.as_x64v3() {

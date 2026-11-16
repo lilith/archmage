@@ -36,6 +36,7 @@ fn inner_scalar(_t: ScalarToken, x: f32) -> f32 {
 fn __arcane_outer(token: X64V3Token, x: f32) -> f32 {
     '__incant_rewrite: {
         use archmage::SimdToken;
+        #[allow(unexpected_cfgs)] {}
         inner_v3(token, x)
     }
 }

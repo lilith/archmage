@@ -52,10 +52,13 @@ fn dispatch(x: f32) -> f32 {
         use archmage::SimdToken;
         #[cfg(target_arch = "x86_64")]
         {
-            #[allow(unexpected_cfgs)] #[cfg(feature = "avx512")]
+            #[allow(unexpected_cfgs)]
             {
-                if let Some(__t) = archmage::X64V4Token::summon() {
-                    break '__incant inner_v4(__t, x);
+                #[cfg(feature = "avx512")]
+                {
+                    if let Some(__t) = archmage::X64V4Token::summon() {
+                        break '__incant inner_v4(__t, x);
+                    }
                 }
             }
             if let Some(__t) = archmage::X64V3Token::summon() {

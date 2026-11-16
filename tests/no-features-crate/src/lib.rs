@@ -151,6 +151,39 @@ pub fn covered_statement_start(x: u32) -> u32 {
     attuned!(bump(x)) + attuned!(bump(x)).wrapping_mul(2)
 }
 
+#[cfg(target_arch = "x86_64")]
+#[arcane]
+fn incant_add_v3(_: X64V3Token, x: u32) -> u32 {
+    x + 3
+}
+
+#[cfg(target_arch = "aarch64")]
+#[arcane]
+fn incant_add_neon(_: NeonToken, x: u32) -> u32 {
+    x + 2
+}
+
+#[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+#[arcane]
+fn incant_add_wasm128(_: Wasm128Token, x: u32) -> u32 {
+    x + 1
+}
+
+fn incant_add_scalar(_: ScalarToken, x: u32) -> u32 {
+    x
+}
+
+pub fn incant_add_default(x: u32) -> u32 {
+    incant!(incant_add(x))
+}
+
+#[cfg(target_arch = "x86_64")]
+#[arcane]
+pub fn incant_add_in_v3(token: X64V3Token, x: u32) -> u32 {
+    let _ = token;
+    incant!(incant_add(x))
+}
+
 // ============================================================================
 // Smoke tests
 // ============================================================================
@@ -239,5 +272,14 @@ mod tests {
         let data = [1.0f32, 2.0, 3.0, 4.0];
         let result = sum_squares_scalar(ScalarToken, &data);
         assert!((result - 30.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn incant_without_avx512_feature_compiles_warning_free() {
+        assert!(incant_add_default(10) >= 10);
+        #[cfg(target_arch = "x86_64")]
+        if let Some(token) = X64V3Token::summon() {
+            assert_eq!(incant_add_in_v3(token, 10), 13);
+        }
     }
 }

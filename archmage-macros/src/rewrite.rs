@@ -311,20 +311,17 @@ fn rewrite_single_incant(input: &IncantInput, ctx: &CallerContext) -> Option<Tok
             preds.push(quote! { feature = #feat });
         }
         if !preds.is_empty() {
-            let allow_attr = if rt.allow_unexpected_cfg && rt.feature_gate.is_some() {
-                quote! { #[allow(unexpected_cfgs)] }
-            } else {
-                quote! {}
-            };
             let cfg_attr = match preds.as_slice() {
                 [only] => quote! { #[cfg(#only)] },
                 many => quote! { #[cfg(all(#(#many),*))] },
             };
-            upgrade_arms.push(quote! {
-                #allow_attr
-                #cfg_attr
-                { #check }
-            });
+            upgrade_arms.push(tiers::wrap_unexpected_cfg(
+                rt.allow_unexpected_cfg && rt.feature_gate.is_some(),
+                quote! {
+                    #cfg_attr
+                    { #check }
+                },
+            ));
         } else {
             upgrade_arms.push(check);
         }
@@ -357,17 +354,14 @@ fn rewrite_single_incant(input: &IncantInput, ctx: &CallerContext) -> Option<Tok
         match &rt.feature_gate {
             Some(feat) => {
                 gates_allow_unexpected |= rt.allow_unexpected_cfg;
-                let allow_attr = if rt.allow_unexpected_cfg {
-                    quote! { #[allow(unexpected_cfgs)] }
-                } else {
-                    quote! {}
-                };
                 let prior = &direct_gates;
-                direct_arms.push(quote! {
-                    #allow_attr
-                    #[cfg(all(feature = #feat, not(any(#(feature = #prior),*))))]
-                    { #call }
-                });
+                direct_arms.push(tiers::wrap_unexpected_cfg(
+                    rt.allow_unexpected_cfg,
+                    quote! {
+                        #[cfg(all(feature = #feat, not(any(#(feature = #prior),*))))]
+                        { #call }
+                    },
+                ));
                 direct_gates.push(feat.as_str());
             }
             None => {
@@ -415,16 +409,13 @@ fn rewrite_single_incant(input: &IncantInput, ctx: &CallerContext) -> Option<Tok
         let fallback = if direct_gates.is_empty() {
             fallback_call
         } else {
-            let allow_attr = if gates_allow_unexpected {
-                quote! { #[allow(unexpected_cfgs)] }
-            } else {
-                quote! {}
-            };
-            quote! {
-                #allow_attr
-                #[cfg(not(any(#(feature = #direct_gates),*)))]
-                { #fallback_call }
-            }
+            tiers::wrap_unexpected_cfg(
+                gates_allow_unexpected,
+                quote! {
+                    #[cfg(not(any(#(feature = #direct_gates),*)))]
+                    { #fallback_call }
+                },
+            )
         };
         quote! {
             '__incant_rewrite: {
@@ -483,13 +474,15 @@ fn rewrite_tokenless_incant(input: &IncantInput, ctx: &CallerContext) -> Option<
             quote! { #function(#args) }
         };
         result = if let Some(feature) = &tier.feature_gate {
-            let allow = tier
-                .allow_unexpected_cfg
-                .then(|| quote! { #[allow(unexpected_cfgs)] });
-            quote! {{
-                #allow #[cfg(feature = #feature)] { #call }
-                #allow #[cfg(not(feature = #feature))] { #result }
-            }}
+            let both = quote! {
+                #[cfg(feature = #feature)] { #call }
+                #[cfg(not(feature = #feature))] { #result }
+            };
+            if tier.allow_unexpected_cfg {
+                tiers::wrap_unexpected_cfg(true, both)
+            } else {
+                quote! {{ #both }}
+            }
         } else {
             call
         };

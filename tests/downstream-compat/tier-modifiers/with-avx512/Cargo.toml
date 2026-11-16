@@ -4,5 +4,9 @@ version = "0.0.0"
 edition = "2024"
 publish = false
 
+[features]
+default = ["avx512"]
+avx512 = ["archmage/avx512"]
+
 [dependencies]
 archmage = { workspace = true, features = ["avx512"] }
