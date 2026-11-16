@@ -37,10 +37,10 @@ pub enum ExpfPortability {
 /// Approximation family, not a global mathematical error bound.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum ExpfPrecision {
-    /// Existing MIDP coefficients and graph; ≤1.9 ULP below x = 127.5.
+    /// Refitted MIDP coefficients and graph; ≤1.9 ULP below x = 127.5.
     #[default]
     Midp,
-    /// Existing shorter LOWP coefficients; ≤0.56% relative error.
+    /// Refitted shorter LOWP coefficients; ≤0.56% relative error.
     Lowp,
 }
 
@@ -78,7 +78,6 @@ impl ExpfOptions {
     pub(crate) const LOWP: u32 = 8;
     pub(crate) const BACKEND: u32 = 16;
     pub(crate) const ASSUME: u32 = 32;
-    pub(crate) const LEGACY: u32 = 64;
 
     /// BitExact MIDP, bounded domain, checked, automatic execution.
     pub const PORTABLE_MIDP: Self = Self::new();

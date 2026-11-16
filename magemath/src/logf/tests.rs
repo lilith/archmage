@@ -76,3 +76,66 @@ fn log1p_basics() {
         core::f32::consts::LN_2
     );
 }
+
+#[test]
+fn log1p_mixed_vector_lanes_and_backend_portability() {
+    use archmage::ScalarToken;
+    use magetypes::simd::generic::f32x4;
+
+    const SPECIALS_CALLER: u32 = LogfOptions::DEFAULT | LogfOptions::SPECIALS | LogfOptions::CALLER;
+    const SPECIALS_BACKEND_CALLER: u32 = SPECIALS_CALLER | LogfOptions::BACKEND;
+
+    // Mixed lanes across every log1p branch: u >= 2, 1 < u < 2, tiny 1+x==1, +/-0, specials
+    let lanes = [
+        [-0.0_f32, 0.0, 1e-20, 1.5],
+        [-1.0_f32, -2.0, f32::INFINITY, f32::NAN],
+        [0.25_f32, 0.999_999_94, 1.0, 1e20],
+    ];
+    for xs in lanes {
+        let vec_exact = try_log1p_f32x4_with::<SPECIALS_CALLER, _>(
+            ScalarToken,
+            f32x4::from_array_t(ScalarToken, xs),
+        )
+        .unwrap()
+        .to_array();
+        let vec_backend = try_log1p_f32x4_with::<SPECIALS_BACKEND_CALLER, _>(
+            ScalarToken,
+            f32x4::from_array_t(ScalarToken, xs),
+        )
+        .unwrap()
+        .to_array();
+        for i in 0..4 {
+            let s_exact = try_log1p_with_token::<SPECIALS_CALLER, _>(ScalarToken, xs[i]).unwrap();
+            let s_backend =
+                try_log1p_with_token::<SPECIALS_BACKEND_CALLER, _>(ScalarToken, xs[i]).unwrap();
+            if xs[i].is_nan() || xs[i] < -1.0 {
+                assert!(vec_exact[i].is_nan() && s_exact.is_nan());
+                assert!(vec_backend[i].is_nan() && s_backend.is_nan());
+            } else {
+                assert_eq!(vec_exact[i].to_bits(), s_exact.to_bits());
+                assert_eq!(vec_backend[i].to_bits(), s_backend.to_bits());
+            }
+        }
+    }
+
+    // Verify BackendDependent allows separate mul + add under ScalarToken instead of forcing software FMA:
+    // find an input in [0.5, 4.0] where mul_add_fused(val, LN_2, c) != val * LN_2 + c.
+    let mut found_rounding_diff = false;
+    for k in 1000..3000 {
+        let x = k as f32 * 0.001_f32;
+        let exact = try_log1p_with_token::<{ LogfOptions::CALLER }, _>(ScalarToken, x).unwrap();
+        let relaxed = try_log1p_with_token::<{ LogfOptions::CALLER | LogfOptions::BACKEND }, _>(
+            ScalarToken,
+            x,
+        )
+        .unwrap();
+        if exact.to_bits() != relaxed.to_bits() {
+            found_rounding_diff = true;
+            break;
+        }
+    }
+    assert!(
+        found_rounding_diff,
+        "expected ScalarToken BitExact vs BackendDependent log1p rounding to diverge cleanly"
+    );
+}

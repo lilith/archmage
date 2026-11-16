@@ -36,10 +36,10 @@ pub enum LogfPortability {
 /// Approximation family, not a global mathematical error bound.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum LogfPrecision {
-    /// Existing MIDP coefficients and graph; at most 4.5 ULP.
+    /// Refitted MIDP coefficients and graph; at most 4.5 ULP in normal domain.
     #[default]
     Midp,
-    /// Existing shorter LOWP coefficients; ~6e-6 absolute error.
+    /// Rational P2/Q2 LOWP approximation; ~6e-6 absolute error.
     Lowp,
 }
 
@@ -76,7 +76,6 @@ impl LogfOptions {
     pub(crate) const LOWP: u32 = 8;
     pub(crate) const BACKEND: u32 = 16;
     pub(crate) const ASSUME: u32 = 32;
-    pub(crate) const LEGACY: u32 = 64;
 
     /// BitExact MIDP, positive domain, checked, automatic execution.
     pub const PORTABLE_MIDP: Self = Self::new();

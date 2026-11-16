@@ -46,21 +46,42 @@ pub fn try_ln_with<const OPTIONS: u32>(x: f32) -> Result<f32, LogfError> {
 pub fn try_log10_with<const OPTIONS: u32>(x: f32) -> Result<f32, LogfError> {
     try_log2_with::<OPTIONS>(x).map(|v| v * core::f32::consts::LOG10_2)
 }
-/// Per-input `u = 1+x` and fdlibm correction: `c = (x-(u-1))/u` for
-/// `u < 2`, else `(1-(u-x))/u`. Zero for non-finite or non-positive `u` —
-/// the kernel's domain handling owns those cases (reject or NaN/-inf/+inf).
-#[inline(always)]
-pub(super) fn log1p_parts(x: f32) -> (f32, f32) {
-    let u = x + 1.0;
-    let c = if !(u > 0.0 && u.is_finite()) {
-        0.0
-    } else if u >= 2.0 {
-        (1.0 - (u - x)) / u
-    } else {
-        (x - (u - 1.0)) / u
+/// Vectorized `u = 1+x` and fdlibm correction `c`, honoring `LogfOptions::BACKEND`
+/// on the final `log2(u) * LN_2 + c` combine step.
+macro_rules! log1p_vec {
+    ($fn_name:ident, $run:ident, $float:ident, $bound:ident) => {
+        #[inline(always)]
+        pub(super) fn $fn_name<const OPTIONS: u32, T: magetypes::simd::backends::$bound>(
+            token: T,
+            input: magetypes::simd::generic::$float<T>,
+        ) -> Result<magetypes::simd::generic::$float<T>, LogfError> {
+            use magetypes::simd::generic::$float as V;
+            let one = V::splat_t(token, 1.0);
+            let two = V::splat_t(token, 2.0);
+            let zero = V::splat_t(token, 0.0);
+            let inf = V::splat_t(token, f32::INFINITY);
+            let u = input + one;
+            let c_ge2 = (one - (u - input)) / u;
+            let c_lt2 = (input - (u - one)) / u;
+            let c = V::blend(u.simd_ge(two), c_ge2, c_lt2);
+            let c = V::blend(u.simd_gt(zero), c, zero);
+            let c = V::blend(u.simd_lt(inf), c, zero);
+            $run::<T, OPTIONS>(token, u).map(|value| {
+                let ln2 = V::splat_t(token, core::f32::consts::LN_2);
+                let result = if OPTIONS & LogfOptions::BACKEND != 0 {
+                    value.mul_add_relaxed(ln2, c)
+                } else {
+                    value.mul_add_fused(ln2, c)
+                };
+                V::blend(input.simd_eq(zero), input, result)
+            })
+        }
     };
-    (u, c)
 }
+log1p_vec!(log1p4, run4, f32x4, F32x4Convert);
+log1p_vec!(log1p8, run8, f32x8, F32x8Convert);
+#[cfg(feature = "w512")]
+log1p_vec!(log1p16, run16, f32x16, F32x16Convert);
 /// Scalar log1p: `ln(1+x)`, with a correction for rounding `1+x`.
 /// MIDP handles tiny inputs; LOWP retains the log2 fit bias near zero and
 /// can return a negative approximation for a tiny positive input.
@@ -96,17 +117,8 @@ pub fn try_log1p_with_token<const OPTIONS: u32, T: magetypes::simd::backends::F3
     token: T,
     x: f32,
 ) -> Result<f32, LogfError> {
-    use magetypes::simd::generic::f32x4;
-    let (u, c) = log1p_parts(x);
-    let xv = f32x4::splat_t(token, x);
-    run4::<T, OPTIONS>(token, f32x4::splat_t(token, u))
-        .map(|value| {
-            let result = value.mul_add_fused(
-                f32x4::splat_t(token, core::f32::consts::LN_2),
-                f32x4::splat_t(token, c),
-            );
-            f32x4::blend(xv.simd_eq(f32x4::splat_t(token, 0.0)), xv, result).to_array()[0]
-        })
+    log1p4::<OPTIONS, T>(token, magetypes::simd::generic::f32x4::splat_t(token, x))
+        .map(|v| v.to_array()[0])
         .map_err(|error| LogfError {
             lane_mask: 1,
             ..error
